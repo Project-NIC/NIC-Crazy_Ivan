@@ -50,5 +50,9 @@ Each page ends with its open questions. The largest:
 
 The pages cite their sources, so a reader with the datasheets can check any number; the Python
 codecs under [software](software/README.md) run with no dependencies and show the frames byte by
-byte. Corrections are welcome as issues. The design is published as it is, under the MIT licence,
-for whoever finds it useful; it takes no side in anything but the engineering.
+byte. A wrong number, a misread datasheet or a broken link goes into
+[Issues](https://github.com/Project-NIC/NIC-Crazy_Ivan/issues); a question, an alternative or
+"we tried that and it failed" goes into
+[Discussions](https://github.com/Project-NIC/NIC-Crazy_Ivan/discussions), where the graveyards,
+the `WHY.md` pages, grow from. The design is published as it is, under the MIT licence, for
+whoever finds it useful; it takes no side in anything but the engineering.
