@@ -39,20 +39,29 @@ class TestFrames(unittest.TestCase):
 
 class TestMeta(unittest.TestCase):
     def test_suit_and_map(self):
-        units = [btp.MapUnit(0x11 + i, 1, i, 4, 0x0100) for i in range(18)] + \
+        units = [btp.MapUnit(0x11 + i, 1, i, 4, 0x0100) for i in range(20)] + \
                 [btp.MapUnit(0x81, 3, 0, 0, 0x0100), btp.MapUnit(0x82, 4, 0, 1, 0x0100)]
-        m = btp.meta_suit(b"CI-0001", 1, 2, 3, 4, 5, btp.RATE_128, 127, 32, 4, units, (1 << 20) - 1)
-        self.assertEqual(len(m.data), 151)
+        m = btp.meta_suit(b"CI-0001", 1, 2, 3, 4, 5, btp.RATE_128, 127, 32, 4, units, (1 << 22) - 1)
+        self.assertEqual(len(m.data), 163)
         back, present = btp.parse_meta_suit(m.data)
-        self.assertEqual((back, present), (units, (1 << 20) - 1))
+        self.assertEqual((back, present), (units, (1 << 22) - 1))
+
+    def test_place_list(self):
+        self.assertEqual(sorted(btp.PLACES), list(range(1, 23)))
+        self.assertEqual([btp.place_line(p) for p in (1, 4, 5, 9, 12, 16, 17, 18, 20, 22)],
+                         [1, 1, 2, 3, 3, 4, 5, 6, 7, 8])
+        with self.assertRaises(ValueError):
+            btp.place_line(0)                                         # unknown
 
     def test_sizes(self):
         self.assertEqual(len(btp.meta_bones(1800, 800, [100] * 16).data), 36)
         self.assertEqual(len(btp.meta_joints(3, [(1, 1, -10, 70)] * 64).data), 256)
-        self.assertEqual(len(btp.meta_electrodes(bytes(64), 3, 0xFF, 0).data), 134)
-        t = btp.meta_temperatures([250] * 20, [25] * 113, (300, 310, 450), bytes(23), 0x0F, 2100)
-        self.assertEqual(len(t.data), 186)
-        self.assertEqual(len(btp.meta_fatigue(bytes(128), bytes(64)).data), 192)
+        self.assertEqual(len(btp.meta_electrodes(bytes(64), 3, 0xFF, 0).data), 286)
+        t = btp.meta_temperatures([250] * 22, [25] * 121, (300, 310, 450), bytes(23), 0x0F, 2100)
+        self.assertEqual(len(t.data), 198)
+        self.assertEqual(len(btp.meta_fatigue(bytes(280), bytes(64)).data), 344)
+        self.assertEqual(btp.smallest_class([btp.meta_fatigue(bytes(280), bytes(64))]), btp.CLASS_512)
+        self.assertEqual(btp.smallest_class([btp.meta_electrodes(bytes(280), 1, 1, 0)]), btp.CLASS_512)
         self.assertEqual(len(btp.meta_time(0, 0, 0, 0, 0, 0, 0).data), 24)
 
     def test_vitals(self):

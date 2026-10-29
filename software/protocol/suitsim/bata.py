@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 
 from ci import btp, stp
 
-ECG_DECIMATION = 8      # 3,840 SPS to 480, the ECG's default
+ECG_DECIMATION = 4      # 1,920 SPS to 480, the ECG's default
 
 
 @dataclass
@@ -30,13 +30,20 @@ class Bata:
     spheres: stp.SphereAssembler = field(default_factory=stp.SphereAssembler)
 
     def __post_init__(self) -> None:
-        self.ecg_units = [(2, i) for i, u in enumerate(self.maps[2]) if getattr(u, "trunk", False)]
+        # the units with a place of data, in the table's order, a place's size by the unit's kind
+        self.place_units = {p: [u for u in self.maps[p] if u.place] for p in self.maps}
+        self.ecg_units = [(2, i) for i, u in enumerate(self.place_units.get(2, []))
+                          if getattr(u, "trunk", False)]
         self.ecg = [bytearray() for _ in self.ecg_units]
         self.ecg_first = 0
         self.assemblers = {}
         for u in (u for m in self.maps.values() for u in m if u.line < 8):
-            per = stp.GLOVE_IMU if u.kind == stp.KIND_IMU else stp.MODULE_IMU
+            per = stp.END_IMU if u.kind == stp.KIND_END else stp.MODULE_IMU
             self.assemblers[u.number] = stp.StepAssembler(u.imus, per)
+
+    def placed(self, proc: int) -> list:
+        """Her units with a place of data, in her table's order: all but Míša."""
+        return [u for u in self.maps[proc] if u.place]
 
     # --- in --------------------------------------------------------------------------------------
 
@@ -51,7 +58,7 @@ class Bata:
     def take(self, proc: int, stream: bytes) -> None:
         """The places by the table, the cycle's number from the frames in them, the four places'
         frames by their kind; a cycle goes on once both processors' places of it are in."""
-        data, extra = stp.parse_cycle(stream, len(self.maps[proc]))
+        data, extra = stp.parse_cycle(stream, [u.place for u in self.place_units[proc]])
         cycle = self.expect[proc]
         numbers = {stp.widen(cycle, f[2] | f[3] << 8) for f in data if f is not None}
         if numbers:
@@ -100,11 +107,11 @@ class Bata:
     # --- a whole cycle ---------------------------------------------------------------------------
 
     def cycle(self, c: int, got: dict) -> None:
-        """Both processors' frames of one cycle: the IMU steps, the ECG of the trunk's modules,
-        a snapshot every 32 cycles."""
+        """Both processors' frames of one cycle: the IMU steps from the frames, the ECG of the
+        trunk's modules, a snapshot every step."""
         self.cycles += 1
         for proc, data in got.items():
-            for u, f in zip(self.maps[proc], data):
+            for u, f in zip(self.place_units[proc], data):
                 if u.line == 8:
                     continue
                 if f is None:
@@ -112,8 +119,8 @@ class Bata:
                     continue
                 a = self.assemblers[u.number]
                 before = len(a.steps)
-                a.feed(c, stp.Frame.unpack(f).body[24:] if u.kind == stp.KIND_EMG
-                       else stp.Frame.unpack(f).body)
+                body = stp.Frame.unpack(f).body
+                a.feed(c, body[-a.per:])                 # the steps' bytes last, 4 B or 28 B
                 self.steps += len(a.steps) - before
         if c % ECG_DECIMATION == 0:
             for k, (proc, i) in enumerate(self.ecg_units):
@@ -131,7 +138,7 @@ class Bata:
         step = cycle // stp.STEP
         if step % every:
             return
-        joints = bytes(int(128 + 100 * math.sin(cycle / 3840 * math.pi + i / 10)) & 0xFF
+        joints = bytes(int(128 + 100 * math.sin(cycle / stp.ADS_SPS * math.pi + i / 10)) & 0xFF
                        for i in range(127))
         contacts = 0b11 << 28 | 0b11 << 30   # the heels and the balls of the feet: standing
         pk = [btp.snapshot(step % 16, joints, contacts)]
@@ -173,18 +180,19 @@ class Bata:
             for u in units:
                 if u.kind == stp.KIND_EMG:
                     d = self.diagnostics.get(u.number)
-                    p, n = (d.p_on, d.n_on) if d else (0xFF, 0xFF)
-                    channels += bytes(0x04 | (~p >> i & 1) | (~n >> i & 1) << 1 for i in range(8))
+                    p, n = (d.p_on, d.n_on) if d else (0xFFFF, 0xFFFF)
+                    channels += bytes(0x04 | (~p >> i & 1) | (~n >> i & 1) << 1
+                                      for i in range(8 * u.ads))
             return btp.meta_electrodes(bytes(channels), 0, 0xFFFF, 0)
         if which == 6:
             temps = [10 * d.temp_c if d else 0x7FFF
                      for d in (self.diagnostics.get(u.number) for u in units)]
             imus = sum(u.imus for u in units)
             battery = stp.Battery((3300,) * 4, 13200, -1500, (250, 260, 270), 0, 55, 6600).pack()
-            return btp.meta_temperatures((temps + [0x7FFF] * 20)[:20], [26] * min(imus, 113),
+            return btp.meta_temperatures((temps + [0x7FFF] * btp.UNITS)[:btp.UNITS], [26] * min(imus, btp.IMUS),
                                          (300, 310, 450), battery, 0x3FF, 2100)
         if which == 7:
-            return btp.meta_fatigue(bytes(128), bytes(64))
+            return btp.meta_fatigue(bytes(btp.CHANNELS), bytes(64))
         return btp.meta_time(0, 0, 0, 0, 0, 0, 0)
 
     def close(self) -> None:

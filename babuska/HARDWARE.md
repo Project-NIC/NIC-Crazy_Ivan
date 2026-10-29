@@ -16,18 +16,18 @@ charging and the two power variants.
 The pack is described here and assembled from cells, not bought: in a bought pack the cells,
 the welds and the protection cannot be checked.
 
-**Energy.** Besides the computer and its Hailos the suit takes ~11.5–12.5 W from the battery,
-with Mamka's converters at an estimated 85–90 %: the modules and the gloves on lines 1–7 ~1.3 A
-at 4 V and ~0.13 A at 6 V, ~6.8–7.2 W; Nataša and Míša on line 8 ~0.35 A at 4 V, ~1.6 W; Mamka's
-own 3.3 V ~0.72–0.77 A, ~2.6–3.0 W (see [Mamka](../mamka/HARDWARE.md#converters)); the fan and
-the BMS ~0.5 W. The ROCK 5T's share is an estimate from others' measurements, not ours:
+**Energy.** Besides the computer and its Hailos the suit takes ~12.2–13.1 W from the battery, with
+Mamka's converters at an estimated 85–90 %: the modules, the gloves and the socks on lines 1–7 ~1.5
+A at 4 V and ~0.13 A at 6 V, ~7.5–8.0 W; Nataša and Míša on line 8 ~0.35 A at 4 V, ~1.6 W; Mamka's
+own 3.3 V ~0.72–0.77 A, ~2.6–3.0 W (see [Mamka](../mamka/HARDWARE.md#converters)); the fan and the
+BMS ~0.5 W. The ROCK 5T's share is an estimate from others' measurements, not ours:
 
 | fitting | the computer | Hailo-10H | the whole suit | on 154 Wh (20–80%) |
 |---|---|---|---|---|
 | ROCK 5T, *small*: no Hailo, the model on its own NPU | ~4–8 W | none | ~16–21 W | ~7.3–9.6 h |
-| ROCK 5T, *normal*: one Hailo, the big cores held lower | ~4–8 W | 2.5–8.25 W | ~18–29 W | ~5.3–8.6 h |
-| ROCK 5T, *brutal*: both Hailos, every core | ~4–17 W | 5–16.5 W | ~21–46 W | ~3.3–7.3 h |
-| two computers: Baťa in any fitting, Borovičok on a ROCK 5T with no Hailo | ~4–17 W and ~4–17 W | 0–16.5 W | ~20–63 W | ~2.4–7.7 h |
+| ROCK 5T, *normal*: one Hailo, the big cores held lower | ~4–8 W | 2.5–8.25 W | ~19–29 W | ~5.3–8.1 h |
+| ROCK 5T, *brutal*: both Hailos, every core | ~4–17 W | 5–16.5 W | ~21–47 W | ~3.3–7.3 h |
+| two computers: Baťa in any fitting, Borovičok on a ROCK 5T with no Hailo | ~4–17 W and ~4–17 W | 0–16.5 W | ~20–64 W | ~2.4–7.7 h |
 
 - **The run time asked for** is a working day, ~8 h, in the small and the normal fittings at an
   ordinary load; the brutal fitting and two computers may run shorter.
@@ -147,7 +147,9 @@ of the backpack. Its usual end is 14.6 V, 3.65 V a cell, EVE's end of charge; 5 
 the 20 Ah pack, inside EVE's standard 0.5 C and inside its 0.25 C even at 0–5 °C. Whether the
 charger or the BMS stops at 80% is the question above. The suit may be worn while it charges;
 the charger's noise may then show in the data, and the right-leg drive holds the common voltage
-against it (see [Rubaška](../rubaska/HARDWARE.md#right-leg-drive)).
+against it (see [Rubaška](../rubaska/HARDWARE.md#right-leg-drive)). The charger's output must
+float against earth: an earthed one would empty a charged wearer through the electrodes (see
+[Rubaška](../rubaska/HARDWARE.md#sensing-module), *Inputs and their protection*).
 
 
 ## Power variants

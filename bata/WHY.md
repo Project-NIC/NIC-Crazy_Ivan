@@ -75,12 +75,12 @@ thing waits in reserve, it says so.
   Debian brings them ready.
 - **Fedora.** It works on arm64, but a release lasts about a year; Debian's stable one is kept
   for years, which suits a machine that should only run.
-- **Raw EMG straight into the model,** Baťa only moving data. 1.47 MB/s of samples into a
-  network cost what it does not need; the model takes 128 log-RMS envelopes and 64 IMU steps
+- **Raw EMG straight into the model,** Baťa only moving data. 1.38 MB/s of samples into a
+  network cost what it does not need; the model takes 240 log-RMS envelopes and 100 IMU steps
   every 1/120 s instead, which one core computes in the gaps (see [signals](SIGNALS.md)).
 - **A fixed 50 Hz notch** on the EMG. It takes EMG with it; the mains, if any is left behind
-  the right-leg drive and −110 dB of CMRR, is tracked as a sinusoid and subtracted.
-- **A driver of our own** to save the one copy from spidev's buffer into the Hailo's. ~950 B per
+  the right-leg drive and the chips' CMRR, is tracked as a sinusoid and subtracted.
+- **A driver of our own** to save the one copy from spidev's buffer into the Hailo's. ~1.3 kB a
   cycle cost next to nothing; the copy stays.
 - **Training on the Hailo.** HailoRT has no functions for training; the Hailo only runs models.
 - **An SSD on Baťa's PCIe** in the normal and brutal fittings. PCIe goes to the Hailos;

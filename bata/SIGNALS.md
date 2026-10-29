@@ -20,22 +20,25 @@ to hold now is only the interfaces: what the model takes, what goes out, and in 
 
 ## The EMG channel
 
-128 channels at 3,840 SPS, 24 bits, 44.70 nV a step at a gain of 12 (±375 mV over 24 bits).
+280 channels at 1,920 SPS, 24 bits, 39.74 nV a step at a gain of 12 on the body's ADS1298 (±333 mV
+over 24 bits) and 44.70 nV on the head's and the neck's ADS1299 (±375 mV).
 
 - **The band:** a high-pass at ~10 Hz takes the electrodes' drift and most of the movement
-  artefact; the upper edge is the ADS1299's own, ~1 kHz at 3,840 SPS (SBAS499C, table 1). That
-  is the 10–500 Hz band SENIAM recommends for surface EMG, with room above it. The movement
+  artefact; the upper edge is the chips' own, ~503 Hz at 1,920 SPS, 0.262 of the rate (SBAS459K,
+  Electrical Characteristics; SBAS499C, table 1), the 10–500 Hz band SENIAM recommends for
+  surface EMG. The movement
   artefact of the electrode on the skin, larger than the cables', lies at 0–20 Hz, and De Luca
   filters from 20 Hz (*Surface Electromyography: Detection and Recording*, Delsys 2002); 10 Hz
   stays, and 20 Hz is tried on the first recordings, one number here.
 - **The mains at 50 Hz** is not notched: a fixed notch takes EMG with it. The right-leg drive and
-  the ADS1299's −110 dB of CMRR leave little, and what is left is estimated as a slowly varying
+  the chips' CMRR, −105 dB at least on the ADS1298 and −110 on the ADS1299 (SBAS459K; SBAS499C),
+  leave little, and what is left is estimated as a slowly varying
   sinusoid at 50 Hz and its first harmonics, tracked from quiet stretches, and subtracted. Whether
   it is needed at all the first recordings will show.
-- **The radar's pattern** on the head's electrodes, aligned to each radar frame by the sphere's
-  stamped arrival, 10 frames a second, is averaged over hundreds of frames and subtracted (see
-  [Míša](../misa/HARDWARE.md#radar-and-the-emg)).
-- **The envelope:** for every channel the log of the RMS over each step of 32 samples (1/120 s),
+- **The radar's pattern** on the head's electrodes, aligned to each radar frame by the stamped
+  arrival of a sphere made with the radar (its code 2 or 3), 10 frames a second, is averaged over
+  hundreds of frames and subtracted (see [Míša](../misa/HARDWARE.md#radar-and-the-emg)).
+- **The envelope:** for every channel the log of the RMS over each step of 16 samples (1/120 s),
   so the EMG arrives at the model at the IMUs' rate. Log, because muscle activity spans two
   decades and the model should see a quiet muscle as well as a straining one.
 
@@ -52,9 +55,9 @@ EMG and kept as a measurement of its own.
   per channel with its own amplitude and delay, since every electrode sees the heart from
   somewhere else. The template is subtracted at every beat; what is left is EMG, what was taken
   is the ECG.
-- **Out:** the ECG of the three trunk modules' first channels, the chest's and the two of the
-  back, 1 B a sample at 480 SPS, the
-  packet of type 3 with a decimation of 8. A doctor reads a rhythm from that; the picture of the
+- **Out:** the ECG of the three trunk modules' first channels, the chest's, the neck's and the
+  lower back's, 1 B a sample at 480 SPS, the packet of type 3 with a decimation of 4. A doctor
+  reads a rhythm from that; the picture of the
   current through the chest is for later, from a recording with all channels.
 - **The breath:** from the slow envelope of the diaphragm's and the lower abdomen's channels,
   which rise and fall with every breath, and from the trunk IMUs, which tilt a little with it.
@@ -66,13 +69,14 @@ EMG and kept as a measurement of its own.
 
 ## The electrodes' quality
 
-- **Off:** the electrodes on the skin come in the diagnostics, every 32 cycles, from the ADS1299's
+- **Off:** the electrodes on the skin come in the diagnostics, every 32 cycles, from the chips'
   LOFF_STATP and LOFF_STATN; an electrode that has come off masks
   its channel for the model (the channel's envelope is set to a value the model learns as
   "absent") and raises an event.
 - **Quality 0–15** in the meta packet of the electrodes: from the channel's noise floor in the
-  quietest stretches of the last seconds against the ADS1299's own 0.65 µVrms at this rate
-  (SBAS499C, the noise table), and from how much mains and movement artefact the channel shows
+  quietest stretches of the last seconds against the chip's own noise at this rate, 0.8 µVrms on
+  the ADS1298 and 0.46 on the ADS1299 (SBAS459K and SBAS499C, their noise tables), and from how
+  much mains and movement artefact the channel shows
   compared with its neighbours. A channel of quality 0 is as good as off.
 
 ## The IMUs and the joints
@@ -97,11 +101,11 @@ Each IMU's step is its turn Δθ over 1/120 s with the coning term and its mean 
 
 ## The model
 
-The model takes features at the IMUs' rate, not the raw EMG: 1.47 MB/s of raw samples into a
+The model takes features at the IMUs' rate, not the raw EMG: 1.61 MB/s of raw samples into a
 network would cost what it does not need, and the envelopes carry the muscles' activity.
 
-- **In, every step of 1/120 s:** 128 EMG envelopes (log-RMS of the step) and 64 IMU steps of 6
-  values, **512 values a step**; a window of **32 steps**, 267 ms, 16,384 values. Absent IMUs and
+- **In, every step of 1/120 s:** 280 EMG envelopes (log-RMS of the step) and 98 IMU steps of 6
+  values, **868 values a step**; a window of **32 steps**, 267 ms, 27,776 values. Absent IMUs and
   masked channels take their "absent" value.
 - **Out, every step:** the 127 joint values, the 32 contact bits and, from longer windows, the
   fatigue below. Neural networks learn rotations better in a six-number form than as angles or
@@ -138,7 +142,5 @@ the meta packet of fatigue. Surface EMG hears the neighbouring muscles too, so g
   template reaches on the limbs, the breath from the EMG against a belt,
 - the complementary filter's gains and the joint constraints' weights, on a recorded walk against
   a camera,
-- the model's window and features: 32 steps of 512 values is the first guess, to be tuned; its 64
-  IMU steps take the body's 48, not the gloves' 40 besides (see
-  [Bogatyr](../bogatyr/CONSTRUCTION.md#open-questions)),
+- the model's window and features: 32 steps of 868 values is the first guess, to be tuned,
 - the fatigue index against a known effort, on a recording with a dynamometer.

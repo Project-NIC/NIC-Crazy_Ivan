@@ -8,19 +8,21 @@ from dataclasses import dataclass, field
 
 from ci import stp
 
-ADS_SPS = 3840
+ADS_SPS = stp.ADS_SPS
 LSB_PER_UV = 1 / 0.04470        # gain 12, ±375 mV over 24 bits: 44.70 nV a step
-MISA_EVERY = 384                # cycles between Míša's spheres, 10 a second
+MISA_EVERY = ADS_SPS // 10      # cycles between Míša's spheres, 10 a second
 P1_LINES = range(1, 5)          # the arms and the legs, on processor 1
 
-# where each module sits, by line and slot, with its IMUs (Bogatyr), in the order a smaller suit
-# takes them; an arm's line is its shoulder, upper arm, forearm and glove, a leg's its hip, thigh
-# and calf
-PLACES = [(1, 2, "upper arm L", 4), (1, 3, "forearm L", 4), (2, 2, "upper arm R", 4),
-          (2, 3, "forearm R", 4), (3, 2, "thigh L", 4), (3, 3, "calf L", 4), (4, 2, "thigh R", 4),
-          (4, 3, "calf R", 4), (6, 1, "chest and abdomen", 1), (7, 2, "lower back", 3),
-          (7, 1, "neck and upper back", 2), (1, 1, "shoulder L", 3), (2, 1, "shoulder R", 3),
-          (3, 1, "hip L", 1), (4, 1, "hip R", 1), (5, 1, "head", 2)]
+# where each module sits, by line and slot, with its IMUs (Bogatyr) and its ADS129x chips, two
+# ADS1298 on the body, two ADS1299 on the head and one on the neck, in the order a smaller suit
+# takes them; an arm's line is its shoulder, upper arm, forearm and glove, a leg's its hip,
+# thigh, calf and sock
+PLACES = [(1, 2, "upper arm L", 4, 2), (1, 3, "forearm L", 2, 2), (2, 2, "upper arm R", 4, 2),
+          (2, 3, "forearm R", 2, 2), (3, 2, "thigh L", 4, 2), (3, 3, "calf L", 2, 2),
+          (4, 2, "thigh R", 4, 2), (4, 3, "calf R", 2, 2), (6, 1, "chest and abdomen", 1, 2),
+          (7, 2, "lower back", 3, 2), (7, 1, "neck and upper back", 2, 1),
+          (1, 1, "shoulder L", 3, 2), (2, 1, "shoulder R", 3, 2), (3, 1, "hip L", 1, 2),
+          (4, 1, "hip R", 1, 2), (5, 1, "head", 4, 2)]
 TRUNK = ("chest and abdomen", "lower back", "neck and upper back")   # where the ECG shows
 
 
@@ -47,6 +49,8 @@ class Unit:
     rng: random.Random = field(default_factory=lambda: random.Random(1))
     uid: bytes = b""
     kind: int = 0
+    ads: int = 0                # its ADS129x chips: two ADS1298, one ADS1299, none
+    bratiski: int = 0           # the glove's and the sock's Bratiški, chips of their Staršaja
 
     def __post_init__(self) -> None:
         if not self.uid:
@@ -58,24 +62,33 @@ class Unit:
 
     @property
     def chips(self) -> int:
-        return self.imus
+        return self.ads + self.bratiski + self.imus
+
+    @property
+    def place(self) -> int:
+        """Its place of data a cycle: 58 B for a module of two chips and for the glove and the
+        sock, 34 B otherwise, none for Míša."""
+        return stp.place_len(self.kind, self.ads)
 
     def diagnostics(self, cycle: int, temp_c: int = 32) -> bytes:
-        temps = [int((26.0 - 25) * 132.48)] * len(stp.which_imus(cycle, self.imus))
+        temps = [int((26.0 - 25) * 128)] * len(stp.which_imus(cycle, self.imus))   # ICM-45686
         alive = stp.chip_bits(self.chips, [True] * self.chips)
-        return stp.Diagnostics(self.number, cycle, alive, alive, temp_c=temp_c, low_mv=3270,
-                               imu_temps=temps).pack()
+        skin = stp.skin_word(0xFF, 0xFF if self.ads == 2 else 0xFF)
+        return stp.Diagnostics(self.number, cycle, alive, alive, skin, skin, temp_c=temp_c,
+                               low_mv=3270, imu_temps=temps).pack()
+
+    def frames(self, cycle: int, pose: float, steps: list[bytes]) -> list[bytes | None]:
+        """The unit's frame of data this cycle, in its place; one a unit."""
+        return []
 
 
 @dataclass
 class Module(Unit):
-    """A sensing module: an ADS1299 and its IMUs."""
+    """A sensing module: two ADS1298 on the body, two ADS1299 on the head, one on the neck, and
+    its IMUs."""
     trunk: bool = False         # the ECG shows strongly on the trunk's modules
     kind: int = stp.KIND_EMG
-
-    @property
-    def chips(self) -> int:
-        return 1 + self.imus
+    ads: int = 2
 
     def channels(self, cycle: int, pose: float) -> list[int]:
         """Eight EMG-like channels: noise, a little muscle tone that follows the pose, the ECG."""
@@ -89,20 +102,27 @@ class Module(Unit):
             out.append(int(max(-8388608, min(8388607, v))))
         return out
 
-    def frame(self, cycle: int, pose: float, steps: list[bytes]) -> bytes:
+    def frames(self, cycle: int, pose: float, steps: list[bytes]) -> list[bytes | None]:
         imu = stp.imu_bytes(cycle, steps[:self.imus], stp.MODULE_IMU)
-        return stp.module_data(self.number, cycle, self.channels(cycle, pose), imu)
+        channels = self.channels(cycle, pose)
+        if self.ads == 2:
+            channels += self.channels(cycle, pose)              # the second chip's eight
+        return [stp.module_data(self.number, cycle, channels, imu)]
 
 
 @dataclass
-class Glove(Unit):
-    """The glove, Vešč, a unit of its own in its arm's fourth slot: 20 IMUs on five Bratiški."""
-    imus: int = 20
-    kind: int = stp.KIND_IMU
+class Glove(Module):
+    """The glove, Vešč, a unit of its own in its arm's fourth slot: one ADS1298 on the hand's 16
+    electrodes and up to 20 IMUs, Staršaja's own four and four Bratiški's; the sock, Nosok, the
+    same board in a leg's fourth slot, with up to 8 IMUs on two Bratiški to start."""
+    imus: int = stp.HAND_IMUS
+    bratiski: int = stp.BRATISKI
+    kind: int = stp.KIND_END
+    ads: int = 1
 
-    def frame(self, cycle: int, pose: float, steps: list[bytes]) -> bytes:
-        return stp.glove_data(self.number, cycle, stp.imu_bytes(cycle, steps[:self.imus],
-                                                                stp.GLOVE_IMU))
+    def frames(self, cycle: int, pose: float, steps: list[bytes]) -> list[bytes | None]:
+        imu = stp.imu_bytes(cycle, steps[:self.imus], stp.END_IMU)
+        return [stp.end_data(self.number, cycle, self.channels(cycle, pose), imu)]
 
 
 @dataclass
@@ -116,16 +136,15 @@ class Natasa(Unit):
     buttons: int = 0
     misa: bool = True
 
-    def frame(self, cycle: int, pose: float, steps: list[bytes]) -> bytes | None:
-        if cycle % stp.STEP != stp.LINE8_DATA_CYCLE:
-            return None
-        return stp.natasa_data(cycle, self.buttons, stp.NATASA_MISA if self.misa else 0)
+    def frames(self, cycle: int, pose: float, steps: list[bytes]) -> list[bytes | None]:
+        if cycle % stp.PERIOD != stp.LINE8_DATA_CYCLE:
+            return [None]
+        return [stp.natasa_data(cycle, self.buttons, stp.NATASA_MISA if self.misa else 0)]
 
 
 @dataclass
 class Misa(Unit):
-    """Line 8's second slot, his own: the sphere after every radar frame. What his frame of data
-    carries is not set; here it is zeros."""
+    """Line 8's second slot, his own: the sphere 10 times a second, no frame of data."""
     line: int = 8
     slot: int = 2
     name: str = "Míša"
@@ -134,23 +153,19 @@ class Misa(Unit):
     imus: int = 1
     sphere_no: int = 0
 
-    def frame(self, cycle: int, pose: float, steps: list[bytes]) -> bytes | None:
-        if cycle % stp.STEP != stp.LINE8_DATA_CYCLE:
-            return None
-        return stp.Frame(stp.MISA, stp.K_DATA, cycle).pack()
-
     def sphere(self) -> bytes:
         self.sphere_no += 1
         rows = {0: (255, 0, 0x1F), 1: None, 2: (120, 0, 0x5F)}
         fields = [rows[row] or (40 + 10 * col, 0, 0x1F) for row in range(3) for col in range(12)]
-        return stp.sphere(self.sphere_no, 0x0F, 0, 0, fields)
+        return stp.sphere(self.sphere_no, stp.SRC_BOTH | 0x0C, 0, 0, fields)  # IMU, levelled
 
 
 @dataclass
 class Suit:
-    """Up to 16 modules and the gloves on lines 1-7 by the body's pieces, Nataša and Míša on line
-    8, Mamka between them and Baťa: processor 1 the limbs over SPI1, processor 2 the rest over two
-    slower SPIs, in places of 34 B."""
+    """Up to 16 modules, the gloves and the socks on lines 1-7 by the body's pieces, Nataša and
+    Míša on line 8, Mamka between them and Baťa: processor 1 the limbs over SPI1, processor 2 the
+    rest over two slower SPIs, in places by the unit's kind, 58 B for a module of two chips and
+    for the glove and the sock, 34 B otherwise."""
     units: list[Unit]                  # the map: by line and on each line by slot
     bad_frame_rate: float = 0.0        # how often a frame reaches Mamka with a bad CRC
     rng: random.Random = field(default_factory=lambda: random.Random(3))
@@ -165,15 +180,18 @@ class Suit:
 
     @classmethod
     def standard(cls, n_modules: int = 16, line8: bool = True, gloves: bool = True,
-                 **kw) -> "Suit":
+                 socks: bool = True, **kw) -> "Suit":
         units: list[Unit] = []
-        for i, (line, slot, name, imus) in enumerate(PLACES[:n_modules]):
+        for i, (line, slot, name, imus, ads) in enumerate(PLACES[:n_modules]):
             units.append(Module(line, slot, name, imus=imus, rng=random.Random(100 + i),
-                                trunk=name in TRUNK))
+                                trunk=name in TRUNK, ads=ads))
         if gloves:
             for m in [u for u in units if u.name.startswith("forearm")]:
-                m.imus = 2                          # the hand's two are the glove's
                 units.append(Glove(m.line, 4, "glove " + m.name[-1], rng=random.Random(m.line)))
+        if socks:
+            for m in [u for u in units if u.name.startswith("calf")]:
+                units.append(Glove(m.line, 4, "sock " + m.name[-1], imus=stp.FOOT_IMUS,
+                                   bratiski=2, rng=random.Random(10 + m.line)))
         if line8:
             units += [Natasa(rng=random.Random(81)), Misa(rng=random.Random(82))]
         units.sort(key=lambda u: (u.line, u.slot))
@@ -183,6 +201,10 @@ class Suit:
 
     def of(self, processor: int) -> list[Unit]:
         return [u for u in self.units if u.processor == processor]
+
+    def placed(self, processor: int) -> list[Unit]:
+        """Her units with a place of data, in her table's order."""
+        return [u for u in self.of(processor) if u.place]
 
     def unit(self, name: str) -> Unit:
         return next(u for u in self.units if u.name == name)
@@ -203,22 +225,23 @@ class Suit:
             return None
 
     def cycle(self) -> tuple[bytes, tuple[bytes, bytes]]:
-        """One cycle: every unit's frame in its slot, the diagnostics in cycle 31 of 32, line 8's
-        frames, each processor's transfer: processor 1's on SPI1, processor 2's striped."""
+        """One cycle: every unit's frames in its slot, the diagnostics in cycle 31 of 32, line
+        8's frames, each processor's transfer: processor 1's on SPI1, processor 2's striped."""
         s = self.cycle_no
         if s % stp.STEP == 0:
             self.phase = 2 * math.pi * 0.5 * s / ADS_SPS     # a swing twice a second
             self.steps = imu_steps(self.phase, 24)
         transfers = {}
         for proc in (1, 2):
-            data = [self.arrive(u.frame(s, self.phase, self.steps)) for u in self.of(proc)]
-            if s % stp.STEP == stp.DIAGNOSTICS_CYCLE:
+            data = [self.arrive(f) for u in self.placed(proc)
+                    for f in u.frames(s, self.phase, self.steps)]
+            if s % stp.PERIOD == stp.DIAGNOSTICS_CYCLE:
                 for u in self.of(proc):
                     self.put(proc, self.arrive(u.diagnostics(s)))
             if proc == 2:
                 self.line8(s, data)
             extra, self.queue[proc] = self.queue[proc][:stp.EXTRA], self.queue[proc][stp.EXTRA:]
-            transfers[proc] = stp.cycle_transfer(data, extra)
+            transfers[proc] = stp.cycle_transfer(data, [u.place for u in self.placed(proc)], extra)
         self.p1.append(transfers[1])
         share = stp.stripe(transfers[2])
         self.p2.append(share)
@@ -232,8 +255,10 @@ class Suit:
 
     def line8(self, s: int, data: list[bytes | None]) -> None:
         """Processor 2: an event for each change of Nataša's buttons, Míša's sphere as it came."""
-        line8 = {u.number: (u, f) for u, f in zip(self.of(2), data) if u.line == 8}
-        _, nf = line8.get(stp.NATASA, (None, None))
+        natasa = next((u for u in self.placed(2) if u.number == stp.NATASA), None)
+        nf = None
+        if natasa is not None:
+            nf = data[self.placed(2).index(natasa)]
         if nf is not None:
             _, buttons, _ = stp.parse_natasa_data(nf)
             changed = buttons ^ self.last_buttons
@@ -242,7 +267,7 @@ class Suit:
                     what = stp.EV_PRESSED if buttons >> bit & 1 else stp.EV_RELEASED
                     self.put(2, stp.event(what, bit, s))
             self.last_buttons = buttons
-        misa, _ = line8.get(stp.MISA, (None, None))
+        misa = next((u for u in self.of(2) if u.number == stp.MISA), None)
         if misa is not None and s % MISA_EVERY == 0:
             for piece in stp.sphere_answers(misa.sphere(), s):
                 self.put(2, self.arrive(piece))

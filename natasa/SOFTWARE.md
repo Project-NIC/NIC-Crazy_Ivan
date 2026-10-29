@@ -66,22 +66,35 @@ microphones.
   packets are mended the same way the other round, Mamka asking. The sound comes 10 ms later;
   for the assistants' speech, reading and music that does not matter, and the vibration to the
   beat goes by the motors' own registers.
-- **The microphones** go only while there are microphones and Baťa wants them, a packet in her
-  slot every ~3.8 cycles; Mamka holds a buffer of her own on her side and feeds the SAI from it.
+- **The microphones** go only while Baťa wants them, a packet in her slot every ~3.8 cycles;
+  Mamka holds a buffer of her own on her side and feeds the SAI from it, silence while none
+  come, so Baťa's sound device runs on.
+
+**The sound is chip 0x02,** one register of Nataša's own, the DAC and the microphones having
+none (see [hardware](HARDWARE.md#microphones)):
+
+| register | what |
+|---|---|
+| 0x00 | the microphones: 0 off, as after a reset, 1 on; Baťa writes it (see [Baťa](../bata/SOFTWARE.md#the-system)) |
+
+- **Her I2S clocks** run while the headphones' stream comes or the microphones are on, the DAC
+  and the microphones sharing them; with neither, they stop and are held low, and the
+  microphones stand by. They start again within 20 ms (*Power management*), so the first
+  packets after an *on* may be silence.
   The sound runs whether a measurement runs or not.
 
 ## Line 8
 
 Line 8 runs by its slots always, measuring or not, since the sound runs always (see
 [Porjadok](../porjadok/SOFTWARE.md#line-8)): two slots of 130.2 µs, 256 B each. Nataša counts
-the cycle on her TIM2 from the suit clock, **3,840 a second,** and Mamka's *heartbeat*, once a
+the cycle on her TIM2 from the suit clock, **1,920 a second,** and Mamka's *heartbeat*, once a
 second at a cycle's start, corrects it; after power-on she finds the cycle's start by it and stays
 silent until then.
 
 | slot | whose | what goes in it |
 |---|---|---|
-| 1 | Nataša's | her frame of data in cycle 15 of 32 and her diagnostics in cycle 31; a packet of the microphones every ~3.8 cycles; *repeat* and an answer of 8 B; a 34 B answer waits for a cycle without a packet |
-| 2 | Míša's, his own | his frame of data in cycle 15 of 32 and his diagnostics in cycle 31; his pieces of the sphere after every radar frame; his answers |
+| 1 | Nataša's | her frame of data in cycle 15 of 32 and her diagnostics in cycle 31; a packet of the microphones every ~1.9 cycles; *repeat* and an answer of 8 B; a 34 B answer waits for a cycle without a packet |
+| 2 | Míša's, his own | his diagnostics in cycle 31 of 32; his pieces of the sphere, 10 times a second; his answers |
 
 The pair down is Mamka's: the sound, 1,000 packets a second, the heartbeat, and whatever is for
 Nataša or Míša. The rest of line 8's hardware is under [hardware](HARDWARE.md#line-8).
@@ -89,9 +102,9 @@ Nataša or Míša. The rest of line 8's hardware is under [hardware](HARDWARE.md
 ## Nataša's frames
 
 **Her frame of data** goes in her slot once every 32 cycles, in the cycle whose number mod 32 is
-15, half a round from the diagnostics, ~4 kB/s, whatever is plugged in, so
+15, half a round from the diagnostics, ~2 kB/s, whatever is plugged in, so
 that nothing hangs on the microphones or the headphones, which are no must; a button is known
-within ~8 ms.
+within ~17 ms.
 
 | B | field |
 |---|---|
@@ -101,7 +114,7 @@ within ~8 ms.
 | 7–31 | zeros |
 | 32–33 | CRC-16 |
 
-- **Her diagnostics** are a unit's with no ADS1299 (see
+- **Her diagnostics** are a unit's with no ADS129x (see
   [Porjadok](../porjadok/SOFTWARE.md#the-diagnostics)): the chips alive, her temperature and her
   lowest 3.3 V.
 - **The buttons:** Mamka's processor 2 compares them with the frame before and sends Baťa an
@@ -190,7 +203,7 @@ By the suit's clock tree (see [Porjadok](../porjadok/SOFTWARE.md#the-clock-tree)
 | SPI3 in I2S, the sound | PLL1Q ÷ 32 (field 31): 12.288 MHz, SPI3SEL = 000 (RCC_CCIPR3, 11.8.42); I2SDIV = 2, ODD = 0, CHLEN = 1 (32-bit slots), MCKOE = 0: 12.288 MHz ÷ (32 × 2 × 4) = 48 kHz, a bit clock of 3.072 MHz (RM0481 Rev 5, 58.9.9) |
 | USART1 and UART4, line 8 | PLL3 Q, 196.608 MHz (USART1SEL and UART4SEL = 010); OVER8 = 1, BRR = 0x0012: 19,660,800 Bd |
 | TIM3, the motors | PSC = 0, ARR = 2,047: 24.0 kHz, inside the DRV2603's 10–250 kHz (SLOS754C), the duty in 2,048 steps |
-| TIM2, the cycles | PSC = 4: a tick of the suit clock; ARR = 2,559, a cycle of 260.4 µs, set by Mamka's heartbeat |
+| TIM2, the cycles | PSC = 4: a tick of the suit clock; ARR = 5,119, a cycle of 520.8 µs, set by Mamka's heartbeat |
 
 ## DMA
 
@@ -219,7 +232,5 @@ vector table's (RM0481 Rev 5, table 153):
 ## Open questions
 
 - the buttons' final assignment, tried with the people who will wear it,
-- how Baťa says he wants the microphones' stream, and how he stops it: a register of the sound's
-  chip, still to set,
 - the radar's image through the suit: its kind's number, its size and TI's loading protocol, once
   the radar is on the bench.

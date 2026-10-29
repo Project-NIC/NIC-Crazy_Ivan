@@ -2,11 +2,13 @@
 
 **Bogatyr's layout drawn on an average body:** every place of
 [Bogatyr](../../bogatyr/CONSTRUCTION.md) put on MakeHuman's base mesh by the bones' landmarks,
-the pictures in [`bogatyr/`](../../bogatyr/README.md#on-an-average-body): the 256 electrodes (P
-red, N blue), the 128 channels as lines from a P to its N, the 16 reference electrodes (green),
-the 16 bias electrodes (yellow) and the 48 IMUs (violet), from the front, the back and the side,
-and the hand, the foot and the neck with the upper back up close. The modules are not drawn,
-their places on the trunk not being set.
+the pictures in [`bogatyr/`](../../bogatyr/README.md#on-an-average-body): the first eight
+channels of every module, 256 electrodes (P red, N blue) and 128 channels as lines from a P to
+its N, the 16 reference electrodes of that layout (green), the 16 bias electrodes (yellow) and 48
+IMUs (violet), the hand's and the foot's among them, from the front, the back and the side, and
+the hand, the foot and the neck with the upper back up close. The body's modules' second eight
+channels, the gloves and the socks are not drawn yet, nor the modules, their places on the trunk
+not being set.
 
 | file | what is in it |
 |---|---|

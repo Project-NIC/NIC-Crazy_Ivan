@@ -4,7 +4,7 @@ import os
 import sys
 
 from suitsim import Suit, Bata, write_frames, read_frames, summarize
-from ci import btp
+from ci import btp, stp
 
 
 def main(argv=None) -> int:
@@ -12,6 +12,7 @@ def main(argv=None) -> int:
     ap.add_argument("--seconds", type=float, default=1.0)
     ap.add_argument("--modules", type=int, default=16)
     ap.add_argument("--no-gloves", action="store_true")
+    ap.add_argument("--no-socks", action="store_true")
     ap.add_argument("--no-line8", action="store_true", help="no Nataša and no Míša")
     ap.add_argument("--rate", type=int, choices=(256, 128, 64, 32), default=128)
     ap.add_argument("--bad", type=float, default=0.0,
@@ -22,10 +23,11 @@ def main(argv=None) -> int:
     if a.summarize:
         print(summarize(read_frames(a.summarize)))
         return 0
-    suit = Suit.standard(a.modules, not a.no_line8, not a.no_gloves, bad_frame_rate=a.bad)
+    suit = Suit.standard(a.modules, not a.no_line8, not a.no_gloves, not a.no_socks,
+                         bad_frame_rate=a.bad)
     rate = {256: btp.RATE_256, 128: btp.RATE_128, 64: btp.RATE_64, 32: btp.RATE_32}[a.rate]
     bata = Bata({1: suit.of(1), 2: suit.of(2)}, rate=rate)
-    cycles = int(a.seconds * 3840)
+    cycles = int(a.seconds * stp.ADS_SPS)
     for _ in range(cycles):
         t1, share = suit.cycle()
         bata.transfer1(t1)

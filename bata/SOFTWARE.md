@@ -30,6 +30,13 @@ boot loader and support, and its build takes patches of one's own, so the kernel
   suit is worn.
 - **Borovičok** runs the same Debian with a desktop (see
   [hardware](HARDWARE.md#borovičok)), and the same kernel.
+- **The microphones only while someone listens:** one unit, `microphones.service`, with
+  `StopWhenUnneeded=yes`, writes 1 to register 0x00 of Nataša's sound chip when it starts and 0
+  when it stops (see [Nataša](../natasa/SOFTWARE.md#sound-across-the-suit)), through Mamka as
+  Storož writes to her. Every service that listens binds to it, `BindsTo=` and `After=`: Soňa,
+  Taťána, Nikita in his listening mode and Pomoščnik. systemd starts it with the first of them
+  and stops it after the last, so the headband's *quiet*, which stops Soňa, also stops the
+  microphones when nobody else listens.
 
 **Baťa does little to the data.** He checks each frame's CRC, computes the envelopes and the
 IMUs' quaternions of the step (see [signals](SIGNALS.md)), ~10 MFLOP/s, and hands the model its
@@ -41,11 +48,11 @@ on the output.
   RK3588's PCIe controllers are not marked `dma-coherent` (`rk3588-base.dtsi`, `rk3588-extra.dtsi`,
   where PCIe goes through the SMMU), so devices on PCIe never see the CPU caches and read and write
   RAM directly.
-- The RAM costs nothing here: both processors' transfers, 952 B a cycle, ~3.7 MB/s, ~15 cache
+- The RAM costs nothing here: both processors' transfers, 1,328 B a cycle, ~2.5 MB/s, ~21 cache
   lines.
-- One copy: the SPI's DMA fills spidev's kernel buffer, and spidev copies it into the buffer
-  mapped for the Hailo. Without a driver of our own there is no way round that copy, and 952 B a
-  cycle cost next to nothing.
+- One copy: the SPI's DMA fills spidev's kernel buffer, and spidev copies it into the buffer mapped
+  for the Hailo. Without a driver of our own there is no way round that copy, and 1,328 B a cycle
+  cost next to nothing.
 
 ## The kernel
 
@@ -92,6 +99,18 @@ fault instead of a recovery branch for each; our Tron, the program that fights f
 - **The services** of the suit, the SPI reader, the model, the output, the recorder and the
   assistants, are systemd units wanted by one target, `suit.target`. Storož is a unit of his
   own, started before them, `Restart=always`, and not part of that target.
+- **Baťa always starts halted:** the default target is `storoz.target`, and Storož looks for the
+  mark a clean shutdown leaves, a file written as the system goes down. Found, he removes it and
+  isolates `suit.target`; missing, he stays halted with the reason 10, an unclean start: the
+  watchdog, a kernel panic or the power lost. The watchdog's driver tells no boot status
+  (`dw_wdt.c`), so the mark is what tells the three from a clean start.
+- **Watchdogs:** the RK3588's own, `watchdog@feaf0000` (`rockchip,rk3588-wdt`, `snps,dw-wdt`,
+  enabled in mainline's `rk3588-base.dtsi`), driven by systemd, `RuntimeWatchdogSec=30s`: systemd
+  pings it at least every half of it, so a hung kernel or a hung systemd reboots the board, the
+  driver taking the nearest of its sixteen periods (systemd-system.conf(5)). Every service of the
+  suit, and Storož, has `WatchdogSec=` of a few seconds and pings from its main loop
+  (`sd_notify`, `WATCHDOG=1`): a service that hangs without dying is aborted and restarted by its
+  `Restart=` (systemd.service(5)), and one that keeps doing it is Storož's reason 8.
 - **What he watches:** Mamka's state and events, processor 1's on her SPI (a unit's place empty) and
   processor 2's on hers (a unit gone, a BMS alarm, the eFuse's PGOOD, either processor silent to the
   other); the Umnicas' PGOOD on their header GPIOs (GPIO events); the Hailo devices on the bus (a
@@ -115,7 +134,7 @@ fault instead of a recovery branch for each; our Tron, the program that fights f
   which isolates `suit.target` again and writes the command 5.
 - **Reasons** (1 B): 1 an Umnica gone, 2 an Umnica's converter (PGOOD low), 3 the SPIs' stream
   silent, 4 Mamka silent, 5 over temperature, 6 a BMS alarm, 7 the disk full, 8 a service that
-  keeps dying, 9 by hand.
+  keeps dying, 9 by hand, 10 an unclean start.
 
 ## Cores on the ROCK 5T
 
@@ -146,8 +165,8 @@ From a sample to the output:
 
 | stretch | time |
 |---|---|
-| sample to the STM32H562s, by the unit's slot | 28–224 µs; a cycle is complete at 224 µs |
-| the STM32H562s to Baťa, the frames as they came in places of 34 B | processor 1's 612 B in 131 µs at 37.5 MHz, processor 2's 340 B over her two SPIs in 124 µs at 11.1 MHz; ~0.36 ms from DRDY in all |
+| sample to the STM32H562s, by the unit's slot | 52–247 µs; a cycle's frames of data are complete at 247 µs |
+| the STM32H562s to Baťa, the frames as they came in places by the unit's kind | processor 1's 1,064 B in 227 µs at 37.5 MHz, processor 2's 384 B over her two SPIs in 138 µs at 11.1 MHz; ~0.47 ms from DRDY in all |
 | Linux waking on the "data ready" pin | tens of µs, sometimes more; to be measured |
 | the step's envelope and the model's window | 8.3 ms for the step; the window of 267 ms is history, not delay (see [signals](SIGNALS.md)) |
 | inference on the Hailo-10H | to be measured |
@@ -207,14 +226,14 @@ code runs on one core. The plan:
   the suit, and afterwards runs on one core.
 - **The general part** is trained on a PC from recordings and compiled for the Hailo.
 - **Recordings** are made only when asked, and then perhaps only parts, in BDF (see
-  [Porjadok](../porjadok/SOFTWARE.md#ci-btp)): all the EMG, 128 channels of 24 bits at 3,840 SPS,
-  is 1.47 MB/s, ~5.3 GB an hour, and a part a fraction of it. The large ones go to Borovičok's
+  [Porjadok](../porjadok/SOFTWARE.md#ci-btp)): all the EMG, 280 channels of 24 bits at 1,920 SPS,
+  is 1.61 MB/s, ~5.8 GB an hour, and a part a fraction of it. The large ones go to Borovičok's
   NVMe SSD, since Baťa's PCIe goes to the Hailos in the normal and brutal fittings.
 - Learning takes more battery than plain running. That is accepted.
 - **The model's shape: convolutions only,** so that one model runs on the Hailo, on the
   RK3588's own NPU and on the cores alike, and the small fitting's fallback is the same model:
-  - **The input as an image,** 1 × 32 × 512: the window of 32 steps, the 128 envelopes and the
-    64 IMUs' 6 values of each step, 512 values a step (see [signals](SIGNALS.md)).
+  - **The input as an image,** 1 × 32 × 868: the window of 32 steps, the 280 envelopes and the
+    98 IMUs' 6 values of each step, 868 values a step (see [signals](SIGNALS.md)).
   - **Convolutions over time** with a kernel of 1 × k, **1 × 1 across the channels**, which also
     stands for the fully connected head; the 32 steps are covered by stacking layers or by a
     stride of 2, not by dilation.
@@ -235,8 +254,46 @@ The map, the suit's table of what is fitted, and every unit's settings live here
 unit's UID; a unit keeps nothing in its flash but its firmware, and Mamka sends the settings at
 every start (see [Porjadok](../porjadok/SOFTWARE.md#the-registers)). Where a unit sits on the
 body no unit can tell, so Baťa asks: an application over plain HTTP, minimal in what it needs and
-in its graphics, opened in the browser of a phone or of Borovičok. When a module is replaced it
-shows a new UID, and the application asks where it sits. What it shows and asks is still to set.
+in its graphics, opened in the browser of a phone or of Borovičok.
+
+- **What it knows without asking:** the line tells the piece of the suit, each of Mamka's headers
+  being its line's (see [Mamka](../mamka/HARDWARE.md#lines)); the kind tells the glove and the
+  sock, the fourth slot of an arm's or a leg's line; lines 5 and 6 carry one module each, line 8
+  Nataša and Míša by their numbers. A module replaced, a new
+  UID on a line where one of the map is missing, takes the missing one's place, and the
+  application only confirms it.
+- **What it asks:** the order on a line, at the first fitting or when two modules of one line
+  change at once. The module's status LED blinks (register 0x02, see
+  [Porjadok](../porjadok/SOFTWARE.md#the-registers)) and the application asks which place it is,
+  offering the line's free places. A unit of the map missing at a bring-up stays in it, shown as
+  missing, until the person forgets it.
+- **What it shows,** one page, a table by line: the place, the UID's last four hex digits, the
+  kind, the firmware's version, present or missing; for a module whether it drives the bias, its
+  strip's ground layer, and on the head and the neck the way of measuring; while measuring, from
+  the diagnostics, the electrodes off, the
+  temperature, the lowest 3.3 V and the last reset's cause; and Storož's state, running or
+  halted and why, with no button: resuming stays over SSH.
+- **What it sets:** which module drives the bias, the strips' ground layers on ground or driven,
+  the head's and the neck's way of measuring, the IMU mode; only in the service mode, in effect
+  from the next start, since Mamka sends the settings at every start.
+- **How:** one Python program, the standard library only; plain HTML forms with no JavaScript,
+  the page reloading itself every 2 s; the map one JSON file keyed by the UID, which can be edited
+  over SSH too; listening on Baťa's local network only.
+
+**The place list,** the numbers behind meta 1's places (see
+[Porjadok](../porjadok/SOFTWARE.md#ci-btp)), by line, so the line follows from the place; 0 an
+unknown place:
+
+| line | places |
+|---|---|
+| 1 | 1 the left shoulder, 2 the left upper arm, 3 the left forearm, 4 the left hand: the glove, or the sock on it |
+| 2 | 5–8 the same on the right |
+| 3 | 9 the left hip, 10 the left thigh, 11 the left calf, 12 the left foot, the sock |
+| 4 | 13–16 the same on the right |
+| 5 | 17 the head |
+| 6 | 18 the chest and abdomen |
+| 7 | 19 the neck and upper back, 20 the lower back |
+| 8 | 21 Nataša, 22 Míša |
 
 ## Assistive use
 
@@ -273,4 +330,3 @@ starting point that then adapts to each next one.
   an NVMe SSD in one of his free M.2 slots, or features only,
 - the *small* fitting: a model on the RK3588's own NPU through `accel/rocket` and Mesa's Teflon,
   how large it may be and how fast it runs,
-- the map's application: what it shows and what it asks.

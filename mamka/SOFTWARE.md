@@ -28,21 +28,22 @@ them.
 
 Processor 1 hands Baťa lines 1–4 over SPI1, the slave of the ROCK 5T's SPI1_M1 at 37.5 MHz, both
 ways at once, as [Porjadok](../porjadok/SOFTWARE.md#into-baťa) lays it out: the frames as they
-came, in places of 34 B, with no header. Baťa is the master, processor 1 the slave: SPI mode 0
+came, in places sized by the unit's kind, 58 B for a module of two chips and 34 B for the rest,
+with no header. Baťa is the master, processor 1 the slave: SPI mode 0
 (CPOL 0, CPHA 0), MSB first, 8-bit words, NSS low for a transfer.
 
 - **"Data ready"** (PB1, header pin 36) stays high while she has anything to send: a cycle while
   measuring, an answer in the service mode.
-- **A cycle** is closed by TIM2 once slot 4's frame is due: each frame checked by its CRC as it
-  came and put in its place by the table's order, a bad or a missing one leaving its place zeros,
-  then the four places for the diagnostics, the answers and her own frames; 18 places, 612 B.
-- **The ring:** 512 KB of SRAM in cycles of 612 B holds ~850 cycles, ~0.22 s. When it fills, the
+- **A cycle** is closed by TIM2 once slot 4's frame is due: each frame checked by its CRC as it came
+  and put in its place by the table's order, a bad or a missing one leaving its place zeros, then
+  the four places of 34 B for the diagnostics, the answers and her own frames; 1,064 B.
+- **The ring:** 512 KB of SRAM in cycles of 1,064 B holds ~490 cycles, ~0.26 s. When it fills, the
   oldest goes, and the jump in the frames' numbers shows it.
 - **An underrun.** A slave clocked beyond what it has sends zeros, which read as empty places,
   and the frames' CRCs catch the rest; the STM32H5's SPI reports the underrun as well (UDR,
   RM0481 58.4). The SPI's FIFO is 16 B, and the DMA feeds it straight from the ring.
-- **Timing:** the limbs' 612 B a cycle take 131 µs at 37.5 MHz, so a sample reaches Baťa
-  ~0.36 ms after DRDY.
+- **Timing:** the limbs' 1,064 B a cycle take 227 µs at 37.5 MHz, so a sample reaches Baťa
+  ~0.47 ms after DRDY.
 - **Down, in the same places:** the frames for lines 1–4 and for processor 1 herself, 0xF1, and
   the firmware's frames. Processor 1 puts a frame down her lines' one sender as it came, at the
   next free moment; she builds none but the heartbeat.
@@ -59,11 +60,12 @@ ready" PB0 on pin 31, one for both.
 
 - **Striped:** she lays the transfer word by word, 4 B at a time, into the two SPIs' buffers as
   she builds it, and each SPI's DMA sends its own; both finish together.
-- **A cycle:** six places of data, the head, the chest, the two of the back, Nataša and Míša, and
-  the four, 340 B, with a word of zeros 172 B a SPI, 124 µs at 11.1 MHz; closed by TIM5 once
-  slot 4's frame is due, as processor 1's by her TIM2.
-- **Line 8:** Nataša's and Míša's frames of data go in their places, once every 32 cycles; Míša's
-  sphere, five answers as they came, and line 8's other answers in the four. From Nataša's
+- **A cycle:** five places of data, the head's, the chest's and the lower back's of 58 B, the
+  neck's and Nataša's of 34 B, and the four, 378 B, with zeros to 96 words 192 B a SPI, 138 µs at
+  11.1 MHz; closed by TIM5 once slot 4's frame is due, as processor 1's by her TIM2.
+- **Line 8:** Nataša's frame of data goes in her place, once every 32 cycles; Míša, who sends
+  none, has no place, and his sphere, five answers as they came, and line 8's other answers go
+  in the four. From Nataša's
   microphones (see [Nataša](../natasa/SOFTWARE.md#sound-across-the-suit)) processor 2 feeds the
   SAI's stream through a buffer of her own, and she makes an event of each change of a button and
   of Nataša's warning.
@@ -72,8 +74,8 @@ ready" PB0 on pin 31, one for both.
 - **Down:** the frames for lines 5–7, for line 8, Nataša 0x81 and Míša 0x82, and for herself,
   0xF2; the firmware's frames for her lines and herself. A frame for the whole system comes on
   every SPI, so she puts it on her lines as processor 1 on hers.
-- **The ring:** 256 KB in cycles of 340 B holds ~770 cycles, ~0.20 s, about as long as processor
-  1's.
+- **The ring:** 256 KB in cycles of 384 B holds ~680 cycles, ~0.36 s, longer than processor 1's
+  0.26 s.
 
 ## The wires between the processors
 
@@ -124,8 +126,9 @@ comes by itself an answer to a read sent unasked, as Míša's sphere.
 | 0x03–0x04 | the power (u16): bits 0–1 the limbs' 4 V chain's first EN and last PGOOD, 2–3 the head's and the trunk's, 4–5 the 6 V's EN and PGOOD, 6–7 Baťa's eFuse's SHDN and PGOOD, 8–9 Borovičok's | read |
 | 0x05–0x06 | the fan, rpm | read |
 | 0x07–0x08 | her temperature, 0.1 °C | read |
+| 0x09 | the last reset's cause, as a unit's (see [Porjadok](../porjadok/SOFTWARE.md#watchdogs)) | read |
 | 0x10 | the power's command: 1 the suit shut down in order and then off (see [Budilnik](HARDWARE.md#budilnik)), 2 the computers' supply off once they have halted, 3 the lines' 4 V and the 6 V off and on again in the order of the start, every unit starting again in the service mode, and then the lines brought up, 5–8 by her and 1–4 by processor 1 as the limbs' PGOOD rises (see [the wires](#the-wires-between-the-processors) and [Porjadok](../porjadok/SOFTWARE.md#bring-up)), 4 Baťa halted by [Storož](../bata/SOFTWARE.md#storož): she plays a pattern on the headband, 5 Baťa running again | write |
-| 0x11 | Storož's reason, 1–9 | write |
+| 0x11 | Storož's reason, 1–10 | write |
 | 0x12 | the fan's duty, % | write |
 | 0x40… | her table, as for every unit | read |
 | 0x80… | the firmware, as for every unit | |
@@ -147,9 +150,9 @@ comes by itself an answer to a read sent unasked, as Míša's sphere.
   state of charge (u8, %), the remaining capacity (u16, mAh); 23 B, one read.
 - **Processor 1 (0xF1), chip 0x00:** from 0x00, read only, the firmware's version (2 B), the
   state (1 B: bit 0 on trial, 1 the last update failed, 2 the limbs' PGOOD), her temperature (2 B,
-  0.1 °C), the ring's fill in cycles (2 B); her table from 0x40, the firmware from 0x80, her event
-  from 0xC0, as processor 2's. A unit gone shows as zeros in its place, the ring overflowed as a
-  jump in the frames' numbers.
+  0.1 °C), the ring's fill in cycles (2 B), the last reset's cause (1 B, at 0x07); her table from
+  0x40, the firmware from 0x80, her event from 0xC0, as processor 2's. A unit gone shows as zeros
+  in its place, the ring overflowed as a jump in the frames' numbers.
 
 ## Baťa and the suit's clock
 
@@ -201,16 +204,17 @@ memory and adds Ethernet, with its own DMA on the bus, and a second SDMMC; Mamka
 the network is Baťa's. The STM32H523 has 272 KB, 128, 80 and 64 KB, and 2 KB of backup SRAM.
 All three have two GPDMAs of eight channels, channels 6 and 7 of each with 2D addressing.
 
-- **The bus is no limit.** Processor 1 moves ~612 B every 260 µs, ~2.4 MB/s in from the lines and
+- **The bus is no limit.** Processor 1 moves ~1,064 B every 521 µs, ~2.0 MB/s in from the lines
+  and
   as much out over her SPI, well under 1% of a 32-bit bus at 197 MHz. Each SRAM block is its own
   slave on the bus matrix, so the DMA and the core do not wait for each other in different
   blocks; in one block they take turns, by round robin (AN5872 Rev 5, 1.5 and 1.7).
 - **The reserve for Baťa.** Linux is not real time, and when Baťa misses a "data ready" the cycles
-  wait in processor 1 (see [her SPI](#processor-1s-spi)). A ring of 512 KB holds ~0.22 s and
-  leaves 128 KB for the rest; processor 2's of 256 KB holds ~0.20 s. "Data ready" stays
+  wait in processor 1 (see [her SPI](#processor-1s-spi)). A ring of 512 KB holds ~0.26 s and
+  leaves 128 KB for the rest; processor 2's of 256 KB holds ~0.36 s. "Data ready" stays
   high while a cycle waits, and Baťa reads whatever has piled up in one go. Should the ring fill,
   the oldest cycles go, and Baťa sees the gap in the frames' numbers.
-- **The rest is small:** the lines' receive buffers, a cycle's 512 B each at 19.66 Mbaud, and on
+- **The rest is small:** the lines' receive buffers, a cycle's 1,024 B each at 19.66 Mbaud, and on
   processor 2 the sound, ~1.9 KB per 10 ms each way and the last ~10 packets down kept for a
   repeat.
 - **While firmware goes down the lines** nothing is measured; processor 1 passes the blocks on
@@ -244,7 +248,7 @@ in VOS0 with LATENCY = 4 (see [firmware](#firmware)). Both processors take:
 | SPI2 and SPI1, the slaves to Baťa | PLL1Q, the SAI's 12.288 MHz (SPI2SEL and SPI1SEL = 000, RCC_CCIPR3); a slave in the Motorola mode shifts on Baťa's SCK, 11.1 MHz, and needs its kernel clock only in the TI mode (RM0481 Rev 5, 58.4.1 and 58.5.1) |
 | lines 5–7, 19,660,800 Bd | OVER8 = 1, BRR = 0x0012; USART1 receives line 5 and sends for all three, USART6 and UART7 only receive |
 | USART3, line 8 | OVER8 = 1, BRR = 0x0012: 19,660,800 Bd |
-| TIM6, line 8's cycle | PSC = 19: a tick of the suit clock; ARR = 2,559, a cycle of 260.4 µs, at whose start the heartbeat goes down line 8 once a second |
+| TIM6, line 8's cycle | PSC = 19: a tick of the suit clock; ARR = 5,119, a cycle of 520.8 µs, at whose start the heartbeat goes down line 8 once a second |
 | UART5 to the BMS | the APB clock, 16×, BRR = 0x5000: 9,600 Bd |
 | LPUART1 to the GPS | the APB3 clock ÷ 8 (LPUART1SEL = 000, PRESCALER = 0100), BRR = 0xA0000: 9,600 Bd, the kernel clock 2,560 times the rate, within its 3 to 4,096 (RM0481 Rev 5, 57.4.8 and 57.7.13) |
 | TIM2, the GPS's PPS | PSC = 19: a tick of the suit clock, 101.7 ns |
@@ -342,7 +346,8 @@ The first *start* takes no interrupt: TIM12's TRGO starts its DMA on both (see
   The STM32H523 has only revision A and no such erratum (ES0621 Rev 3).
 - **Updates:** the way is one for the whole suit, under
   [Porjadok](../porjadok/SOFTWARE.md#updating-firmware): *begin*, the blocks of 512 B into the other
-  bank, the missing ones again, the CRC-32 checked, SWAP_BANK, and the confirm within 30 s, written
+  bank, the missing ones again by the map's four windows, the CRC-32 checked, SWAP_BANK, and the
+  confirm within 30 s, written
   by Mamka once Baťa has tried the new version, or the unit swaps back by itself. Here the two banks
   are 512 KB each (DS14258 Rev 6, 3.4); each processor takes her image over her own SPI, a block in
   0.11 ms on processor 1's, 0.19 ms on processor 2's two, the flash's write setting the pace; the
@@ -355,7 +360,8 @@ The first *start* takes no interrupt: TIM12's TRGO starts its DMA on both (see
   1–4's from processor 1 and lines 5–8's from processor 2, each out of her own SPI's way down: a
   module's 128 KB in ~1 s, all lines at once, the flash's write setting the pace. Neither processor
   looks inside; Baťa drives the update and reads the answers.
-- **A hang** without an update is the independent watchdog's: it restarts the processor.
+- **A hang** without an update is the independent watchdog's: it restarts the processor, which
+  watches itself as every unit does (see [Porjadok](../porjadok/SOFTWARE.md#watchdogs)).
 - **SWD pads** for each processor take a programmer on the bench, should the update itself ever
   go wrong. They cost no header pin, so nothing on the header resets the processors.
 
@@ -368,6 +374,4 @@ The first *start* takes no interrupt: TIM12's TRGO starts its DMA on both (see
   scope,
 - processor 2's SPIs as slaves at 11.1 MHz through the ROCK's UM3204s, on a kernel clock of
   12.288 MHz, tried,
-- an image larger than the map of 256 blocks, 128 KB: the banks here hold 512 KB (see
-  [Porjadok](../porjadok/SOFTWARE.md#updating-firmware)),
 - the BMS's byte order and its SOC registers, on a sample.

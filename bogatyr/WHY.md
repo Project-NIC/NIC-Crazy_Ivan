@@ -47,12 +47,16 @@ thing waits in reserve, it says so.
   chords across the limb least. The model was a sketch, not anatomy; the ring gave way to two rings,
   and those to the owner's layout.
 - **A reference electrode not fitted on the suit** (to 25 Oct 2026), the room for one kept on
-  every module. Every module has its reference now, so the suit measures both ways, and which
-  serves the model better is tried on one arm.
+  every module; then one on every module (to 29 Oct 2026). The body's ADS1298 have no SRB1, so
+  the reference stays on the head and the neck, where the ADS1299 is (see
+  [Rubaška](../rubaska/WHY.md#the-sensing-module)), and which way serves the model better is
+  tried there.
 - **The foot behind the calf's module and the hand behind the forearm's,** an extension of up to
-  four IMUs on a processor of its own (to 25 Oct 2026). The calf's and the forearm's modules
-  carry two IMUs beyond the joint on the strip that already crosses it for the electrodes, so no
-  extension is needed (the owner).
+  four IMUs on a processor of its own (to 25 Oct 2026), then **two IMUs beyond the joint on the
+  calf's and the forearm's module's strip** (to 29 Oct 2026). The hand and the foot want more than
+  a module's four places, losing their detail making no sense (the owner), so the sock, Nosok, a
+  unit of the glove's kind in the limb's fourth slot, carries up to eight and the glove 20 (see
+  [Rubaška](../rubaska/HARDWARE.md#the-sock)).
 
 ## The places weighed
 
@@ -67,8 +71,11 @@ thing waits in reserve, it says so.
 - **One ring on a limb,** its pairs side by side round it. It crosses the fibres only; the pairs
   run along and across by turns, which held up better when electrodes shifted (Young, Hargrove
   and Kuiken 2012).
-- **A module on the hand.** Its three pairs go across the wrist to the forearm's module, which
-  keeps a ring of five with their N; the hand carries only the glove's Bratiški.
+- **A module on the hand** (to 29 Oct 2026): its three pairs went across the wrist to the
+  forearm's module, which kept a ring of five with their N, the hand carrying only the glove's
+  IMUs. With sixteen channels a module the forearm has its own eight and more, and the glove's
+  board carries an ADS1298 for the hand's eight, those three pairs among them (see
+  [Rubaška](../rubaska/WHY.md#the-sensing-module)).
 - **A chin strap for the head's band,** from the temple over the masseter, under the chin and
   up the other side, to see the jaw close and open. Nobody wants to wear a dog's muzzle; a
   headband sees the temporalis, which closes the jaw, and the IMUs and the neck do the rest.

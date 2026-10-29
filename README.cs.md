@@ -6,8 +6,8 @@
 
 [English](README.md) · **Čeština** · [Русский](README.ru.md)
 
-**Neurální oblek:** až 288 elektrod a 84 inerciálních jednotek, 40 z nich ve dvou rukavicích, na
-obleku, který si skládáš z dílů, jako je rukáv, nohavice, trup nebo čelenka.
+**Neurální oblek:** až 582 elektrod a 98 inerciálních jednotek, 56 z nich v rukavicích a
+ponožkách, na obleku, který si skládáš z dílů, jako je rukáv, nohavice, trup nebo čelenka.
 
 Vlastní signály svalů a pohyb těla jdou do počítače v batohu, Radxa ROCK 5T s vlastním NPU nebo
 až se dvěma AI akcelerátory Hailo-10H, a celé tělo se stává ovladačem počítače nebo hry.
@@ -16,7 +16,7 @@ až se dvěma AI akcelerátory Hailo-10H, a celé tělo se stává ovladačem po
 
 </div>
 
-> **Beta 0.4:** koncept ve stádiu návrhu, nic ještě není postaveno; co je uzavřené, co otevřené a
+> **Beta 0.5:** koncept ve stádiu návrhu, nic ještě není postaveno; co je uzavřené, co otevřené a
 > co je jen odhad, je ve [stavu projektu](STATUS.md) (anglicky). Ostatní stránky jsou anglicky.
 
 ---
@@ -45,11 +45,11 @@ každém oblečení stačí krátká kalibrace, protože oblek se nikdy neoblék
 rehabilitaci, když lékař ze záznamu pozná, který sval pracuje a jak silně, stranu proti straně a
 den proti dni, a souhlasí to s tím, co zjistí vyšetřením.
 
-**Co musí umět,** v rozsazích: EMG na 3 840 SPS s pásmem do ~1 kHz, pro rychlé pohyby ve sportu a
-pro záškuby nervové soustavy, která nefunguje, jak má, 1 920 SPS jako nastavení k vyzkoušení; IMU
-v krocích po 120 Hz; nejvýš desítky milisekund od svalu k výstupu; gesta pro počítač a úhly
-kloubů s chybou v jednotkách stupňů; kalibrace nejvýš několik minut; pracovní den, ~8 h, na jedno
-nabití v menších osazeních; pot a slabý déšť, ne ponoření. Váha a cena se teprve ukážou.
+**Co musí umět,** v rozsazích: EMG na 1 920 SPS s pásmem do ~500 Hz, jak měří profesionálové, 3 840
+SPS jako nastavení k vyzkoušení pro rychlé pohyby ve sportu a pro záškuby nervové soustavy, která
+nefunguje, jak má; IMU v krocích po 120 Hz; nejvýš desítky milisekund od svalu k výstupu; gesta pro
+počítač a úhly kloubů s chybou v jednotkách stupňů; kalibrace nejvýš několik minut; pracovní den, ~8
+h, na jedno nabití v menších osazeních; pot a slabý déšť, ne ponoření. Váha a cena se teprve ukážou.
 
 ## Tomografie
 
@@ -69,7 +69,7 @@ studie naznačují, že by mohlo (viz [Bogatyr](bogatyr/README.md)).
 
 | část | co to je |
 |---|---|
-| [**Rubaška**](rubaska/README.md) | oblek sám: díly se snímacími moduly, rukavice Vešč, elektrody a postroj |
+| [**Rubaška**](rubaska/README.md) | oblek sám: díly se snímacími moduly, rukavice Vešč a ponožka Nosok, elektrody a postroj |
 | [**Bogatyr**](bogatyr/README.md) | rozložení na těle: kde sedí každá elektroda a každá IMU, sval po svalu, a proč |
 | [**Nataša**](natasa/README.md) | jednotka v čelence: sluchátka, dva mikrofony, vibrace a tlačítka |
 | [**Mamka**](mamka/README.md) | základní deska: hodiny pro celý oblek, zvukový most, budiče linek a napájení obleku |
@@ -104,7 +104,8 @@ Na těle je oblek **Rubaška**, košilka, v níž se člověk rodí, na **Kašč
 co sedí, je **Bogatyr**, Kaščej oblečený do masa. Mamčiny vlastní děti, **Rebjata** (snímací
 moduly), visí na **Pupovině**, pupeční šňůře: na osmi linkách, jedné na díl obleku, které jim,
 rukavicím, Nataše a Míšovi nosí napájení, hodiny a data. Hlavní procesor každé snímací jednotky je
-**Staršaja**, ta starší; rukavice, **Vešč**, má na prstech její mladší bratříčky, **Bratiški**.
+**Staršaja**, ta starší; rukavice, **Vešč**, a ponožka, **Nosok**, mají její mladší bratříčky,
+**Bratiški**, čtyři malé procesory vedle ní na jedné desce, každý čte IMU jednoho prstu.
 Pravidla domácnosti jsou **Porjadok** a její napájení, od Babušky dolů, **Pitanije**.
 
 Díly se volně kombinují:

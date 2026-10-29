@@ -162,8 +162,9 @@ What travels on the SPIs is under [software](SOFTWARE.md#processor-1s-spi).
 ## Lines
 
 Eight lines leave Mamka, a line a piece of the suit, at most four units a line: lines 1–4 for
-the limbs, an arm's its shoulder, upper arm, forearm and glove, a leg's its hip, thigh and calf;
-lines 5–7 for the head, the chest and the back; line 8 for [Nataša](../natasa/HARDWARE.md#line-8)
+the limbs, an arm's its shoulder, upper arm, forearm and glove, a leg's its hip, thigh, calf and
+sock; lines 5–7 for the head, the chest and the back; line 8 for
+[Nataša](../natasa/HARDWARE.md#line-8)
 and [Míša](../misa/HARDWARE.md). They end at Mamka: lines 1–4 at processor 1, which hands their
 frames to Baťa over one fast SPI, lines 5–8 at processor 2, which hands the sound over the I2S and
 the rest over two slower SPIs. Details under
@@ -173,8 +174,9 @@ Each line has on Mamka:
 
 - **a THVD1451** for its data, full duplex with no enable pins: its driver is always on the
   pair to the units, where Mamka is the only one that sends, and its receiver takes the
-  return pair. Every pair is terminated at both ends with 120 Ω, for the 3M 1785's 118 Ω: here
-  on Mamka and on the last unit. Between the units' frames nobody drives the return pair, and
+  return pair. Every pair is terminated at both ends with 120 Ω, checked on the cable (see
+  [Porjadok](../porjadok/HARDWARE.md#cable-and-connectors-in-the-suit)): here on Mamka and on
+  the last unit. Between the units' frames nobody drives the return pair, and
   the receiver's failsafe then reads high. **The drivers of a processor's lines with modules
   take one input,** her one TX, so a frame goes down lines 1–4, or 5–7, at once; each receiver
   has a USART of its own;
@@ -189,14 +191,17 @@ Each line has on Mamka:
   | 7, 8 | +4 V and its ground |
   | 9, 10 | +6 V and its ground |
 
-The 4 V and the 6 V come from Mamka's own converters (see [Converters](#converters)). Eight 2 × 5
-box headers, ~20 mm each, stand on her top face, and Terem's beside them (see
-[construction](CONSTRUCTION.md#the-stack)); whether eight fit along the header's side is seen when
-she is drawn. Inside the backpack a short harness, ~10–20 cm (see
-[Porjadok](../porjadok/HARDWARE.md#end-to-end)), joins them to the connectors in the shell, one a
-piece of the suit (see [Babuška](../babuska/CONSTRUCTION.md#the-backpack)). The harness carries a
-header's ten wires; the suit's cable of 14 wires, its supplies and grounds doubled, begins at
-the shell's Weipu SP21 (see [Porjadok](../porjadok/HARDWARE.md#cable-and-connectors-in-the-suit)).
+The 4 V and the 6 V come from Mamka's own converters (see [Converters](#converters)). Each
+header belongs to its line, so to its piece of the suit, and is marked with it, as the shell's
+connector is: the wiring tells the piece, the map only the order on a line. Eight 2 × 5 box
+headers, ~20 mm each, do not fit along one edge, ~162 mm and Terem's ~20 mm more against
+Mamka's ~110 mm: two rows of four (~81 mm a row) or a smaller IDC, decided when she is drawn
+(see [construction](CONSTRUCTION.md#the-stack)). Inside the backpack a short harness, ~10–20 cm
+(see [Porjadok](../porjadok/HARDWARE.md#end-to-end)), joins them to the connectors in the shell,
+one a piece of the suit (see [Babuška](../babuska/CONSTRUCTION.md#the-backpack)). The harness
+carries a header's ten wires; the suit's cable of 16 wires, its supplies and grounds doubled,
+begins at the shell's Weipu SP21 (see
+[Porjadok](../porjadok/HARDWARE.md#cable-and-connectors-in-the-suit)).
 
 ## Clock
 
@@ -230,15 +235,16 @@ Every rate in the suit is the base multiplied or divided by a whole number, apar
 
 | to | clock | from 9.8304 MHz |
 |---|---|---|
-| ADS1299 | 1.96608 MHz | ÷ 5 |
-| ADS1299 samples | 3,840 SPS | ÷ 2,560 |
-| ICM-42688-P, CLKIN input | 38,400 Hz | ÷ 256 |
-| ICM-42688-P samples | 1,200 Hz | ÷ 8,192 |
-| IMU steps | 120 Hz, 3,840 / 32 | ÷ 81,920 |
+| ADS129x | 1.96608 MHz | ÷ 5 |
+| ADS129x samples | 1,920 SPS | ÷ 5,120 |
+| ICM-45686, CLKIN input | 38,400 Hz | ÷ 256 |
+| ICM-45686 samples, the 1.6 kHz setting | 1,920 Hz, by our inference (see [Rubaška](../rubaska/HARDWARE.md#the-imu)) | ÷ 5,120 |
+| IMU steps | 120 Hz, 1,920 / 16 | ÷ 81,920 |
 | every line | 19,660,800 Bd | × 2 |
 
-The ADS1299 accepts 1.5 to 2.25 MHz. Its sample rates then come out as 240, 480, 960, 1,920,
-3,840, 7,680 and 15,360 SPS.
+The ADS1299 accepts 1.5 to 2.25 MHz, the ADS1298 1.94 to 2.25 (SBAS459K). The ADS1299's sample
+rates then come out as 240, 480, 960, 1,920, 3,840, 7,680 and 15,360 SPS, the ADS1298's in its
+high-resolution mode as 480 to 30,720.
 
 A 9.8304 MHz clock means roughly 19.7 Mbit/s on the line. Its THVD1450 driver handles up to
 50 Mbit/s.
@@ -357,11 +363,11 @@ divider for any other voltage. Mamka's own 3.3 V and the fan's 5 V use the same 
 
   | rail | load | capacitance it charges at start | start |
   |---|---|---|---|
-  | 4 V, an arm's line, 1 or 2: three modules and the glove | ~0.31 A on average, ~0.51 A at worst | ~650 µF, an estimate: four units' bulks with their ceramics, the π filter, C_OUT | within the 3.5 ms soft start; at its fastest, 2 ms, briefly at the current limit |
-  | 4 V, a leg's line, 3 or 4: three modules | ~0.21 A on average, ~0.33 A at worst | ~500 µF: three modules' 6TPE100M with their ceramics, the π filter, C_OUT | within the 3.5 ms soft start; at its fastest, 2 ms, at the edge of the current limit |
+  | 4 V, an arm's line, 1 or 2: three modules and the glove | ~0.31 A on average, ~0.50 A at worst | ~650 µF, an estimate: four units' bulks with their ceramics, the π filter, C_OUT | within the 3.5 ms soft start; at its fastest, 2 ms, briefly at the current limit |
+  | 4 V, a leg's line, 3 or 4: three modules and the sock | ~0.29 A on average, ~0.47 A at worst | ~600 µF, an estimate: four units' bulks with their ceramics, the π filter, C_OUT | within the 3.5 ms soft start; at its fastest, 2 ms, briefly at the current limit |
   | 4 V, lines 5 and 6, a module each; line 7, two modules | ~0.07 A on average, ~0.14 A at worst; ~0.14 and ~0.23 A | ~200 µF: one module's, the π filter, C_OUT; ~350 µF with two | within the soft start |
   | 4 V, line 8 | ~0.35 A on average, ~1.0 A for a millisecond when the radar chirps while two motors run | ~900 µF, Nataša's two polymers and Míša's among them | within the 3.5 ms soft start; at its fastest, briefly at the current limit |
-  | 6 V, the whole suit | ~0.13 A, ~8 mA a module | ~1.4 mF: sixteen modules' 10TPE47MAZB with their ceramics | at the current limit, ~7–8 ms |
+  | 6 V, the whole suit | ~0.10 A, ~7 mA a module | ~1.4 mF: sixteen modules' 10TPE47MAZB with their ceramics | at the current limit, ~7–8 ms |
 
 - **At the current limit** the converter holds the inductor's current between its high-side peak
   and low-side valley limits, cycle by cycle, and delivers about their average: at least
@@ -393,7 +399,7 @@ parts:
 1. **On Mamka,** right behind each converter: a π filter with the modules' parts, two chokes
    SWPA252012S2R2MT side by side (2.2 µH, 0.17 Ω and 1.85 A each, so 1.1 µH and 0.085 Ω) with 10 µF
    and 100 nF on both sides, then two ferrite beads GZ2012D301TF side by side (300 Ω at 100 MHz, at
-   most 0.2 Ω and 500 mA each). At an arm's line's worst ~0.51 A the pair drops ~0.09 V. No polymer
+   most 0.2 Ω and 500 mA each). At an arm's line's worst ~0.50 A the pair drops ~0.09 V. No polymer
    sits at the board's outputs: the lines' bulks sit at the modules, and one here would only add to
    what the converter charges at start. The converters sit on one side of the board with copper
    poured under them, away from the clock and the processor.
@@ -402,7 +408,7 @@ parts:
 3. **On the module:** capacitors at the input, the LDO, and behind it a π filter with a choke
    whose self-resonance lies at 69 MHz (see [Rubaška](../rubaska/HARDWARE.md#power)). The digital
    branch has the same.
-4. **Inside the ADS1299:** its own supply circuits behind AVDD.
+4. **Inside the ADS129x:** its own supply circuits behind AVDD.
 
 **Polymers and ceramics.** A ceramic capacitor loses capacitance under DC voltage. The house
 rule's 50 V parts lose little at 3.3–6 V, which is why it takes them, but the loss grows at the
@@ -479,7 +485,7 @@ fuse → the eFuses, Terem's cable and Mamka's own converters.
   12 of 16 channels (see [software](SOFTWARE.md#dma)), to check on the first board,
 - the TPS26630's current limit against the ROCK 5T's real peaks with the glasses on its USB-C,
   measured; the jack's pin, 2.0 mm by the model, checked with a calliper on the board,
-- the converters' ripple in the ADS1299 data: confirm by measurement,
+- the converters' ripple in the ADS129x data: confirm by measurement,
 - the 6 V converter's start into ~1.4 mF and its loop's stability: simulation and measurement;
   SNVSBY5B lists a hiccup time (tHICCUP, 30–75 ms) that its section 8.3.9 does not describe, so
   when the part hiccups, and whether a long start at the current limit triggers it, is to be

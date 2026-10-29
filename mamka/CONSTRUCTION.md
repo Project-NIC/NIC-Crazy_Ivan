@@ -49,11 +49,14 @@ Terem; Terem with the Hailos' heatsink hangs ~30 mm under it (see
   flush with it.
 - **The box:** none, the stack bare in the backpack's insert, or a perforated metal box of the
   stack's outer size; the sides stay open to the ports and the air either way.
-- **The lines' connectors:** eight 2 × 5 IDC box headers, ~20 mm each, stand on her top face
-  along the header's side, their flat cables leaving over that edge; whether all eight fit there
-  is seen when she is drawn. Inside the backpack a short harness joins them to the connectors in
-  the shell, one a piece of the suit (see
-  [Babuška](../babuska/CONSTRUCTION.md#the-backpack)).
+- **The lines' connectors:** eight 2 × 5 IDC box headers, ~20 mm each, on her top face along
+  the header's side, their flat cables leaving over that edge. In one row they do not fit,
+  ~162 mm against her ~110 mm, Terem's not counted: two rows of four, ~81 mm a row, the inner
+  row's cables over the outer row's sockets, at ~20 mm of the board's depth; or a smaller IDC at
+  1.27 mm, whose size and wire are not yet read, likely on a thinner cable than the harness's
+  28 AWG (see [Porjadok](../porjadok/HARDWARE.md#end-to-end)). Decided when she is drawn. Inside
+  the backpack a short harness joins them to the connectors in the shell, one a piece of the suit
+  (see [Babuška](../babuska/CONSTRUCTION.md#the-backpack)).
 - **The processors,** two STM32H562VG in LQFP100, 14 × 14 mm each, side by side, so that the
   four wires between them stay a few millimetres long.
 - **The converters** sit on one side of the board with copper poured under them, away from the
@@ -74,5 +77,6 @@ Terem; Terem with the Hailos' heatsink hangs ~30 mm under it (see
 
 - the stack: the 23 mm header's seat on the ROCK's header and the stack's height checked on the
   parts; whether the 6240B's fan cools the SoC with ~13.5 mm of air under Mamka, measured; Mamka's
-  outline against the ports and the USB-C; the eight IDC headers and Terem's along her edge;
+  outline against the ports and the USB-C; the eight IDC headers and Terem's: two rows of four,
+  or a smaller IDC;
 - the box: none, or a perforated metal one of the stack's size.

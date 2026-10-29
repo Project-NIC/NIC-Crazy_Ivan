@@ -34,3 +34,6 @@ Each entry says what it was and why it went, so that nobody digs it up without k
 | his own oscillator of the suit's frequency (to 25 Oct 2026) | his slot on line 8 wants the suit's clock, which the line brings; two oscillators of ±20 ppm would part by the slot's guard in ~26 ms |
 | the suit's time written into his registers by Nataša, ten times a second (to 25 Oct 2026) | he counts the suit's cycles himself on the suit's clock, the heartbeat's numbers setting the count |
 | the sphere in bank 2 of his chip 0x00 (to 25 Oct 2026) | the frames have no bank byte; the sphere is a chip of its own, 0x05 |
+| a frame of data of his own, once in 32 cycles as Nataša's (to 28 Oct 2026) | it had nothing to carry: his data are the sphere, his health the diagnostics, his IMU goes into the sphere's header and the firmware's state is at 0x88 of his chip 0x00; it would have been 28 B of zeros 120 times a second |
+| two spheres, one a sensor | 224 B in ten pieces, and the nearer of the two every reader's to pick, Nataša's own warning too; the source's code in one sphere tells the same |
+| the sphere only after a radar frame (to 28 Oct 2026) | with the radar gone no sphere came: the ultrasound, there for glass, reached nobody, and Nataša took Míša for gone |

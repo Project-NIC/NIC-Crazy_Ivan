@@ -14,10 +14,11 @@ everything sits on the body is under [Bogatyr](../bogatyr/README.md).
 ## Electrodes
 
 Where each electrode sits on the body, muscle by muscle, is under
-[Bogatyr](../bogatyr/CONSTRUCTION.md); here is what the electrodes and their strips are made of
-and how they ride the body. Every module has its sixteen electrodes, a bias electrode and a
-reference electrode, 18 a module, 288 on a suit of 16 (see
-[Right-leg drive](HARDWARE.md#right-leg-drive)).
+[Bogatyr](../bogatyr/CONSTRUCTION.md); here is what the electrodes and their strips are made of and
+how they ride the body. A module of the body has its 32 electrodes and a bias electrode, 33; the
+head's 32, a bias and a reference electrode, 34; the neck's 16, a bias and a reference, 18; 514 on a
+suit of 16, 582 with the gloves' and the socks' 17 each (see [Right-leg
+drive](HARDWARE.md#right-leg-drive)).
 
 - **The head and the neck are joined like a turtleneck,** two pieces of the suit: the headband
   above, the neck's unit below, fabric between them over the back of the head and behind the ears.
@@ -30,14 +31,20 @@ reference electrode, 18 a module, 288 on a suit of 16 (see
 
 - The grade is **316L**, the steel of body jewellery. 316Ti is not needed: its titanium protects
   the steel at high temperatures (welding), not on the skin.
-- A cheap source is marine press studs in 316 (A4), made for boat covers and sold in kits with a
-  hand tool for pressing them into fabric; the polished cap is the electrode. Cheap "stainless"
-  studs are often 304 or plated brass, so the grade has to be 316/A4.
+- **The source is body jewellery:** flat discs of 316L in ASTM F138, the implant grade, 3 to 8 mm
+  across with a 1.2 mm internal thread, and the 14g posts of the same steel that fit them, sold
+  by the piece (Painful Pleasures, $0.99 a disc, $0.39 from 100, October 2026): a polished
+  electrode of exactly 6 or 8 mm for about a dollar with its post, the post through the strip and
+  the ring where a pressed stud would be, cut to length or a short screw, chosen when the strip is
+  drawn. Marine press studs in 316 are too large for it, and cheap "stainless" snaps are 304 or
+  plated brass (see [why not](WHY.md#the-electrodes-and-the-suit)).
 - Stainless steel has more low-frequency noise and drift than Ag/AgCl, which is acceptable for
-  EMG. The ADS1299's input itself would cope even with dry contacts (datasheet SBAS499C):
-  1000 MΩ input impedance and ±300 pA bias current, so a 1 MΩ contact shifts the input by
-  0.3 mV, and the input range is ±VREF / gain, ±375 mV at our gain of 12. The input filter
-  would not: with 1 MΩ contacts its corner falls to ~360 Hz, inside the band.
+  EMG. The chips' inputs themselves would cope even with dry contacts (SBAS499C; SBAS459K):
+  1,000 MΩ of input impedance, 500 MΩ with the lead-off current on, and a bias current of
+  ±300 pA on the ADS1299, ±1 nA on the ADS1298, so a 1 MΩ contact shifts the input by 0.3 or
+  1 mV, and the input range is ±VREF / gain, ±333 mV at our gain of 12 on the ADS1298's 4 V
+  reference, ±375 mV on the ADS1299's. The input filter would not: with 1 MΩ contacts its corner
+  falls to ~360 Hz, inside the band.
 - **Moist, not dry.** A ring around each electrode holds the skin's moisture under it, so the
   contact sits far below the ~1 MΩ of a dry one; tens of kilohms are taken as the working
   figure, to be measured. The ring is of dissipative material, not plain plastic, which would
@@ -49,6 +56,16 @@ reference electrode, 18 a module, 288 on a suit of 16 (see
   [Bogatyr](../bogatyr/CONSTRUCTION.md)), so the rings fit with room; the hand's pairs, 2 cm
   apart, are the tightest and find their rings' width on the body.
 - 316L contains nickel; anyone allergic to nickel tries it on the skin first.
+- **Conductive silicone is the third candidate,** carbon-filled, ~5 Ω·cm: nothing in it
+  corrodes and it is washed with the suit; its few ohms are nothing against the skin's tens of
+  kilohms. Carbon rubber on the skin has a higher contact impedance than Ag/AgCl at the same EMG
+  amplitude (a study of carbon electrodes on 20 subjects, 2016), the EMS suits that wear it wet
+  it, and its resistance drifts with temperature, time and stretch. The form is a moulded plug of
+  a push-in silicone foot's shape, PINGOOD's GMC-3RF-SFB as the pattern: a domed face Ø 12 × 3 mm
+  on a stem Ø 8 × 2 mm with a 1.1 mm shoulder, 55 Shore A, pushed through the fabric into a
+  stainless eyelet on the strip, the dissipative ring round it holding the moisture; a moulder
+  runs such a tool in the conductive compound, so no tool is paid for. Tried on the first arm
+  beside the steel.
 
 **The offset.** Two metal electrodes on the skin differ by a DC voltage that adds to the channel
 and wanders. Steel polarises; Ag/AgCl hardly does, which makes it the reference electrode of the
@@ -64,24 +81,29 @@ field.
 - Titanium films on steel come close to Ag/AgCl in the quality of surface EMG (Rodrigues et al.,
   Materials 2020, PMC7254203; Ti–Au films, Sensors 2021, 21, 8143); their offset was not
   measured. Titanium is covered by its oxide and so polarises like steel; that is our inference.
-- The gain is 12 for this, ±375 mV (see [Software](SOFTWARE.md#the-ads1299s-settings)).
-- The offset needs no instrument: the ADS1299's input is DC-coupled (SBAS499C, 10.1), so the
+- The gain is 12 for this, ±333 mV on the body's ADS1298 and ±375 mV on the head's and the
+  neck's ADS1299 (see [Software](SOFTWARE.md#the-ads129xs-settings)).
+- The offset needs no instrument: the chips' inputs are DC-coupled (SBAS499C, 10.1), so the
   mean of a raw channel is the offset, and a few minutes recorded on Baťa show its drift.
 
-**The price** of other electrodes, as listed in October 2026, for 288 of them:
+**The price** of the electrodes, as listed in October 2026, for 582 of them:
 
-| electrode | apiece | for 288 | where listed |
+| electrode | apiece | for 582 | where listed |
 |---|---|---|---|
-| sintered Ag/AgCl | $7–13 from 500 pieces; $8–12 with a lead, from 100 | ~$2,000–3,700 | Greentek (Wuhan), its Alibaba store |
+| 316L discs, ASTM F138, 6 and 8 mm, with their posts | $0.99 a disc, $0.39 from 100; a post about the same | ~$600 | Painful Pleasures (US) |
+| titanium discs, ASTM F136, mostly 2–5 mm | $10–14 at retail; $1–2 at Alibaba from 10 pieces | for samples | Pierced Owl, Urban Body Jewelry; Right Grand |
+| sintered Ag/AgCl pellets and discs | $7–15 from 500 pieces; $8–12 with a lead, from 100 | ~$4,000–9,000 | Greentek (Wuhan), its Alibaba store |
 | sintered Ag/AgCl, 12 mm | €0.17–0.21 from 5,000 pieces | the least order ~€850–1,050 | Alibaba |
-| sintered Ag/AgCl cups, single use | $19.95 for 24 | ~$240 a set | Compumedics (Neuromedical Supplies) |
-| sintered Ag/AgCl DC-EEG disc | $37.95 | ~$10,900 | bio-medical.com |
-| titanium press studs | not sold off the shelf; made to order | — | — |
+| sintered Ag/AgCl discs of 6–8 mm, and a snap with a 4 or 8 mm cavity, by the piece | €23–30, the snap €33.20; from $10.93; $18 | for samples | Medcat (NL); Neurospec; BioMed Electrodes |
+| sintered Ag/AgCl cups, single use | $19.95 for 24 | ~$480 a set | Compumedics (Neuromedical Supplies) |
+| plated AgCl snap studs for ECG, 3.9 mm | $0.04–0.09 | ~$50 | Alibaba, Honsung: disposable grade, the plating wears |
+| conductive silicone, carbon-filled, ~5 Ω·cm | a sheet 500 × 500 × 1 mm $1.2–40; a moulded part $0.30–0.60 from 1,000 | ~$400 moulded | Alibaba; Milesun, Better Silicone (Xiamen); Wave Company's ElecSil (Korea) |
+| dry comb electrodes coated with Ag/AgCl, for the hair | $5–8 from 5–10 pieces; €125 for 10 | for the head's trials | Alibaba; Neurospec |
 
-The cheap Ag/AgCl pieces are EEG discs and cups, not press studs: how they would sit in the
-fabric is not known. A sintered electrode is Ag/AgCl right through and is renewed by rubbing its
-face; the makers tie its DC stability to a chloride gel, and how it fares on sweat alone was not
-found.
+The titanium discs take the same post as the steel ones. The sintered Ag/AgCl pieces are EEG
+discs, pellets and a snap, not studs: how they would sit in the strip is not known. A sintered
+electrode is Ag/AgCl right through and is renewed by rubbing its face; the makers tie its DC
+stability to a chloride gel, and how it fares on sweat alone was not found.
 
 **The band's strip.** The electrodes do not hang on wires: each band is a flexible printed
 circuit that carries the studs and runs to the module, on the torso polyimide of two layers
@@ -109,11 +131,19 @@ made by JLCPCB, on the limbs copper on TPU (below).
   turns in three axes, take what their layout asks for, polyimide where the skin does not
   stretch, TPU where it does.
 - **The pads** at their places (see [Bogatyr](../bogatyr/CONSTRUCTION.md)). The strip ends in a
-  stiffened tail in the module's locking flexible-circuit connector (see
+  stiffened tail in the module's locking flexible-circuit connector of 36 ways (see
   [hardware](HARDWARE.md#sensing-module)); JLCPCB makes flexible circuits up to 234 × 490 mm in
   regular orders, with stiffeners of polyimide, FR4 or steel (JLCPCB, *Flex PCB capabilities*).
-- **The second layer is ground,** the shield, hatched by our choice so that the strip stays
-  supple, or JLCPCB's shielding film of 18 µm. A channel's P and N run under the same ground.
+- **The second layer is ground,** solid, on the strip's outer face, the leads toward the skin:
+  12 µm of copper on the 25 µm core, 0.11 mm finished and still supple (JLCPCB, a bend radius of
+  ~1 mm). A hatch would shield little, its openings far wider than the trace's distance from it
+  (our inference, to be measured), and JLCPCB's shielding film of 18 µm is the alternative over
+  one; on the limbs' TPU strips only meanders stretch, so their shield is a mesh of meanders, the
+  one place the sample must show whether a passive strip holds. The layer sits on the module's
+  ground, or is driven at the body's common mode when the module says so, and every stud has a
+  follower's place beside it under a 0 Ω part, with a +5 V trace along the layer's edge, fitted
+  only if the strip's own noise asks (see [hardware](HARDWARE.md#the-strips-ground-layer)). A
+  channel's P and N run under the same ground.
 - **Less charge from friction.** In a cable the charge is made where the insulation rubs the
   shield as it bends (US patent 6,232,789); the low-noise cables put a graphite layer there
   (PCB Piezotronics, *WPL 43, Accelerometer Signals*). In a printed circuit the layers are bonded
@@ -179,48 +209,68 @@ The cable and its connectors are described under
 
 ## The glove
 
-Vešč's Staršaja sits before the wrist, on the sleeve, and its five Bratiški on the hand (see
-[hardware](HARDWARE.md#the-glove)); where its IMUs sit is under
-[Bogatyr](../bogatyr/CONSTRUCTION.md#the-gloves).
+Vešč's board sits on the back of the hand, over the bases of the second and third metacarpals,
+in a low enclosure of its own (see [hardware](HARDWARE.md#the-glove)); its 16 electrodes and
+its IMUs are laid out under [Bogatyr](../bogatyr/CONSTRUCTION.md#the-gloves).
 
-- **The wiring is a stretchable printed circuit,** copper on TPU with meanders, laminated into
-  the glove's inner layer: 5–20% of repeated stretch by its layout, turned round and round
-  without harm, gentle on the skin, softening at 155–185 °C, soldered with SnBi; samples on
-  request (Würth Elektronik, *STRETCH.flex*, webinar 2021; Murata makes the like). It runs along
-  the sides of the fingers, never across their backs, where the skin stretches least. Each
-  branch ends in a tail stiffened over ~4 mm and goes into its IMU board's five-way locking
-  connector: SCL, SDA, +3.3 V, ground and CLKIN (see [the IMU board](HARDWARE.md#the-imu-board)).
-  Up to ~10 cm a finger, ~6 cm to its last phalanx.
-- **One spider or five noodles,** whichever proves cheaper and lasts better and is easier to
-  mend: one circuit for the whole hand, a leg a finger, across the wrist into one larger
-  connector at Staršaja; or five strips, one a finger, each into a small connector of its own. The
-  spider is one part and one connector; a noodle is a simple shape, and a torn one is replaced
-  alone.
+- **The hand's strip** carries the sixteen electrodes and the bias in its studs, as a band's
+  strip does (see [electrodes](#electrodes)), stretchable, copper on TPU, round the hand's edges
+  and over its back under the board, with a tail into the board's 20-way lever connector.
+- **The finger strips are stretchable printed circuits** too, copper on TPU with meanders,
+  laminated into the glove's inner layer: 5–20% of repeated stretch by its layout, turned round
+  and round without harm, gentle on the skin, softening at 155–185 °C, soldered with SnBi; samples
+  on request (Würth Elektronik, *STRETCH.flex*, webinar 2021; Murata makes the like). One a finger
+  and one for the thumb, five, each with seven wires, its two I3C buses, CLKIN, +3.3 V and ground,
+  from a tail stiffened over ~4 mm in its seven-way connector on the board, along the side of the
+  finger, never across its back, where the skin stretches least, with a branch to each IMU board's
+  five-way locking connector (see [the IMU board](HARDWARE.md#the-imu-board)); up to ~10 cm a
+  finger, ~6 cm to its last phalanx. A torn strip is replaced alone.
 - **A glove of two layers** with a hook-and-loop closure: the outer one comes off, the inner one
-  with the circuit is pulled out and a new one goes in.
+  with the strips is pulled out and a new one goes in; the board stays, unplugged from its strips.
 - **The fallback** is PTFE wires of 28 AWG along the sides of the fingers, as the IMU board was
   first drawn, should the stretchable circuit fail on a sample.
-- **Across the wrist** go eight wires, the five Bratiški's, CLKIN, the supply and ground, and the
-  glove comes off at a connector there; the arm's line ends at Staršaja on the sleeve.
+- **Across the wrist** goes the arm's line alone, its flat cable sewn in meanders over the wrist's
+  back to the board's IDC socket; the glove unplugs from the cable and its strips as a module
+  does. The glove is cut with the sleeve, one piece of the harness (see
+  [Harness and washing](#harness-and-washing)).
+
+## The sock
+
+Nosok, the glove's unit on the foot (see [hardware](HARDWARE.md#the-sock)), is made as the glove
+is: a sock of two layers with a hook-and-loop closure at the ankle, the inner one carrying the
+foot's strip of sixteen electrodes and one or two IMU strips, the outer one over it; the strips
+run along the foot's sides and over the instep, never under the sole, which is stood on. The board
+sits on the calf above the ankle in its enclosure, where the calf's module's strip crosses too,
+and the foot's strips come up to it across the ankle, in meanders, as the line's cable crosses the
+wrist. Where its electrodes and its IMUs sit is under
+[Bogatyr](../bogatyr/CONSTRUCTION.md#the-socks); it is drawn after the hand's layout is settled,
+since each version is a circuit made and thrown away.
 
 ## Open questions
 
-- the band's strip on a sample: bent, tapped and rubbed while recording, its fit on the limb as a
-  piece of a cone, the elastic gap over the bone, and the girths that set two or three lengths,
+- the band's strip on a sample: bent, tapped and rubbed while recording, on a dummy body of
+  resistors first, its fit on the limb as a piece of a cone, the elastic gap over the bone, and
+  the girths that set two or three lengths,
+- the strip's ground layer: solid polyimide against the TPU strips' meanders, on ground and
+  driven, and what the strip generates by itself (see
+  [hardware](HARDWARE.md#the-strips-ground-layer)),
+- the sock: its strips on the foot, gripping the floor and washing; the foot's strip across the
+  ankle,
 - the stud on the strip: the disc spring, the sealant, washed again and again; the contact
   through it and the offset, against a stud on a wire,
 - the ring around the electrode: its dissipative material and shape, and the contact it gives,
   measured,
-- the electrodes on a sample: 316/A4 marine press studs, titanium and sintered Ag/AgCl side by
-  side on one arm: the contact, the noise, the skin, and the offset with its drift; Ag/AgCl goes
-  in only if the steel drifts too far,
+- the electrodes on a sample: 316L discs, titanium discs, sintered Ag/AgCl and conductive
+  silicone side by side on one arm: the contact, the noise, the skin, and the offset with its
+  drift, and the washing, at 60 °C in a bag with the laundry, fifty times; Ag/AgCl goes in only
+  if the steel drifts too far,
 - the girths under each band, and the studs' and rings' sizes they allow,
 - the backpack's straps over the shoulders' units: they must run beside the electrodes or be
   padded,
 - a prototype of the harness, cut from an overall; how much stretch the cotton may carry,
-- the glove: the stretchable circuit along the fingers, gripping and washing; the spider against
-  five noodles in price, life and mending; the stiffened tails in the locking connectors; the
-  hand's three channels on the thumb's edge as the thumb turns to the palm,
+- the glove: the finger strips along the fingers, gripping and washing; the stiffened tails in
+  the locking connectors; the board on the back of the hand in a grip and a fall; the hand's
+  electrodes under the board and at the thumb's edge as the thumb turns to the palm,
 - the headband's electrodes above the ears, in the hair; the layout itself is under
   [Bogatyr](../bogatyr/CONSTRUCTION.md#open-questions).
 

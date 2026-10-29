@@ -13,7 +13,10 @@ KIND_ALIVE, KIND_PACKETS = 0, 1
 
 P_SNAPSHOT, P_META, P_ECG, P_SPHERE, P_EVENT, P_VITALS = 1, 2, 3, 4, 5, 6
 SNAPSHOT_LEN = 127 + 4       # the joints' bytes and the contacts' 32 bits
-META_FIXED = {2: 36, 3: 256, 4: 284, 5: 134, 7: 192, 8: 24}   # 1 and 6 grow with the map
+META_FIXED = {2: 36, 3: 256, 4: 284, 5: 286, 7: 344, 8: 24}   # 1 and 6 grow with the map
+CHANNELS, IMUS = 280, 121     # the suit's EMG channels at most (15 × 16 + 8 + 4 × 8), and
+                              # its IMU places in meta 6: 64, the gloves' 40, the socks' 16, Míša's
+UNITS = 22                    # units in the map at most: 20 on lines 1-7, Nataša, Míša
 
 SUBSCRIBE_MARK = b"\xC1\xA1"   # C1 first
 RATE_32, RATE_64, RATE_128, RATE_256 = 0, 1, 2, 3
@@ -133,10 +136,31 @@ def meta(sub: int, data: bytes) -> Packet:
     return Packet(P_META, sub, data)
 
 
+# The place list (bata/SOFTWARE.md, the map), by line; 0 an unknown place.
+PLACES = {
+    1: "left shoulder", 2: "left upper arm", 3: "left forearm", 4: "left hand",
+    5: "right shoulder", 6: "right upper arm", 7: "right forearm", 8: "right hand",
+    9: "left hip", 10: "left thigh", 11: "left calf", 12: "left foot",
+    13: "right hip", 14: "right thigh", 15: "right calf", 16: "right foot",
+    17: "head", 18: "chest and abdomen", 19: "neck and upper back", 20: "lower back",
+    21: "Nataša", 22: "Míša",
+}
+PLACE_LINES = (range(1, 5), range(5, 9), range(9, 13), range(13, 17), range(17, 18),
+               range(18, 19), range(19, 21), range(21, 23))
+
+
+def place_line(place: int) -> int:
+    """The line, 1-8, a place is on; ValueError for 0 or a number not in the list."""
+    for line, places in enumerate(PLACE_LINES, 1):
+        if place in places:
+            return line
+    raise ValueError("not a place")
+
+
 @dataclass
 class MapUnit:
     addr: int
-    kind: int          # 1 EMG, 2 IMU, 3 Nataša, 4 Míša
+    kind: int          # 1 EMG, 2 the glove and the sock, 3 Nataša, 4 Míša
     place: int         # from the place list
     imus: int
     firmware: int
@@ -144,9 +168,9 @@ class MapUnit:
 
 def meta_suit(serial: bytes, run: int, start: int, bata_ver: int, p1_ver: int, p2_ver: int,
               rate: int, joints: int, contacts: int, ecg_ch: int, units: list[MapUnit], present: int) -> Packet:
-    """Meta 1: the suit, the run and the map, 6 B a unit, up to 20 units."""
-    if len(units) > 20:
-        raise ValueError("up to 20 units")
+    """Meta 1: the suit, the run and the map, 6 B a unit, up to 22 units."""
+    if len(units) > UNITS:
+        raise ValueError("up to 22 units")
     data = serial.ljust(8, b"\0")[:8] + struct.pack("<IIHHH", run, start, bata_ver, p1_ver, p2_ver)
     data += bytes([rate, joints, contacts, ecg_ch, len(units)])
     data += b"".join(struct.pack("<BBBBH", u.addr, u.kind, u.place, u.imus, u.firmware) for u in units)
@@ -176,29 +200,30 @@ def meta_joints(sub: int, entries: list[tuple[int, int, int, int]], contacts: li
 
 
 def meta_electrodes(channels: bytes, bias_unit: int, bias_found: int, bias_stat: int) -> Packet:
-    """Meta 5: the EMG units' channels in the map's order, 128 B, zeros beyond the last; the unit
-    driving the bias as its place in the map; the bias electrodes found (u32); BIAS_STAT now."""
-    if len(channels) > 128:
-        raise ValueError("128 channel bytes at most")
-    return meta(5, channels.ljust(128, b"\0") + struct.pack("<BIB", bias_unit, bias_found, bias_stat))
+    """Meta 5: the EMG units' channels in the map's order, 16 a module of two chips and 8 of one,
+    the glove's and the sock's 8, 280 B, zeros beyond the last; the unit driving the bias as its
+    place in the map; the bias electrodes found (u32); BIAS_STAT now."""
+    if len(channels) > CHANNELS:
+        raise ValueError("280 channel bytes at most")
+    return meta(5, channels.ljust(CHANNELS, b"\0") + struct.pack("<BIB", bias_unit, bias_found, bias_stat))
 
 
 def meta_temperatures(processors: list[int], imus: list[int], boards: tuple[int, int, int],
                       battery: bytes, power: int, fan_rpm: int) -> Packet:
-    """Meta 6: the units' processors (20 × i16), the IMUs as many as meta 1 says (i8), up to 113:
-    the modules' 64, the gloves' 48 and Míša's; Mamka's two and Baťa's CPU (3 × i16), the
-    battery's 23 B, the power's bits (u16) and the fan."""
-    if len(processors) != 20 or len(imus) > 113 or len(battery) != 23:
-        raise ValueError("20 processors, up to 113 IMUs, 23 B of the battery")
-    data = struct.pack("<20h", *processors) + struct.pack(f"<{len(imus)}b", *imus)
+    """Meta 6: the units' processors (22 × i16), the IMUs as many as meta 1 says (i8), up to 121:
+    the modules' 64 places, the gloves' 40, the socks' 16 and Míša's; Mamka's two and Baťa's CPU
+    (3 × i16), the battery's 23 B, the power's bits (u16) and the fan."""
+    if len(processors) != UNITS or len(imus) > IMUS or len(battery) != 23:
+        raise ValueError("22 processors, up to 121 IMUs, 23 B of the battery")
+    data = struct.pack(f"<{UNITS}h", *processors) + struct.pack(f"<{len(imus)}b", *imus)
     data += struct.pack("<3h", *boards) + battery + struct.pack("<HH", power, fan_rpm)
     return meta(6, data)
 
 
 def meta_fatigue(groups: bytes, fatigue: bytes) -> Packet:
-    """The muscle group of each of the 128 channels in the map's order, then the fatigue of 1-64."""
-    if len(groups) != 128 or len(fatigue) != 64:
-        raise ValueError("128 groups and 64 fatigue bytes")
+    """The muscle group of each of the 280 channels in the map's order, then the fatigue of 1-64."""
+    if len(groups) != CHANNELS or len(fatigue) != 64:
+        raise ValueError("280 groups and 64 fatigue bytes")
     return meta(7, groups + fatigue)
 
 

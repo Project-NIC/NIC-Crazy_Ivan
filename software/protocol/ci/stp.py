@@ -3,7 +3,7 @@ SPIs to Baťa and the firmware's blocks (porjadok/SOFTWARE.md).
 
 Byte orders, as the pages give them:
 - every field of 16 and 32 bits is little-endian, the frame's number and the CRC too;
-- an ADS1299 channel is its 3 B as the chip sends them, most significant first (two's complement);
+- an ADS129x channel is its 3 B as the chip sends them, most significant first (two's complement);
 - an IMU's TEMP_DATA is its 2 B as the chip gives them, TEMP_DATA1 first.
 
 Where the pages leave a detail to the code, the choice is said in the docstring.
@@ -15,9 +15,10 @@ from dataclasses import dataclass, field
 
 from .crc import crc16, crc32
 
-# --- the four frames and their kinds -------------------------------------------------------------
+# --- the five frames and their kinds -------------------------------------------------------------
 
 FRAME_LEN, SHORT_LEN, FIRMWARE_LEN, SOUND_LEN = 34, 8, 519, 198
+DATA2_LEN = 58         # a frame of data of 58 B: a module of two chips' 0x24, the glove's 0x25
 BODY_LEN = 28          # bytes 4-31 of a frame of 34 B
 SHORT_BODY = 3         # bytes 3-5 of a frame of 8 B
 VALUES = 25            # the values in a read's answer or a write of several registers
@@ -26,6 +27,8 @@ ANSWER = 0x80          # bit 7 of the kind: an answer
 K_DISCOVER, K_ASSIGN, K_READ, K_WRITE, K_DIRECT, K_WRITE_MANY = 0x01, 0x02, 0x03, 0x04, 0x05, 0x06
 K_GET_READY, K_START, K_STOP, K_REPEAT, K_HEARTBEAT, K_MAMKA, K_BUS_TEST = range(0x10, 0x17)
 K_DATA, K_DIAGNOSTICS, K_SOUND_DOWN, K_SOUND_UP = 0x20, 0x21, 0x22, 0x23
+K_DATA2 = 0x24                         # the data of a module with two ADS1298, 58 B
+K_END = 0x25                           # the glove's and the sock's: 8 channels and 28 B of steps, 58 B
 K_FIRMWARE = 0x30
 
 LENGTH = {
@@ -34,7 +37,8 @@ LENGTH = {
     K_WRITE | ANSWER: 8, K_WRITE_MANY | ANSWER: 8, K_DIRECT: 34,
     K_GET_READY: 8, K_GET_READY | ANSWER: 8, K_START: 8, K_STOP: 8, K_REPEAT: 8,
     K_HEARTBEAT: 8, K_MAMKA: 8, K_BUS_TEST: 34,
-    K_DATA: 34, K_DIAGNOSTICS: 34, K_SOUND_DOWN: 198, K_SOUND_UP: 198, K_FIRMWARE: 519,
+    K_DATA: 34, K_DATA2: 58, K_END: 58, K_DIAGNOSTICS: 34, K_SOUND_DOWN: 198, K_SOUND_UP: 198,
+    K_FIRMWARE: 519,
 }
 
 # --- the units' numbers, the chips, the results ---------------------------------------------------
@@ -44,7 +48,8 @@ P1, P2 = 0xF1, 0xF2                    # Mamka's two processors
 NATASA, MISA = 0x81, 0x82              # line 8's, fixed
 SENSING = range(0x01, 0x80)            # given at the start by *assign*
 
-CHIP_UNIT, CHIP_ADS, CHIP_SOUND, CHIP_MOTORS, CHIP_BMS, CHIP_SPHERE = range(6)
+CHIP_UNIT, CHIP_ADS, CHIP_SOUND, CHIP_MOTORS, CHIP_BMS, CHIP_SPHERE, CHIP_ADS2 = range(7)
+CHIP_BRATISKA = 0x07                   # 0x07-0x0A the glove's and the sock's Bratiški, her chips
 CHIP_EVERY_IMU, CHIP_IMU = 0x0F, 0x10  # 0x10... the IMUs in the order of the unit's table
 
 DONE, NO_ANSWER, NO_CHIP, NO_REGISTER, REFUSED = range(5)              # a write's result
@@ -68,7 +73,8 @@ def check(frame: bytes) -> bytes:
 
 @dataclass
 class Frame:
-    """A frame of 34 B, 8 B or a sound packet: the unit's number, the kind, the number, the body.
+    """A frame of 34 B, 58 B, 8 B or a sound packet: the unit's number, the kind, the number, the
+    body.
     The number is the frame's, a cycle's, in data and in what goes unasked; the command's in the
     commands and their answers; the test's running number in the bus test; the packet's in sound.
     It takes 2 B, but 1 B in a frame of 8 B."""
@@ -81,7 +87,7 @@ class Frame:
         n = LENGTH[self.kind]
         if n == SHORT_LEN:
             head, room = bytes([self.unit & 0xFF, self.kind, self.number & 0xFF]), SHORT_BODY
-        elif n in (FRAME_LEN, SOUND_LEN):
+        elif n in (FRAME_LEN, DATA2_LEN, SOUND_LEN):
             head = struct.pack("<BBH", self.unit & 0xFF, self.kind, self.number & 0xFFFF)
             room = n - 6
         else:
@@ -293,9 +299,11 @@ def bus_errors(frame: bytes) -> int:
 
 # --- a unit's data --------------------------------------------------------------------------------
 
-STEP = 32              # cycles a step: 32 ADS samples, 1/120 s
+ADS_SPS = 1920         # the EMG's rate; 3,840 the setting to try, with a step of 32
+STEP = 16              # cycles a step: 16 ADS samples at 1,920 SPS, 1/120 s
+PERIOD = 32            # cycles between a unit's diagnostics, and Nataša's frames of data
 IMU_STEP_LEN = 12      # an IMU's step: the turn and the mean force, three i16 each
-MODULE_IMU, GLOVE_IMU = 4, 28      # IMU bytes a frame of data
+MODULE_IMU, END_IMU = 4, 28        # IMU bytes a frame of data: a module's; the glove's and the sock's
 
 
 def s24(b: bytes) -> int:
@@ -315,30 +323,30 @@ def imu_step(turn: tuple[int, int, int], force: tuple[int, int, int]) -> bytes:
 
 def imu_bytes(cycle: int, steps: list[bytes], per_frame: int) -> bytes:
     """A unit's IMU bytes in this cycle's frame of data: its steps one after another in its
-    table's order, the frame whose number mod 32 is k carrying bytes per_frame × k on, zeros
+    table's order, the frame whose number mod STEP is k carrying bytes per_frame × k on, zeros
     past the last."""
     stream = b"".join(steps)
     if len(stream) > STEP * per_frame:
-        raise ValueError("more steps than 32 frames hold")
+        raise ValueError(f"more steps than {STEP} frames hold")
     k = cycle % STEP
     return stream[per_frame * k:per_frame * (k + 1)].ljust(per_frame, b"\0")
 
 
 def frames_for(imus: int, per_frame: int) -> int:
-    """How many frames of the 32 a unit's steps take: a module's four 12, the glove's 20 nine."""
+    """How many frames of the STEP a unit's steps take: a module's four 12, the glove's 20 nine."""
     return -(-imus * IMU_STEP_LEN // per_frame)
 
 
 class StepAssembler:
     """One unit's IMU steps put together from its frames of data: an IMU's step is whole when
-    every frame holding its bytes came in the same 32; a frame lost loses only the steps in it."""
+    every frame holding its bytes came in the same step; a frame lost loses only the steps in it."""
 
     def __init__(self, imus: int, per_frame: int) -> None:
         self.imus, self.per = imus, per_frame
         self.period: int | None = None
         self.stream = bytearray(STEP * per_frame)
         self.got: set[int] = set()
-        self.steps: list[tuple[int, int, bytes]] = []    # (cycle // 32, the IMU, 12 B)
+        self.steps: list[tuple[int, int, bytes]] = []    # (cycle // STEP, the IMU, 12 B)
 
     def feed(self, cycle: int, imu: bytes) -> None:
         period, k = divmod(cycle, STEP)
@@ -353,33 +361,89 @@ class StepAssembler:
 
 
 def module_data(unit: int, cycle: int, channels: list[int], imu: bytes) -> bytes:
-    """A module's frame of data: the ADS1299's eight channels as the chip sends them, 4 B of IMU
-    steps."""
-    if len(channels) != 8 or len(imu) != MODULE_IMU:
-        raise ValueError("8 channels and 4 IMU bytes")
-    return Frame(unit, K_DATA, cycle, b"".join(b24(c) for c in channels) + imu).pack()
+    """A module's frame of data: 0x20, 34 B, one chip's eight channels as the chip sends them and
+    4 B of IMU steps; 0x24, 58 B, both chips' sixteen and the 4 B after them."""
+    if len(channels) not in (8, 16) or len(imu) != MODULE_IMU:
+        raise ValueError("8 or 16 channels and 4 IMU bytes")
+    kind = K_DATA if len(channels) == 8 else K_DATA2
+    return Frame(unit, kind, cycle, b"".join(b24(c) for c in channels) + imu).pack()
 
 
-def parse_module_data(frame: bytes) -> tuple[int, int, list[int], bytes]:
-    """The unit, the cycle's 16 bits, the channels and the IMU bytes."""
+def end_data(unit: int, cycle: int, channels: list[int], imu: bytes) -> bytes:
+    """The glove's and the sock's frame of data: 0x25, 58 B, its ADS1298's eight channels as the
+    chip sends them in bytes 4-27, as a module's first chip's, and 28 B of its IMUs' steps in
+    bytes 28-55."""
+    if len(channels) != 8 or len(imu) != END_IMU:
+        raise ValueError("8 channels and 28 IMU bytes")
+    return Frame(unit, K_END, cycle, b"".join(b24(c) for c in channels) + imu).pack()
+
+
+def parse_data(frame: bytes) -> tuple[int, int, list[int], bytes]:
+    """The unit, the cycle's 16 bits, the 8 or 16 channels and the IMU bytes of 0x20, 0x24 or
+    0x25: 4 B after a module's channels, 28 B after the glove's and the sock's eight."""
     f = Frame.unpack(frame)
-    if f.kind != K_DATA:
+    if f.kind not in (K_DATA, K_DATA2, K_END):
         raise ValueError("not data")
-    return f.unit, f.number, [s24(f.body[3 * i:3 * i + 3]) for i in range(8)], f.body[24:28]
+    n = 16 if f.kind == K_DATA2 else 8
+    channels = [s24(f.body[3 * i:3 * i + 3]) for i in range(n)]
+    return f.unit, f.number, channels, f.body[3 * n:]
 
 
-def glove_data(unit: int, cycle: int, imu: bytes) -> bytes:
-    """The glove's frame of data: its steps in all 28 B."""
-    if len(imu) != GLOVE_IMU:
-        raise ValueError("28 IMU bytes")
-    return Frame(unit, K_DATA, cycle, imu).pack()
+# --- the Bratiški, on the glove's and the sock's board (rubaska/SOFTWARE.md, the Bratiški) --------
+
+BRATISKI, BRATISKA_IMUS = 4, 4     # four on the board, one a finger; four IMUs each, two a bus
+BRATISKA_STEP_LEN = 52             # his step to Staršaja: 1 + 1 + 4 × 12 + 2
+
+
+def bratiska_step(step: int, imus: list[bytes | None]) -> bytes:
+    """A Bratiška's step on his UART to Staršaja, 52 B: a bit for each of his four IMUs that
+    answers in bits 3-0 of byte 0, the step's number mod 256, the four IMUs' 12 B, zeros for one
+    that does not answer, and the CRC-16. Nothing says which Bratiška: the UART does."""
+    if len(imus) != BRATISKA_IMUS:
+        raise ValueError("four IMUs")
+    if any(i is not None and len(i) != IMU_STEP_LEN for i in imus):
+        raise ValueError("12 B an IMU")
+    present = sum(1 << n for n, i in enumerate(imus) if i is not None)
+    steps = b"".join(i or bytes(IMU_STEP_LEN) for i in imus)
+    return seal(bytes([present, step & 0xFF]) + steps)
+
+
+def parse_bratiska_step(b: bytes) -> tuple[int, list[bytes | None]]:
+    """The step's number and the four IMUs' steps, None for one not answering; ValueError for a
+    wrong length or CRC, which Staršaja takes as a step missing."""
+    if len(b) != BRATISKA_STEP_LEN:
+        raise ValueError("not 52 B")
+    if struct.unpack_from("<H", b, BRATISKA_STEP_LEN - 2)[0] != crc16(b[:-2]):
+        raise ValueError("bad CRC")
+    present = b[0] & 0x0F
+    imus = [b[2 + 12 * n:14 + 12 * n] if present >> n & 1 else None for n in range(BRATISKA_IMUS)]
+    return b[1], imus
+
+
+def end_steps(own: list[bytes], links: list[bytes | None],
+              fitted: tuple[int, ...] = (4, 4, 4, 4)) -> list[bytes]:
+    """Staršaja's IMU steps for her frames of data, in her table's order: her own IMUs' first,
+    then each Bratiška's as his step brought them, as many of his four as her table lists; a step
+    missing or failing its CRC, and an IMU that does not answer, give zeros."""
+    if len(links) != len(fitted) or len(links) > BRATISKI:
+        raise ValueError("a step a Bratiška, four at most")
+    out = list(own)
+    for b, n in zip(links, fitted):
+        imus: list[bytes | None] = [None] * BRATISKA_IMUS
+        if b is not None:
+            try:
+                _, imus = parse_bratiska_step(b)
+            except ValueError:
+                pass
+        out += [i or bytes(IMU_STEP_LEN) for i in imus[:n]]
+    return out
 
 
 NATASA_MISA, NATASA_WARNING, NATASA_MOTOR, NATASA_TRIAL, NATASA_FAILED = 1, 2, 4, 8, 16
 
 
 def natasa_data(cycle: int, buttons: int, state: int) -> bytes:
-    """Hers, once every 32 cycles, in cycle 15: the buttons, a bit each, and her state."""
+    """Hers, once every PERIOD cycles, in cycle 15: the buttons, a bit each, and her state."""
     return Frame(NATASA, K_DATA, cycle, struct.pack("<HB", buttons & 0xFFFF, state & 0xFF)).pack()
 
 
@@ -394,9 +458,13 @@ def parse_natasa_data(frame: bytes) -> tuple[int, int, int]:
 
 # --- the diagnostics ------------------------------------------------------------------------------
 
-DIAGNOSTICS_CYCLE = 31     # every unit's in the cycle whose number mod 32 is 31
-LINE8_DATA_CYCLE = 15      # Nataša's and Míša's frames of data, half a round from it
+DIAGNOSTICS_CYCLE = 31     # every unit's in the cycle whose number mod PERIOD is 31
+LINE8_DATA_CYCLE = 15      # Nataša's frame of data, half a round from it
 IMU_TEMPS = 6              # IMU temperatures a diagnostics frame
+TEMPS_AT = 15              # byte 19 of the frame: the IMUs' temperatures, six at most
+RESET_AT = 27              # byte 31 of the frame: the last reset's cause (porjadok, Watchdogs)
+(RESET_SUPPLY, RESET_IWDG, RESET_FAULT, RESET_ECC, RESET_CLOCK, RESET_ASKED,
+ RESET_PIN) = range(7)
 
 
 def mv_byte(mv: int) -> int:
@@ -408,25 +476,33 @@ def byte_mv(b: int) -> int:
     return 2000 + 10 * b
 
 
-def temp_c(temp_data: int) -> float:
-    """An ICM-42688-P's TEMP_DATA in °C: TEMP_DATA / 132.48 + 25 (DS-000347, 14.5)."""
-    return temp_data / 132.48 + 25
+def temp_c(temp_data: int, part: int | None = None) -> float:
+    """An IMU's TEMP_DATA in °C by its part in the unit's table: the ICM-45686's / 128 + 25
+    (DS-000489, table 4), the ICM-42688-P's / 132.48 + 25 (DS-000347, 14.5)."""
+    return temp_data / (132.48 if part == PART_ICM42688P else 128) + 25
 
 
 def which_imus(cycle: int, imus: int) -> range:
     """The six IMUs whose temperatures this diagnostics carries, by turns by the frame's number:
-    the glove's 20 in four diagnostics. Six from the first in turn is the code's choice."""
+    the glove's 22 in four diagnostics. Six from the first in turn is the code's choice."""
     turns = max(1, -(-imus // IMU_TEMPS))
-    first = IMU_TEMPS * ((cycle // STEP) % turns)
+    first = IMU_TEMPS * ((cycle // PERIOD) % turns)
     return range(first, min(first + IMU_TEMPS, imus))
 
 
 def on_skin(loff_stat: list[int]) -> int:
-    """LOFF_STATP or LOFF_STATN over 32 samples turned over: 1 on the skin in every one of them."""
+    """One chip's LOFF_STATP or LOFF_STATN over 32 samples turned over: 1 on the skin in every
+    one of them."""
     off = 0
     for s in loff_stat:
         off |= s
     return ~off & 0xFF
+
+
+def skin_word(first: int, second: int = 0xFF) -> int:
+    """The 16 electrodes' word of a module: the first chip's eight in the low byte, the second's
+    in the high one, ones for a chip not fitted."""
+    return first & 0xFF | (second & 0xFF) << 8
 
 
 @dataclass
@@ -436,19 +512,21 @@ class Diagnostics:
     cycle: int
     alive: int = 0xFFFFFFFF        # a bit a chip in the order of the unit's table, unused 1
     clean: int = 0xFFFFFFFF        # without an error over the 32 samples, the same bits
-    p_on: int = 0xFF
-    n_on: int = 0xFF
+    p_on: int = 0xFFFF             # P1-P16 on the skin, the second chip's eight in the high byte
+    n_on: int = 0xFFFF             # N1-N16
     flags: int = 0xFF              # bit 0 the bias electrode on the skin, 1 Mamka's frames clean
     temp_c: int = 0                # the processor's, signed
     low_mv: int = 3300             # the lowest 3.3 V since the last
     imu_temps: list[int] = field(default_factory=list)   # TEMP_DATA, six at most
+    reset: int = RESET_SUPPLY      # the last reset's cause, 0-6
 
     def pack(self) -> bytes:
         if len(self.imu_temps) > IMU_TEMPS:
             raise ValueError("six IMU temperatures at most")
-        body = struct.pack("<IIBBBbB", self.alive, self.clean, self.p_on, self.n_on, self.flags,
+        body = struct.pack("<IIHHBbB", self.alive, self.clean, self.p_on, self.n_on, self.flags,
                            self.temp_c, mv_byte(self.low_mv))
         body += b"".join(struct.pack(">h", t) for t in self.imu_temps)
+        body = body.ljust(RESET_AT, b"\0") + bytes([self.reset])
         return Frame(self.unit, K_DIAGNOSTICS, self.cycle, body).pack()
 
     @classmethod
@@ -457,14 +535,15 @@ class Diagnostics:
         f = Frame.unpack(frame)
         if f.kind != K_DIAGNOSTICS:
             raise ValueError("not diagnostics")
-        alive, clean, p, n, flags, t, mv = struct.unpack_from("<IIBBBbB", f.body)
-        temps = [struct.unpack_from(">h", f.body, 13 + 2 * i)[0] for i in range(min(imus, 6))]
-        return cls(f.unit, f.number, alive, clean, p, n, flags, t, byte_mv(mv), temps)
+        alive, clean, p, n, flags, t, mv = struct.unpack_from("<IIHHBbB", f.body)
+        temps = [struct.unpack_from(">h", f.body, TEMPS_AT + 2 * i)[0] for i in range(min(imus, 6))]
+        return cls(f.unit, f.number, alive, clean, p, n, flags, t, byte_mv(mv), temps,
+                   f.body[RESET_AT])
 
     @property
     def all_well(self) -> bool:
         """The scan for all ones: a zero is looked into only when found."""
-        return ((self.alive & self.clean) == 0xFFFFFFFF and (self.p_on & self.n_on) == 0xFF
+        return ((self.alive & self.clean) == 0xFFFFFFFF and (self.p_on & self.n_on) == 0xFFFF
                 and (self.flags & 0x03) == 0x03)
 
 
@@ -480,13 +559,23 @@ def chip_bits(chips: int, ok: list[bool]) -> int:
 # --- the registers of chip 0x00 ------------------------------------------------------------------
 
 REG_BIAS, REG_IMU_MODE = 0x00, 0x01            # the settings, 0x00-0x3F
+REG_LED = 0x02                                 # a module's status LED, 1 blinking; not kept
+REG_SHIELD = 0x03                              # the strip's ground layer: 0 on ground, 1 driven
 REG_TABLE = 0x40                               # the unit's table, read only, 0x40-0x7F
 REG_FIRMWARE = 0x80                            # the firmware's update, 0x80-0xBF
 REG_EVENTS = 0xC0                              # Mamka's, 0xC0-0xFF
 
-KIND_EMG, KIND_IMU, KIND_NATASA, KIND_MISA, KIND_BRATISKA = range(1, 6)
+KIND_EMG, KIND_END, KIND_NATASA, KIND_MISA = range(1, 5)   # 2 the glove and the sock
+
+
+def blink(unit: int, on: bool, number: int = 0) -> bytes:
+    """The map's application finding a module: its status LED blinking, or back to the
+    firmware's own."""
+    return write(unit, CHIP_UNIT, REG_LED, int(on), number)
+
 FW_MODULE, FW_GLOVE, FW_BRATISKA, FW_NATASA, FW_MISA, FW_P1, FW_P2 = range(1, 8)
-PART_ADS1299, PART_ICM42688P, PART_ICM45686, PART_SOUND, PART_MOTORS, PART_SPHERE = range(1, 7)
+(PART_ADS1299, PART_ICM42688P, PART_ICM45686, PART_SOUND, PART_MOTORS, PART_SPHERE,
+ PART_ADS1298, PART_BRATISKA) = range(1, 9)
 
 
 @dataclass
@@ -520,70 +609,114 @@ class UnitTable:
         return [(REG_TABLE + i, min(VALUES, n - i)) for i in range(0, n, VALUES)]
 
 
-def module_table(uid: bytes, imus: int = 4, version: int = 0x0100) -> UnitTable:
-    """A sensing module's: the ADS1299 at 0x01, its IMUs from 0x10."""
-    chips = [(CHIP_ADS, PART_ADS1299)] + [(CHIP_IMU + i, PART_ICM42688P) for i in range(imus)]
+def module_table(uid: bytes, imus: int = 4, version: int = 0x0100, imu: int = PART_ICM45686,
+                 ads: tuple[int, ...] = (PART_ADS1298, PART_ADS1298)) -> UnitTable:
+    """A sensing module's: its first ADS129x at 0x01, a second ADS1298 at 0x06, its IMUs from
+    0x10: two ADS1298 on the body, one ADS1299 on the head and the neck."""
+    chips = [(CHIP_ADS, ads[0])] + ([(CHIP_ADS2, ads[1])] if len(ads) > 1 else [])
+    chips += [(CHIP_IMU + i, imu) for i in range(imus)]
     return UnitTable(KIND_EMG, FW_MODULE, version, uid, chips)
 
 
-def glove_table(uid: bytes, imus: int = 20, version: int = 0x0100) -> UnitTable:
-    """The glove's: its IMUs from 0x10 by Bratiška, 0x10-0x23 for its 20."""
-    if not 1 <= imus <= 20:
-        raise ValueError("up to 20 IMUs, five Bratiški of four")
-    return UnitTable(KIND_IMU, FW_GLOVE, version, uid,
-                     [(CHIP_IMU + i, PART_ICM42688P) for i in range(imus)])
+HAND_IMUS, FOOT_IMUS = 20, 8       # the glove's places, Staršaja's four and the Bratiški's; a sock's to start
+END_IMUS = 20                      # the board's places: two I3C buses of two on Staršaja and on each Bratiška
 
 
-# --- into Baťa: places of 34 B --------------------------------------------------------------------
+def end_table(uid: bytes, imus: int = HAND_IMUS, bratiski: int = BRATISKI, version: int = 0x0100,
+              imu: int = PART_ICM45686) -> UnitTable:
+    """The glove's, and the sock's, the same board: its ADS1298 at 0x01, its Bratiški from 0x07,
+    its IMUs from 0x10 in the frame's order, Staršaja's own first; 0x10-0x23 for the glove's 20."""
+    if not 0 <= bratiski <= BRATISKI or not 1 <= imus <= END_IMUS:
+        raise ValueError("up to four Bratiški and 20 IMUs")
+    chips = [(CHIP_ADS, PART_ADS1298)]
+    chips += [(CHIP_BRATISKA + i, PART_BRATISKA) for i in range(bratiski)]
+    chips += [(CHIP_IMU + i, imu) for i in range(imus)]
+    return UnitTable(KIND_END, FW_GLOVE, version, uid, chips)
 
-PLACE = FRAME_LEN
+
+# --- into Baťa: the places on the SPIs ------------------------------------------------------------
+
+PLACE = FRAME_LEN      # a place of 34 B: the four places more, and every place in the service mode
 EXTRA = 4              # places a cycle for the diagnostics, the answers and Mamka's own
 
 
+def has_place(kind: int) -> bool:
+    """Whether a unit of this kind has a place of data: all but Míša, who sends no frame of data,
+    his sphere going in the four places."""
+    return kind != KIND_MISA
+
+
+def place_len(kind: int, ads: int = 0) -> int:
+    """A unit's place of data a cycle, by its kind: 58 B for a module of two ADS1298, its frame
+    0x24, and for the glove and the sock, 0x25; 34 B for every other unit with a place, none for
+    Míša."""
+    if not has_place(kind):
+        return 0
+    return DATA2_LEN if ads == 2 or kind == KIND_END else PLACE
+
+
 def places_of(frame: bytes) -> int:
-    """How many places a frame takes: one for 34 B or 8 B, 16 for a firmware block."""
+    """How many places of 34 B a frame takes: one for 34 B or 8 B, 16 for a firmware block."""
     return -(-len(frame) // PLACE)
 
 
-def places(frames: list[bytes | None]) -> bytes:
-    """Frames as they came, each from a place's start, zeros after a short one; None an empty
-    place."""
+def places(frames: list[bytes | None], sizes: list[int] = ()) -> bytes:
+    """Frames as they came, each from its place's start, zeros after a short one; None an empty
+    place. `sizes` gives the data places' lengths, 58 or 34 B by the unit's kind; a frame beyond
+    them takes places of 34 B, a firmware block 16 of them."""
     out = bytearray()
-    for f in frames:
+    for i, f in enumerate(frames):
         f = f or b""
-        out += f + bytes(PLACE * max(1, places_of(f)) - len(f))
+        n = sizes[i] if i < len(sizes) else PLACE * max(1, places_of(f))
+        if len(f) > n:
+            raise ValueError("a frame longer than its place")
+        out += f + bytes(n - len(f))
     return bytes(out)
 
 
-def parse_places(stream: bytes) -> list[bytes | None]:
-    """A transfer's places: a frame by its kind's length, None for an empty one (kind 0). A tail
-    shorter than a place, a stripe's padding, is no place."""
-    out, pos = [], 0
-    while pos + PLACE <= len(stream):
+def parse_places(stream: bytes, sizes: list[int] = ()) -> list[bytes | None]:
+    """A transfer's places, the data places by `sizes` and the rest of 34 B: a frame by its
+    kind's length, None for an empty one (kind 0). A tail shorter than a place, a stripe's
+    padding, is no place."""
+    out, pos, i = [], 0, 0
+    while True:
+        n = sizes[i] if i < len(sizes) else PLACE
+        if pos + n > len(stream):
+            break
         kind = stream[pos + 1]
         if kind == 0:
             out.append(None)
-            pos += PLACE
-            continue
-        if kind not in LENGTH:
-            raise ValueError(f"no kind 0x{kind:02X}")
-        n = LENGTH[kind]
-        out.append(bytes(stream[pos:pos + n]))
-        pos += PLACE * places_of(bytes(n))
+        else:
+            if kind not in LENGTH:
+                raise ValueError(f"no kind 0x{kind:02X}")
+            m = LENGTH[kind]
+            if i >= len(sizes):
+                n = PLACE * -(-m // PLACE)
+            elif m > n:
+                raise ValueError("a frame longer than its place")
+            if pos + m > len(stream):
+                raise ValueError("a frame cut short")
+            out.append(bytes(stream[pos:pos + m]))
+        pos += n
+        i += 1
     return out
 
 
-def cycle_transfer(data: list[bytes | None], extra: list[bytes] = ()) -> bytes:
+def cycle_transfer(data: list[bytes | None], sizes: list[int], extra: list[bytes] = ()) -> bytes:
     """A processor's cycle while measuring: the frames of data in her table's order, by line
-    and on each line by slot, then the four places more."""
+    and on each line by slot, each in a place of its unit's size, then the four places of 34 B
+    more."""
+    if len(data) != len(sizes):
+        raise ValueError("a size for every place of data")
     if len(extra) > EXTRA:
         raise ValueError("four places more")
-    return places(list(data) + list(extra) + [None] * (EXTRA - len(extra)))
+    return places(list(data) + list(extra) + [None] * (EXTRA - len(extra)), list(sizes))
 
 
-def parse_cycle(stream: bytes, units: int) -> tuple[list[bytes | None], list[bytes]]:
-    """The data places of a processor with `units` in her table, and the frames of the four."""
-    p = parse_places(stream)
+def parse_cycle(stream: bytes, sizes: list[int]) -> tuple[list[bytes | None], list[bytes]]:
+    """The data places of a processor, their sizes from her table, and the frames of the four."""
+    p = parse_places(stream, list(sizes))
+    units = len(sizes)
     if len(p) < units + EXTRA:
         raise ValueError("too few places")
     return p[:units], [f for f in p[units:units + EXTRA] if f is not None]
@@ -591,8 +724,7 @@ def parse_cycle(stream: bytes, units: int) -> tuple[list[bytes | None], list[byt
 
 def stripe(stream: bytes) -> tuple[bytes, bytes]:
     """Processor 2's transfer in words of 4 B over her two SPIs, bytes 0-3 on SPI0_M2, 4-7 on
-    SPI3_M0 and so on; padded with zeros to 8 B so that both carry the same share (the code's
-    choice: 340 B make 85 words)."""
+    SPI3_M0 and so on; padded with zeros to 8 B so that both carry the same share (378 B to 384)."""
     stream = stream + bytes(-len(stream) % 8)
     words = [stream[i:i + 4] for i in range(0, len(stream), 4)]
     return b"".join(words[0::2]), b"".join(words[1::2])
@@ -607,9 +739,12 @@ def join(a: bytes, b: bytes) -> bytes:
 # --- the firmware ---------------------------------------------------------------------------------
 
 FW_BLOCK = 512
-FW_MAP_REG, FW_MAP_LEN = 0x90, 32      # a bit a block, 256 blocks: 128 KB
+FW_MAP_REG, FW_MAP_LEN = 0x90, 32      # a bit a block, 256 blocks a window: 128 KB
+FW_MAP_WINDOW = 0x89                   # which 256 blocks the map shows
+FW_MAX_BLOCKS = 1024                   # the largest bank, Mamka's 512 KB, in four windows
 FW_BEGIN, FW_CHECK, FW_CONFIRM, FW_ABORT = 1, 2, 3, 4
 FW_IDLE, FW_ERASING, FW_RECEIVING, FW_CRC_WRONG, FW_ON_TRIAL, FW_FAILED = range(6)
+FW_PROGRAMMING = 6     # the glove's Staršaja writing her Bratiški through ST's bootloader
 
 
 @dataclass
@@ -649,9 +784,19 @@ def fw_frames(firmware: int, image: bytes) -> list[bytes]:
         chunk = image[off:off + FW_BLOCK]
         chunk += b"\xFF" * (-len(chunk) % 16)
         blocks.append(FirmwareFrame(EVERY, firmware, n, chunk).pack())
-    if len(blocks) > 8 * FW_MAP_LEN:
-        raise ValueError("more blocks than the map holds: an image beyond 128 KB is open")
+    if len(blocks) > FW_MAX_BLOCKS:
+        raise ValueError("an image is at most a bank, 512 KB on Mamka's")
     return blocks
+
+
+def fw_windows(blocks: int) -> int:
+    """How many windows of the map an image of `blocks` takes, 256 blocks each."""
+    return -(-blocks // (8 * FW_MAP_LEN))
+
+
+def fw_window(unit: int, window: int, number: int = 0) -> bytes:
+    """Which 256 blocks the unit's map at 0x90 shows next: one byte written at 0x89."""
+    return write(unit, CHIP_UNIT, FW_MAP_WINDOW, window, number)
 
 
 def fw_begin(firmware: int, image: bytes, version: int, number: int = 0) -> bytes:
@@ -665,9 +810,11 @@ def fw_command(unit: int, what: int, number: int = 0) -> bytes:
     return write(unit, CHIP_UNIT, REG_FIRMWARE, what, number)
 
 
-def missing(block_map: bytes, blocks: int) -> list[int]:
-    """The blocks a unit lacks, from its map of 32 B, a bit a block."""
-    return [n for n in range(blocks) if not block_map[n // 8] >> (n % 8) & 1]
+def missing(block_map: bytes, blocks: int, window: int = 0) -> list[int]:
+    """The blocks a unit lacks in one window, from its map of 32 B, a bit a block."""
+    first = window * 8 * FW_MAP_LEN
+    return [n for n in range(first, min(blocks, first + 8 * FW_MAP_LEN))
+            if not block_map[(n - first) // 8] >> ((n - first) % 8) & 1]
 
 
 # --- line 8: the sound, Míša's sphere, the motors ------------------------------------------------
@@ -692,12 +839,13 @@ def parse_sound(frame: bytes) -> tuple[int, int, list[tuple[int, int]]]:
 
 
 SPHERE_LEN, SPHERE_FIELDS, SPHERE_PIECE = 112, 36, 25
+SRC_NONE, SRC_ULTRASOUND, SRC_RADAR, SRC_BOTH = range(4)    # the source's code, header and fields
 
 
 def sphere(frame_no: int, status: int, turn: int, pitch: int,
            fields: list[tuple[int, int, int]]) -> bytes:
-    """Míša's sphere: 4 B of header, then the 36 fields of (distance u8, speed i8, the byte of the
-    confidence, the source and the kind)."""
+    """Míša's sphere: 4 B of header (the status's bits 0-1 the source's code), then the 36 fields
+    of (distance u8, speed i8, the byte of the confidence, the source's code and the kind)."""
     if len(fields) != SPHERE_FIELDS:
         raise ValueError("36 fields")
     out = struct.pack("<BBbb", frame_no & 0xFF, status & 0xFF, turn, pitch)
@@ -734,6 +882,12 @@ class SphereAssembler:
 
 MOTOR_LEFT, MOTOR_RIGHT, MOTOR_FOREHEAD, MOTOR_NAPE = 0x00, 0x04, 0x08, 0x0C
 MOTOR_SETTINGS, MOTOR_PATTERNS = 0x10, 0x20
+REG_MICROPHONES = 0x00     # Nataša's sound chip: 0 off, as after a reset, 1 on
+
+
+def microphones(on: bool, number: int = 0) -> bytes:
+    """Baťa's `microphones.service` turning Nataša's microphones on or off: one byte written."""
+    return write(NATASA, CHIP_SOUND, REG_MICROPHONES, int(on), number)
 
 
 def motors(sets: dict[int, tuple[int, int, int, int]], number: int = 0) -> bytes:

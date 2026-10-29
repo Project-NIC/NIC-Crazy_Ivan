@@ -22,12 +22,15 @@ thing waits in reserve, it says so.
   cycles over SPI.
 - **The Raspberry Pi as the SPI slave.** The Linux driver did not support it; the
   computer is the master and Mamka raises "data ready" when a cycle waits.
-- **Category 5e or 6 Ethernet cable** for the lines, with 100 Ω terminations. It would do; the
-  3M 1785 flat cable takes IDC sockets anywhere on a flat stretch, so a unit taps in without a
-  connector of its own. The Ethernet cable stays as the fallback.
-- **The lines twisted or untwisted.** Not decided: the untwisted 3M 3517 is a variant to try,
-  held to two tests (see [hardware](HARDWARE.md#cable-and-connectors-in-the-suit)); until they
-  pass, the twisted 1785 is the design.
+- **Category 5e or 6 Ethernet cable** for the lines, with 100 Ω terminations. It would do; a
+  flat cable takes IDC sockets along it, so a unit taps in without a connector of its own. The
+  Ethernet cable stays as the fallback.
+- **The 3M 1785, twisted pairs in a shielded flat cable** (to 28 Oct 2026), with the shielded
+  but untwisted 3M 3517 as a variant to try. Both are 28 AWG and sold by the roll of 30 m, the
+  1785/14 ~$450 by estimate for a metre or two an arm. The unshielded 3811/16 has 26 AWG, ~37 %
+  less resistance, and is sold by the metre (€7.12 at Farnell, 28 Oct 2026); the twist and the
+  shield are given up for it, held to the same two tests (see
+  [hardware](HARDWARE.md#cable-and-connectors-in-the-suit)).
 - **Four long lines** (to 24 Oct 2026), up to four modules a line and a glove behind a forearm's
   module, wherever the units sat on the body, all at 19.66 Mbaud. A line then crossed the
   suit's pieces, so a suit in pieces would have needed connectors along it; eight short lines, a
@@ -51,7 +54,8 @@ thing waits in reserve, it says so.
   pairs against ~2,500 CZK for the SP21, which is IP68 and screws on.
 - **Six grounds in the cable** (the 3M 1785/16, 16 wires). Ten pins a branch take two wires into
   each supply pin, so the cable has 14 wires and four grounds: on a metre at ~0.38 A the drop is
-  ~57 mV against 51 mV, and a unit sits ≤ ~30 mV off Mamka's ground at the worst line.
+  ~57 mV against 51 mV, and a unit sits ≤ ~30 mV off Mamka's ground at the worst line. Taken
+  again on 28 Oct 2026 with the 3811/16: a ground between the pairs and two in the supply.
 - **The clock drivers' DE on a pin a line** (24 Oct 2026, morning) **or tied on** (the
   afternoon). Each processor switches her own lines' clock on one pin: ~0.3 A of the eight
   drivers comes off while her lines are off or asleep, and no line is switched alone.
@@ -115,8 +119,32 @@ What was tried for the frames and the modes and left:
   read back** (to 24 Oct 2026). The answer is the result in 8 B; whoever wants to check
   reads the registers.
 - **START low while stopped.** What it would save the datasheet does not give, and every new
-  start would need the sync again; the ADS1299s run on idle through the whole active mode, and
+  start would need the sync again; the ADS129x run on idle through the whole active mode, and
   only the lines' power off and on ends the sync.
+- **Two frames of 34 B for a module of two chips** (29 Oct 2026), the second chip's channels in
+  a frame of their own, 0x24, back to back with the first in the slot. Sixteen bytes of header and
+  CRC and four empty IMU bytes on every module every cycle, a fifth of processor 1's SPI; one frame
+  of 58 B, a kind of its own, carries both chips with six, the kind telling the length as with
+  every frame (the owner).
+- **3,840 SPS as the suit's rate** (to 29 Oct 2026), a band to ~1 kHz for fast movements and the
+  twitches of a nervous system that does not work as it should. With two chips a module it doubled
+  the data, the lines at 46 % and processor 1's SPI at 84 %, for a band above the ~500 Hz that
+  surface EMG uses (SENIAM's 10–500 Hz; Delsys at 1,926 SPS, Meta at 2,000, OT at 2,048): 1,920 is
+  the rate and 3,840 the setting to try, a twitch of a few milliseconds seen at either.
+- **The IMUs' step of 60 Hz at 1,920 SPS** (to 29 Oct 2026), thirty-two samples kept at the lower
+  rate. The step is 1/120 s at either rate, sixteen samples at 1,920 and the frames counted mod 16,
+  thirty-two and mod 32 at 3,840.
+- **The foot's and the hand's IMUs on their module's bus** (to 29 Oct 2026), two beyond the joint
+  on the strip that crosses it. The hand and the foot want more than a module's four places (the
+  owner: losing their detail makes no sense), so a unit of the glove's kind in the limb's fourth
+  slot carries them, the sock Nosok up to eight and the glove 20, in frames of 58 B with the hand's
+  eight channels; the modules keep four IMUs each.
+- **The glove's frame of 34 B of steps alone, and the Bratiški as units behind their Staršaja**
+  (to 29 Oct 2026), with numbers of their own from *discover* passed on down their wires and
+  "IMUs alone" as a kind of unit. The hand got its own eight channels on the glove's board, so the
+  glove and the sock send 0x25, 58 B, eight channels and 28 B of steps, and the Bratiški, on the
+  board, are Staršaja's chips 0x07–0x0A, with no number and no frame of Mamka's to answer; their
+  image goes in through her and ST's bootloader (see [Rubaška](../rubaska/WHY.md)).
 - **The line clock as the switch between the modes** (23 Oct 2026): every
   unit on its HSI at 38,400 Bd until Mamka raised its line's clock, then at 19.66 Mbaud, and back
   when the clock went. It took a second setting of every peripheral for the HSI and a change of

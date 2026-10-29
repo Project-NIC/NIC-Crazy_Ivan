@@ -27,9 +27,10 @@ is unzipped.
 - **A connector for each piece of the suit,** eight in the shell, one a line: the arms with
   their shoulders, the legs, the head's module, the chest, the back, and the headband (see
   [Porjadok](../porjadok/HARDWARE.md#links-between-boards)), so a piece comes off by itself. A
-  line's 14 wires (see [Porjadok](../porjadok/HARDWARE.md#cable-and-connectors-in-the-suit)) take
-  10 contacts: the six of the three pairs and four for the supply, 4 V, 6 V and two grounds, two
-  wires into one contact, which a contact carries easily at the line's fraction of an ampere.
+  line's 16 wires (see [Porjadok](../porjadok/HARDWARE.md#cable-and-connectors-in-the-suit)) take
+  10 contacts: the six of the three pairs and four for the supply, 4 V, 6 V and two grounds, the
+  doubled wires sharing a contact, which a contact carries easily at the line's fraction of an
+  ampere.
   The connector is the **Weipu SP21 of 12 pins,** IP68, 5 A, screwed on, two pins spare; the
   GX16 of 10 pins for the first trials. Inside, a short harness joins each to its IDC header on
   Mamka.

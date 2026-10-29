@@ -6,8 +6,9 @@
 
 **English** · [Čeština](README.cs.md) · [Русский](README.ru.md)
 
-**A neural suit:** up to 288 electrodes and 84 inertial units, 40 of them in the two gloves, on a
-suit you put together from pieces like a sleeve, a trouser leg, the torso or a headband.
+**A neural suit:** up to 582 electrodes and 98 inertial units, 56 of them in the gloves and the
+socks, on a suit you put together from pieces like a sleeve, a trouser leg, the torso or a
+headband.
 
 The muscles' own signals and the body's motion go to a computer in the backpack, a Radxa ROCK 5T
 with its own NPU or up to two Hailo-10H AI accelerators, and the whole body becomes the
@@ -17,7 +18,7 @@ controller for a computer or a game.
 
 </div>
 
-> **Beta 0.4:** a concept at the design stage, nothing is built yet; what is closed, what is
+> **Beta 0.5:** a concept at the design stage, nothing is built yet; what is closed, what is
 > open and what is only an estimate is under [Status](STATUS.md).
 
 ---
@@ -48,12 +49,12 @@ and after each putting on a short calibration is enough, since the suit is never
 way twice; for rehabilitation, a doctor tells from the record which muscle works and how hard,
 side against side and day against day, and it agrees with what the doctor finds by examining.
 
-**What it must do,** in ranges: the EMG at 3,840 SPS, its band to ~1 kHz, for fast movements in
-sport and for the twitches of a nervous system that does not work as it should, 1,920 SPS a
-setting to try; the IMUs in steps of 120 Hz; tens of milliseconds at most from a muscle to the
-output; gestures for a computer and the joints' angles, wrong by units of degrees; a calibration
-of a few minutes at most; a working day, ~8 h, on one charge in the smaller fittings; sweat and
-light rain, not immersion. The weight and the price are to be seen.
+**What it must do,** in ranges: the EMG at 1,920 SPS, its band to ~500 Hz, the professionals' rate,
+3,840 SPS a setting to try for fast movements in sport and for the twitches of a nervous system that
+does not work as it should; the IMUs in steps of 120 Hz; tens of milliseconds at most from a muscle
+to the output; gestures for a computer and the joints' angles, wrong by units of degrees; a
+calibration of a few minutes at most; a working day, ~8 h, on one charge in the smaller fittings;
+sweat and light rain, not immersion. The weight and the price are to be seen.
 
 ## Tomography
 
@@ -74,7 +75,7 @@ it works we do not know; studies suggest it might (see [Bogatyr](bogatyr/README.
 
 | part | what it is |
 |---|---|
-| [**Rubaška**](rubaska/README.md) | the suit itself: the pieces with their sensing modules, the glove Vešč, the electrodes and the harness |
+| [**Rubaška**](rubaska/README.md) | the suit itself: the pieces with their sensing modules, the glove Vešč and the sock Nosok, the electrodes and the harness |
 | [**Bogatyr**](bogatyr/README.md) | the layout on the body: where every electrode and IMU sits, muscle by muscle, and why |
 | [**Nataša**](natasa/README.md) | the unit in the headband: headphones, two microphones, vibration and buttons |
 | [**Mamka**](mamka/README.md) | the base board: the clock for the whole suit, the sound bridge, the line drivers and the suit's power |
@@ -109,9 +110,10 @@ On the body, the suit is **Rubaška**, the shirt you are born in, on **Kaščej*
 everything sits on it is **Bogatyr**, Kaščej dressed in the meat. Mamka's own children, the
 **Rebjata** (the sensing modules), hang on the **Pupovina**, the umbilical cord: the eight lines,
 one a piece of the suit, that bring power, the clock and data to them, to the gloves and to Nataša
-and Míša. Every sensing unit's main processor is a **Staršaja**, the elder; the glove, **Vešč**, has
-her younger brothers, the **Bratiški**, on its fingers. The household's rules are the **Porjadok**,
-and its power, from Babuška down, the **Pitanije**.
+and Míša. Every sensing unit's main processor is a **Staršaja**, the elder; the glove, **Vešč**,
+and the sock, **Nosok**, have her younger brothers, the **Bratiški**, four small processors beside
+her on one board, each reading a finger's IMUs.
+The household's rules are the **Porjadok**, and its power, from Babuška down, the **Pitanije**.
 
 The pieces combine freely:
 

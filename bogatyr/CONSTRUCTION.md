@@ -19,14 +19,21 @@ named. What the electrodes and the strips are made of is under
 
 ## The electrodes' rules
 
-- **Both ways on one suit:** every module has 16 electrodes, a bias electrode and a reference
-  electrode, 18 a module and 288 on 16 modules. In the differential way (MISC1 0x00) each channel
-  is P against N; against the reference (MISC1 0x20) the ADS1299 puts SRB1 on every channel's
-  negative input, so the eight P measure against the reference and the N are idle: INnN reaches
-  the amplifier through a switch that is closed only while SRB1 is off (SBAS499C, figure 18; see
-  [Rubaška](../rubaska/HARDWARE.md#right-leg-drive)).
-- **The eight P cover the area's main muscles,** one site each, evenly: against the reference they
-  are eight monopolar channels, and any pair of them is formed in software.
+- **Two chips on the body and on the head, one on the neck:** a module of the body has two ADS1298,
+  16 channels on 32 electrodes and a bias electrode, 33, measuring differentially, each channel P
+  against N; the head's module two ADS1299, 16 channels on 32 electrodes, a bias and one reference
+  electrode, 34, and the neck's one ADS1299, 8 channels on 16 electrodes, a bias and a reference,
+  18, both ways on both: against the reference (MISC1 0x20) an ADS1299 puts SRB1 on every channel's
+  negative input, so its eight P measure against the reference and the N are idle, INnN reaching the
+  amplifier through a switch that is closed only while SRB1 is off (SBAS499C, figure 18; see
+  [Rubaška](../rubaska/HARDWARE.md#right-leg-drive)); 514 electrodes on the modules, and the glove's
+  and the sock's sixteen with a bias each, 582 in all. **The body's second eight channels are not
+  laid out yet:** every module below has its first eight, and the second eight, the crossed pairs
+  through the limb and the trunk the owner wants, are laid out with the physiotherapist (see [Open
+  questions](#open-questions)).
+- **The eight P cover the area's main muscles,** one site each, evenly: on the head and the neck,
+  against the reference, they are eight monopolar channels, and any pair of them is formed in
+  software.
 - **Each N lies 4–8 cm from its P where the muscle allows,** on the neighbouring muscle or further
   along the same one, along the fibres and across them by turns. Mixed along and across pairs
   held up best when the electrodes shifted (Young et al., IEEE TBME 58, 2011; 59, 2012, the
@@ -49,15 +56,16 @@ named. What the electrodes and the strips are made of is under
 - **Across the spine only diagonally, on the erectors' bulges:** a P on one bulge, its N on the
   other a few centimetres higher or lower, ~5–9 cm, so the chords cross in X and each takes both
   sides.
-- **The reference over bone near the middle of the area,** so that it is close to all eight P;
-  the bias over bone too, as SENIAM puts its reference over bone (C7, the wrist, the ankle).
+- **The bias over bone,** as SENIAM puts its reference over bone (C7, the wrist, the ankle), and
+  on the head and the neck the reference over bone near the middle of the area, close to all
+  eight P; the body's modules carry no reference, the ADS1298 having no SRB1.
   Where an IMU needs the same bone, both stay on it a few centimetres apart (see
   [the IMUs](#the-imus)). One bias electrode drives the body and the others wait as spares (see
   [Rubaška](../rubaska/HARDWARE.md#right-leg-drive)).
 - **Nothing pressed onto a nerve that lies on bone under the skin:** the common peroneal nerve
   winds round the neck of the fibula, the ulnar nerve rests on the back of the medial epicondyle
-  (Gray's *Anatomy of the Human Body*, 1918); an electrode with its spring would press the nerve
-  against the bone (an inference).
+  (Gray's *Anatomy of the Human Body*, 1918); an electrode pressed by its band would press the
+  nerve against the bone (an inference).
 - **The neck sits loose and keeps off the carotid's division.** The common carotid divides opposite
   the upper border of the thyroid cartilage, where it lies comparatively superficially (Gray's, the
   carotid triangle); pressure on the carotid sinus there can slow the heart to a faint in people
@@ -82,14 +90,16 @@ named. What the electrodes and the strips are made of is under
 | 2, 6 | frontalis, above the brow's outer third | along, 3 cm higher (4 cm out would land by N3) |
 | 3, 7 | temporalis' anterior part, at the temple (Castroflorio et al. 2005) | along, 3 cm up |
 | 4, 8 | temporalis above the ear | along, 3 cm towards the back of the head |
+| 9–16 | with the physiotherapist, as the body's modules' second eight | |
 
 Reference over the left mastoid, bias over the right, the bone behind the ears, low, behind the
-earlobe, with Nataša's buttons above them (see
-[Nataša](../natasa/CONSTRUCTION.md#on-the-head)). All four pairs
-run along: across, they would land on the neighbours' places. The headband's back half carries
-no electrodes: it lies in the hair, over the occipitalis at the sides and only the galea between
-them, and it carries Nataša's board (see [Nataša](../natasa/CONSTRUCTION.md#on-the-head)); the
-electrodes above the ears sit at its front half's edge, their contact to be tried.
+earlobe, with Nataša's buttons above them (see [Nataša](../natasa/CONSTRUCTION.md#on-the-head)). All
+four pairs run along: across, they would land on the neighbours' places. The headband's back half
+carries no electrodes yet: it lies in the hair, over the occipitalis at the sides and only the galea
+between them, and it carries Nataša's board (see [Nataša](../natasa/CONSTRUCTION.md#on-the-head));
+the electrodes above the ears sit at its front half's edge, their contact to be tried. The head's
+second chip's eight channels are laid out with the physiotherapist, and may reach the back half, the
+occipitalis at its sides.
 
 ### Neck and upper back, 1
 
@@ -117,10 +127,9 @@ turn, one sternocleidomastoid with the other side's splenius (Gray's), is compar
 | 8 | serratus anterior, on the side at the sixth rib | across, 4 cm back to the latissimus; on the left 3 cm, near the heart |
 
 The acromion carries an IMU. On the scapula's spine, from its root outwards, ~3–4 cm apart: N5,
-the bias, the reference, an IMU. **The left serratus lies where the ECG's chest lead V6 is put,**
-on the mid-axillary line at the fifth intercostal space: against the reference the left
-shoulder's channel 8 will carry much ECG. The deltoid's three pairs lie tight round the acromion;
-to be laid on a body.
+the bias, an IMU. **The left serratus lies where the ECG's chest lead V6 is put,** on the
+mid-axillary line at the fifth intercostal space: a long pair there would carry much ECG, so its
+N stays short. The deltoid's three pairs lie tight round the acromion; to be laid on a body.
 
 ### Chest and abdomen, 1
 
@@ -131,11 +140,9 @@ to be laid on a body.
 | 3, 7 | external oblique, below the ribs at the side, along its fibres (Ng et al., Electromyogr Clin Neurophysiol 38, 1998) | along, 4 cm down and in |
 | 4, 8 | internal oblique, below the anterior superior iliac spine, its fibres nearly horizontal (Ng 1998) | along, 5 cm in towards the rectus' outer edge, below the spines' level |
 
-On the sternum, ~5–6 cm apart: the bias on the manubrium, the IMU on the body's middle, the
-reference low on the body, above the xiphoid. **Against the reference the chest will carry much
-ECG:** pairs to the xiphoid had the ECG ~30 dB above the breathing muscles' EMG (Oltmann 2025);
-this module is meant for the differential way. On a woman the pectoralis' places sit above the
-breast, the serratus beside it.
+On the sternum, ~5–6 cm apart: the bias on the manubrium, the IMU on the body's middle. **No
+pair reaches the xiphoid:** pairs to it had the ECG ~30 dB above the breathing muscles' EMG
+(Oltmann 2025). On a woman the pectoralis' places sit above the breast, the serratus beside it.
 
 ### Lower back, 1
 
@@ -146,8 +153,8 @@ breast, the serratus beside it.
 | 3, 7 | iliocostalis at L2 (SENIAM) | along, 4 cm up its line |
 | 4, 8 | multifidus at L5, 2–3 cm from the midline (SENIAM) | across the spine diagonally to the other side at L4, ~5 cm |
 
-Reference on L4's spinous process, L3's carrying an IMU; the multifidus' N lie 2–3 cm beside it,
-tight. Bias on the sacrum's middle crest at S3, the IMU at S1 above it. The lower trapezius and
+L3's spinous process carries an IMU; the multifidus' N lie 2–3 cm beside L4, tight. Bias on the
+sacrum's middle crest at S3, the IMU at S1 above it. The lower trapezius and
 the upper latissimus are the shoulders'.
 
 ### Hip, 2 (each side; nothing where one sits)
@@ -163,8 +170,8 @@ the upper latissimus are the shoulders'.
 | 7 | gluteus maximus, upper part, inner, beside the sacrum | along, 4 cm down and out |
 | 8 | gluteus maximus, at most down to SENIAM's line from the sacrum to the trochanter | across, 5 cm up to the medius' back fibres |
 
-Reference on the iliac crest behind the IMU on its tubercle, clear of P4; bias on the greater
-trochanter, which is the hip's alone. The gluteus maximus' lower part is sat on, and so pressed
+The IMU on the iliac crest's tubercle, clear of P4; bias on the greater trochanter, which is the
+hip's alone. The gluteus maximus' lower part is sat on, and so pressed
 like the palm.
 
 ### Upper arm, 2
@@ -176,23 +183,33 @@ too, an inference. Under the ring: the biceps' two heads, the brachialis beside 
 side, the triceps' lateral and long heads. The biceps is placed with the elbow bent, as it
 slides under the electrodes (Konrad, *The ABC of EMG*, Noraxon 2005, fig. 24). N1, 3, 5, 7 along,
 4 cm below; N2, 4, 6, 8 half a place round and 4 cm above. In the elastic gap on the outer side,
-over the humerus' lateral supracondylar ridge, from the elbow up: an IMU, the reference, the
-bias, ~3 cm apart (an estimate, to check).
+over the humerus' lateral supracondylar ridge, from the elbow up: an IMU and the bias, ~3 cm
+apart (an estimate, to check).
 
-### Forearm and hand, 2
+### Forearm, 2
 
 | | P | N |
 |---|---|---|
 | 1–5 | an even ring of five round the forearm's upper part, at 40 % from the medial epicondyle to the ulna's styloid, ~10 cm below the elbow, over the wrist's and fingers' flexors, the extensors and the brachioradialis (Farrell & Weir: eight electrodes evenly round at 40 %, the ulna's edge in a gap) | N1, 3, 5 along, 4 cm below; N2, 4 half a place round and 4 cm above |
-| 6 | first dorsal interosseous, between the thumb and the index | along, 2 cm |
-| 7 | abductor pollicis brevis, at the thumb's edge (SENIAM) | along, 2 cm |
-| 8 | abductor digiti minimi, at the little finger's edge | along, 2 cm |
+| 6–8 | with the physiotherapist, as the module's second eight | |
 
-Four to six channels sufficed for the forearm (Farrell & Weir 2008; Young et al. 2012), which
-is why five go there and three to the hand. Reference in the gap over the ulna's edge at the
-ring's level, the IMU 3–4 cm below the olecranon above it; bias over the ulna's styloid at the
-wrist. The hand has no module of its own; on its back only the first dorsal interosseous is taken,
-the other three being thin under the extensors' tendons, and the palm stays bare.
+Four to six channels sufficed for the forearm (Farrell & Weir 2008; Young et al. 2012), which is
+why five go there and the rest waits for the physiotherapist. The IMU in the gap over the ulna's
+edge, 3–4 cm below the olecranon; bias over the ulna's styloid at the wrist. The hand has a chip
+of its own, on the glove's board (see [the glove's](#the-gloves)).
+
+### The hand, the glove's ADS1298
+
+| | P | N |
+|---|---|---|
+| 1 | first dorsal interosseous, between the thumb and the index | along, 2 cm |
+| 2 | abductor pollicis brevis, at the thumb's edge (SENIAM) | along, 2 cm |
+| 3 | abductor digiti minimi, at the little finger's edge | along, 2 cm |
+| 4–8 | with the physiotherapist: the thenar's and the hypothenar's muscles, the back of the hand under the extensors' tendons | |
+
+On the back only the first dorsal interosseous is sure, the other muscles there being thin under
+the extensors' tendons, and the palm stays bare, since every grip presses it (see
+[WHY](WHY.md#the-places-weighed)); the bias on the glove's board's own electrode, over the carpus.
 
 ### Thigh, 2
 
@@ -201,39 +218,50 @@ the patella, ~6 cm apart: the rectus femoris (SENIAM 50 %), the vastus lateralis
 behind, the biceps femoris and the semitendinosus (SENIAM 50 %), two over the adductors, and the
 vastus medialis' upper edge (its spot lies lower, SENIAM 80 %; estimate). N1, 3, 5, 7 along,
 5 cm below; N2, 4, 6, 8 half a place round and 4 cm above. **The thigh has no bone near the skin
-at its middle:** the reference over the lateral femoral epicondyle and the bias over the medial
-one, both far from the ring, the IMUs 4–5 cm above them; the trochanter is left to the hip's
-bias. To be tried, the weakest point.
+at its middle:** the bias over the medial femoral epicondyle, far from the ring, the IMUs 4–5 cm
+above both epicondyles; the trochanter is left to the hip's bias. To be tried, the weakest
+point.
 
-### Calf and foot, 2
+### Calf, 2
 
 | | P | N |
 |---|---|---|
 | 1–5 | an even ring of five below the knee: tibialis anterior (SENIAM 1/3 from the fibula's head to the medial malleolus), peroneus longus (SENIAM 25 % from the fibula's head), gastrocnemius lateralis and medialis, the soleus' inner edge (estimate) | N1, 3, 5 along, 4 cm below; N2, 4 half a place round and 4 cm above |
-| 6 | extensor digitorum brevis, on the instep's outer side (Branthwaite et al., The Foot 2019) | along, 2 cm |
-| 7 | the dorsal interossei, in the first space between the metatarsals (Branthwaite 2019; the space an estimate) | along, 2 cm |
-| 8 | abductor digiti minimi, the outer edge (Branthwaite 2019) | along, 2 cm |
+| 6–8 | with the physiotherapist, as the module's second eight | |
 
-On the tibia's inner surface, in the elastic gap: the IMU 3–4 cm below the knee, the reference
-at the ring's level, the bias lower, the IMU 6–8 cm above the ankle. The bias is not over the
-fibula's head: the common peroneal nerve winds round the bone just below it (Gray's). On the
-foot the IMUs take the instep's inner side and the fourth metatarsal; the sole stays bare.
+On the tibia's inner surface, in the elastic gap: the IMU 3–4 cm below the knee, the bias lower,
+the IMU 6–8 cm above the ankle. The bias is not over the fibula's head: the common peroneal nerve
+winds round the bone just below it (Gray's). The foot has a chip of its own, on the sock's board
+(see [the socks](#the-socks)).
+
+### The foot, the sock's ADS1298
+
+| | P | N |
+|---|---|---|
+| 1 | extensor digitorum brevis, on the instep's outer side (Branthwaite et al., The Foot 2019) | along, 2 cm |
+| 2 | the dorsal interossei, in the first space between the metatarsals (Branthwaite 2019; the space an estimate) | along, 2 cm |
+| 3 | abductor digiti minimi, the outer edge (Branthwaite 2019) | along, 2 cm |
+| 4–8 | with the physiotherapist; the sole stays bare, which is stood on | |
+
+The bias on the inner side of the heel, over the calcaneus, an estimate.
 
 ## What it comes to
 
 | part | modules | P + N | bias + reference | IMUs |
 |---|---|---|---|---|
-| head | 1 | 16 | 2 | 2 |
+| head | 1 | 32, 16 laid out | 2 | 4 |
 | neck and upper back | 1 | 16 | 2 | 2 |
-| shoulders | 2 | 32 | 4 | 6 |
-| chest and abdomen | 1 | 16 | 2 | 1 |
-| lower back | 1 | 16 | 2 | 3 |
-| hips | 2 | 32 | 4 | 2 |
-| upper arms | 2 | 32 | 4 | 8 |
-| forearms and hands | 2 | 32 | 4 | 4 + 4 |
-| thighs | 2 | 32 | 4 | 8 |
-| calves and feet | 2 | 32 | 4 | 4 + 4 |
-| **the suit** | **16** | **256** | **32, 288 electrodes in all** | **48** |
+| shoulders | 2 | 64, 32 laid out | 2 | 6 |
+| chest and abdomen | 1 | 32, 16 laid out | 1 | 1 |
+| lower back | 1 | 32, 16 laid out | 1 | 3 |
+| hips | 2 | 64, 32 laid out | 2 | 2 |
+| upper arms | 2 | 64, 32 laid out | 2 | 8 |
+| forearms | 2 | 64, 20 laid out | 2 | 4 |
+| hands, the gloves | 2 | 32, 12 laid out | 2 | 40 |
+| thighs | 2 | 64, 32 laid out | 2 | 8 |
+| calves | 2 | 64, 20 laid out | 2 | 4 |
+| feet, the socks | 2 | 32, 12 laid out | 2 | 16 |
+| **the suit** | **16 modules, 2 gloves, 2 socks** | **560, 256 laid out** | **22, 582 electrodes in all** | **98** |
 
 **The heart and the breath.** The heart's ECG shows in the EMG, strongest on the torso and
 weaker on the limbs. Cleaning the EMG means estimating the ECG and subtracting it, and the ECG
@@ -269,8 +297,9 @@ output; see [Porjadok](../porjadok/SOFTWARE.md#output).
 
 **The rules:**
 
-- **Four IMUs a module at most:** two I3C buses of two, since the ICM-42688-P has one address pin
-  (DS-000347, 9.3); 64 places on 16 modules. The gloves come on top, 20 each.
+- **Four IMUs a module at most:** two I3C buses of two, since the ICM-45686 has one address pin
+  (DS-000489, 9.3); 64 places on 16 modules, 42 fitted. The gloves come on top, 20 each, and the
+  socks, 8.
 - **At least the segments of a commercial suit:** Xsens MVN puts 17 sensors on the pelvis (the
   sacrum), the sternum, the head, both shoulders (the scapula), the upper arms, the forearms,
   the hands, the thighs, the shanks and the feet (the walking study in PMC3651313); this suit has
@@ -288,61 +317,86 @@ output; see [Porjadok](../porjadok/SOFTWARE.md#output).
   a second.
 - **Over bone and flat places, where the skin slides least;** where an IMU and an electrode need
   the same bone, both stay on it a few centimetres apart.
-- **The hand and the foot from their module, with no extension:** the forearm's and the calf's
-  modules carry two IMUs of their own and two beyond the joint, on their bus's own strip, which
-  crosses the wrist and the ankle beside the electrodes' (see
-  [Rubaška](../rubaska/HARDWARE.md#sensing-module)); with the glove, the hand's IMUs are the
-  glove's.
+- **The hand and the foot are the glove's and the sock's:** one board in the limb's fourth slot
+  with one ADS1298 and the IMUs, the glove's 20 places, a sock's eight to start (see
+  [Rubaška](../rubaska/HARDWARE.md#the-glove)); the forearm's and the calf's modules keep their
+  two.
 
 | module | IMUs | places |
 |---|---|---|
-| head (headband) | 2 | the forehead, over the frontal bone, above the left frontalis' pairs beside Míša's housing, the middle being his, with his own IMU; above the ear on the other side, so that a band that slips is seen |
+| head (headband) | 4 | a square on the skull, one rigid bone: the forehead's two over the frontal bone, left and right of Míša's housing above the frontalis' pairs, the middle being his, with his own IMU; the back half's two above the ears' level beside Nataša's board, left and right. Four on one bone are redundancy: their mean halves the noise, and a band that slips shows as the four disagreeing |
 | neck and upper back | 2 | C2's spinous process, the first felt below the skull, above the electrodes at C4; T2, between the shoulder blades' tops, between the reference on C7 and the bias on T4 |
-| shoulder, each | 3 | the acromion's flat top: the scapula followed from it, with an error under 10°, between 30° and 120° of the arm's elevation (Karduna et al., J Biomech Eng 2001; the figures from a later review, PMC4019455); the scapula's spine, its outer part, beside the reference; the clavicle's middle, near the skin |
-| chest and abdomen | 1 | the sternum's body, its middle, between the bias on the manubrium and the reference above the xiphoid |
-| lower back | 3 | the thoracolumbar junction, T12–L1; L3's spinous process, for the lumbar curve (the reference on L4); the sacrum's top, S1, the pelvis' sensor (the bias at S3) |
-| hip, each | 1 | the iliac crest's tubercle, in front on its outer lip, a second look at the pelvis' tilt (the reference on the crest behind it) |
-| upper arm, each | 4 | the outer side at the deltoid's insertion, in the ring's elastic gap; the lowest on the lateral supracondylar ridge, just above the lateral epicondyle (the reference and the bias above it); above the medial epicondyle, in front of the ulnar nerve's groove; the back above the olecranon |
-| forearm and hand, each | 2 + 2 | the ulna's border 3–4 cm below the olecranon; the radius' back ~2 cm above the wrist, on the radius alone, which turns with the hand while the ulna does not; beyond the wrist the back of the hand over the third metacarpal and the thumb's metacarpal, only when no glove is worn |
-| thigh, each | 4 | 5 cm below the greater trochanter's tip on the outer side (the trochanter left to the hip's bias); 4–5 cm above the lateral and the medial epicondyle (the reference and the bias on them); the front above the patella (estimate) |
-| calf and foot, each | 2 + 2 | the tibia's inner surface 3–4 cm below the knee and 6–8 cm above the ankle (the reference and the bias between them); beyond the ankle the instep's inner side over the midfoot (the extensor digitorum brevis on its outer side) and the fourth metatarsal (the interossei's pair in the first space) |
+| shoulder, each | 3 | the acromion's flat top: the scapula followed from it, with an error under 10°, between 30° and 120° of the arm's elevation (Karduna et al., J Biomech Eng 2001; the figures from a later review, PMC4019455); the scapula's spine, its outer part, beside the bias; the clavicle's middle, near the skin |
+| chest and abdomen | 1 | the sternum's body, its middle, below the bias on the manubrium |
+| lower back | 3 | the thoracolumbar junction, T12–L1; L3's spinous process, for the lumbar curve; the sacrum's top, S1, the pelvis' sensor (the bias at S3) |
+| hip, each | 1 | the iliac crest's tubercle, in front on its outer lip, a second look at the pelvis' tilt |
+| upper arm, each | 4 | the outer side at the deltoid's insertion, in the ring's elastic gap; the lowest on the lateral supracondylar ridge, just above the lateral epicondyle (the bias above it); above the medial epicondyle, in front of the ulnar nerve's groove; the back above the olecranon |
+| forearm, each | 2 | the ulna's border 3–4 cm below the olecranon; the radius' back ~2 cm above the wrist, on the radius alone, which turns with the hand while the ulna does not; the hand's are the glove's (below) |
+| thigh, each | 4 | 5 cm below the greater trochanter's tip on the outer side (the trochanter left to the hip's bias); 4–5 cm above the lateral and the medial epicondyle (the bias on the medial one); the front above the patella (estimate) |
+| calf, each | 2 | the tibia's inner surface 3–4 cm below the knee and 6–8 cm above the ankle (the bias between them); the foot's are the sock's (below) |
 
-| | with no gloves | with the gloves |
-|---|---|---|
-| the body's IMUs | 48 of 64 places | 44 (the hands' four go to the gloves) |
-| the gloves | — | 2 × 20 |
-| all | 48 | 84 |
+| | IMUs |
+|---|---|
+| the body's modules | 42 of 64 places |
+| the gloves | 2 × 20 |
+| the socks | 2 × 8 |
+| all, with two gloves and two socks | 98 |
 
 ### The glove's
 
-Five Bratiški, one a finger, four IMUs each, 20 in all (see
-[Rubaška](../rubaska/HARDWARE.md#the-glove)): on each finger its three phalanges and its
-metacarpal, the index's and the middle finger's on the back of the hand, which hardly move against
-the wrist, the ring finger's and the little finger's mid-bone, where the palm's arch bends; on the
-thumb its two phalanges, its metacarpal and a second on it, because its skin slides. Over bone,
-not between the bones, where the interosseous muscles bulge under the skin; the wiring along the
-sides of the fingers. The palm's arch bending only past the middle finger is anatomy, not measured
-here.
+The glove's board on the back of the hand carries the hand's ADS1298 and 20 IMU places (see
+[Rubaška](../rubaska/HARDWARE.md#the-glove)). **The electrodes,** eight channels, three laid out
+above and five with the physiotherapist. **The IMUs,** 20 places: on each finger its three
+phalanges, the proximal and the middle on the Bratiška's first bus, the distal on the second with
+a place to spare; on Staršaja's own buses the thumb's metacarpal and its two phalanges, and the
+board's own, on the back of the hand over the carpus; the four spares for the palm's arch, the
+fourth and fifth metacarpals' heads, where the arch bends, and a second on the thumb's metacarpal,
+because its skin slides. Over bone, not between the bones, where the interosseous muscles bulge
+under the skin; the strips along the sides of the fingers. Which are fitted the recordings decide:
+20; 12, the thumb's three, the board's own and two a finger, the proximal and the distal; or 8,
+the thumb's three, the board's own and one a finger, the proximal, a mitt open at the fingers for
+a hand without a glove. The palm's arch bending only past the middle finger is anatomy, not
+measured here.
+
+### The socks
+
+Nosok's board sits on the calf above the ankle (see [Rubaška](../rubaska/HARDWARE.md#the-sock));
+on the foot its ADS1298's sixteen electrodes, three channels laid out above and five with the
+physiotherapist, and up to eight IMUs, the segments of a multi-segment foot model, the Oxford
+Foot Model's hindfoot, forefoot and hallux (Stebbins et al., Gait & Posture 23, 2006): the heel
+over the calcaneus, the midfoot's inner side, the fourth metatarsal and the hallux's proximal
+phalanx, four to start, on Staršaja's own places, the other four, on one Bratiška, for trials,
+the forefoot's outer side and the lesser toes among them; over bone, not on the sole, which is
+stood on, and clear of the extensor digitorum brevis' and the interossei's pairs. To be laid out
+with the hand; the first layout a proposal.
 
 ## Open questions
 
 - an hour with a physiotherapist over every place above, before a strip is drawn;
-- the reference on the thigh, far from its ring;
-- the chest and the left serratus against the reference, with their ECG;
+- **the body's modules' second eight channels,** 16 on a limb's module, on the trunk's and on the
+  head's, the crossed pairs through the limb and the trunk the owner wants, laid out with the
+  physiotherapist before any strip is drawn; the thumb's channels with them;
+- **the hand's and the foot's eight channels,** three of each laid out here, the rest with the
+  physiotherapist; **the sock's places on the foot,** the heel, the midfoot, the forefoot and the
+  hallux on Staršaja's own places and a Bratiška, with the hand's layout;
+- the left serratus' pair and its ECG;
 - the splenius' and the soleus' places, the latissimus' upper place, marked as estimates;
 - the tight places: the deltoid's pairs round the acromion; the scapula's spine with N5, the
   bias, the reference and an IMU; L4's reference beside the multifidus' N; the thumb's metacarpal
   IMU beside the first dorsal interosseous' and the abductor pollicis brevis' electrodes; the
-  glove laid over the hand's electrodes; the headband's: the forehead's IMU beside Míša's housing
+  glove's board over the hand's strip; the headband's: the forehead's IMUs beside Míša's housing
   and the frontalis' pairs, the mastoids under Nataša's buttons;
 - whether an N should sit further than 8 cm anywhere: no source gives a limit;
-- the model takes 64 IMU steps (see [Baťa](../bata/SIGNALS.md)): 48 on the body fit, 44 + 40 with
-  the gloves do not;
-- 16 IMU places left free, for trials; the heel: with two on the foot it rides with the instep,
-  and a third would need a place on the calf's module, which is full;
-- the crossing on the spine and the rings' diagonals against straight pairs, and the
-  differential way against the reference, on one arm: how much the model loses after the suit
-  comes off and goes on again.
+- the hand, asked before any glove is made, since each version of it is a flexible circuit made
+  and thrown away: its electrodes' strip under the board and the finger strips on one inner
+  layer; and how many of the glove's eight channels the thumb wants. Today it has the abductor
+  pollicis brevis at its edge and the first dorsal interosseous on the back; the opponens lies
+  beneath the abductor along the first metacarpal, the short flexor and the adductor in the palm,
+  and the long flexor in the forearm (Gray 1918, pp. 461–462);
+- 24 IMU places left free on the modules, for trials; the heel is the sock's;
+- the crossing on the spine and the rings' diagonals against straight pairs, on one arm, and the
+  differential way against the reference on the head and the neck: how much the model loses after
+  the suit comes off and goes on again.
 
 ## Sources
 
@@ -361,4 +415,6 @@ analysis: a systematic review*, Gait & Posture 2010; Stagni et al., Clin Biomech
 31 mm, shank up to 21 mm); Cutti et al., *Soft tissue artefact assessment in humeral axial
 rotation*, Gait & Posture 21, 2005; Warner & Heller, J Biomech 2025; Karduna et al., *Dynamic
 measurements of three-dimensional scapular kinematics: a validation study*, J Biomech Eng 2001,
-with the review PMC4019455; ICM-42688-P DS-000347.
+with the review PMC4019455; Stebbins et al., *Repeatability of a model for measuring multi-segment
+foot kinematics in children*, Gait & Posture 23, 2006, the Oxford Foot Model; ICM-45686 DS-000489
+Rev 1.1.

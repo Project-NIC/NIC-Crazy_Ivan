@@ -15,12 +15,88 @@ thing waits in reserve, it says so.
 
 ## The sensing module
 
-- **1,920 SPS as the suit's rate** (proposed 23 Oct 2026, after the professionals' ~2 kHz, Meta's
-  2,000 Hz and OT Bioelettronica's 2,048 Hz, and SENIAM's band of 10–500 Hz): half the data, and
-  0.46 against 0.65 µVrms. The rate is set by what the suit must catch: fast movements in sport,
-  and the twitches of a nervous system that does not work as it should, which cannot even be seen
-  from outside; the cost, the data, the design bears. 1,920 SPS stays a setting to try, with the
-  IMUs' step at 60 Hz.
+- **3,840 SPS as the suit's rate** (to 29 Oct 2026), a band to ~1 kHz for fast movements in
+  sport and the twitches of a nervous system that does not work as it should. With two chips a
+  module it doubled the data, the lines at 46 % and processor 1's SPI at 84 %, for a band above
+  the ~500 Hz surface EMG uses: SENIAM's 10–500 Hz, Delsys' Trigno at 1,926 SPS, Meta's band at
+  2,000, OT Bioelettronica's at 2,048. 1,920 is the rate, its sinc filter's −3 dB at ~503 Hz and
+  0.8 against 1.1 µVrms on the ADS1298; 3,840 stays a setting to try, a twitch of a few
+  milliseconds seen at either, and the IMUs' step is 120 Hz at both, sixteen or thirty-two samples.
+- **One ADS1299 a module** (to 29 Oct 2026): 8 channels on 16 electrodes, 128 in a suit of 16.
+  Two ADS1298 in cascade give 16 channels a module at 0.8 against 0.46 µVrms, under the contacts'
+  ~1 µVrms and the skin's 1–20, and cheaper, $40 against $62 a module at JLCPCB (29 Oct 2026);
+  the head and the neck keep the ADS1299 for its SRB1, the way against the reference, and its
+  noise. One board takes either, the chips being pin-compatible (see
+  [hardware](HARDWARE.md#sensing-module)).
+- **One ADS1299 on the head** (to 29 Oct 2026), 16 electrodes. The owner: 32 fit on the head; the
+  module takes a second ADS1299 in the second chip's place, the reference shared by both SRB1s,
+  and line 5 keeps three slots free should the head ever split into two units, one a side.
+- **Against the reference on the body** (to 29 Oct 2026), a reference electrode and SRB1 on
+  every module. The ADS1298 has no SRB1, so the body measures differentially, the owner's layout
+  from the start, and the reference stays on the head and the neck, where the ADS1299 is; which
+  way serves the model better is tried there.
+- **A daisy chain of the two chips** (29 Oct 2026), DOUT into DAISY_IN, one read of 432 bits.
+  The devices "cannot be programmed when sharing a common DIN" (SBAS499C, 10.1.4.2), and the two
+  differ in their settings, the first's bias amplifier on and the second's off; the cascade
+  shares DIN, DOUT and SCLK with a chip select each (10.1.4.1).
+- **A hatched ground layer on the strip** (to 29 Oct 2026), hatched so that the strip stays
+  supple. A mesh stops fields from sources far beyond its pitch, and the trace lies at a tenth of
+  it (our inference); 12 µm of copper on the 25 µm core stays supple solid, so the layer is
+  solid, and on the strip's outer face, the leads toward the skin (see
+  [hardware](HARDWARE.md#the-strips-ground-layer)).
+- **A test board for the analog path** (29 Oct 2026), the strip's three levels tried on a board
+  of its own first. A board made once, paid with the import's surcharge and its spare chips, and
+  good for nothing after, is what the rules forbid (the owner); the module is drawn once so that
+  all three levels are tried on it, and the first arm is the test.
+- **TVS diodes on the inputs** (29 Oct 2026). The suit floats, so a wearer's discharge into a
+  handle leaves ~0.5 mA for 50 ns in an input, which the 4.99 kΩ and the chips' own diodes take
+  (computed on a simple model, see [hardware](HARDWARE.md#sensing-module)); a TVS would add
+  capacitance and leakage to every input for a case that does not come.
+- **Followers at every stud from the start,** BioSemi's active electrode (29 Oct 2026). They
+  cost 18 op-amps a module, a potted strip and the chips' impedance check, for a current the
+  bonded strip may not generate; their places wait under 0 Ω parts, fitted only if the dummy
+  body shows the strip generating (see [hardware](HARDWARE.md#the-strips-ground-layer)).
+- **The foot's and the hand's IMUs on their module's bus** (to 29 Oct 2026), two beyond the
+  joint on the strip. The owner: losing the hand's and the foot's detail makes no sense; the
+  sock, Nosok, a unit of the glove's kind in the limb's fourth slot, carries up to eight, the
+  glove 20, and the modules keep four IMUs each (see [Porjadok](../porjadok/WHY.md)).
+- **The glove as a unit of IMUs alone,** Staršaja on the sleeve with five Bratiški on the fingers
+  (to 29 Oct 2026): 22 IMUs and no EMG, the hand's three channels going across the wrist to the
+  forearm's module. The forearm's module got its sixteen channels for the forearm, and the hand
+  its own eight on one board on the back of the hand with its IMUs, an ADS1298, Staršaja and
+  four Bratiški, the frame 0x25 carrying both (see [hardware](HARDWARE.md#the-glove)).
+- **Bratiški on the fingers, one wire each across the wrist** (to 29 Oct 2026): a processor on
+  every finger, eight wires over the wrist, each an open-drain half-duplex wire at 4 MBd with a
+  470 Ω pull-up, the step in halves of 4.17 ms and the finger in every step. On the board the
+  four sit beside Staršaja, full duplex on traces, and the fingers carry passive strips of seven
+  wires; nothing crosses the wrist but the line's cable.
+- **Five Bratiški and 22 IMUs** (to 29 Oct 2026), one a finger with its metacarpal, and two of
+  Staršaja's own. The thumb's three and the board's own sit on Staršaja's two buses, so four
+  Bratiški read the four fingers, 20 places in all, the fourth place on each finger spare for the
+  palm's arch and a second on the thumb's metacarpal.
+- **SWD on the Bratiški** (to 29 Oct 2026): pads for four programmers on a board on the hand. An
+  empty STM32H503 boots ST's bootloader, which listens on USART2 on the very pins to Staršaja; she
+  programs them through it and recovers one by the shared BOOT0 line, and the pads stay for her
+  alone.
+- **A bank swap and a zero stage on a Bratiška** (29 Oct 2026): his image in frames through
+  Staršaja into his second bank, with a trial and a swap back. With the bootloader there is
+  nothing in him to update but the one image Staršaja writes; his 128 KB are one image.
+- **Staršaja counting her cycles from *start* on a timer** (to 29 Oct 2026): with no ADS129x she
+  had no DRDY. With one she keeps the cycle from DRDY as a module does.
+- **The connector at the wrist** (to 29 Oct 2026), eight wires plugged into Staršaja on the
+  sleeve. The line's cable runs on to the board on the hand, sewn in meanders over the wrist, and
+  the board unplugs at its IDC as any unit.
+- **One spider for the whole hand** against five strips (to 29 Oct 2026): with the board on the
+  hand each finger's strip goes into a connector of its own, and a torn one is replaced alone.
+- **LQFP64 for the glove's Staršaja** (to 29 Oct 2026), for six U(S)ARTs. The module's STM32H523CCU6
+  in UFQFPN48 does it with the echo received on the LPUART and the master on USART1's RX, which
+  frees UART4, and the ADS1298's CLK and START made by TIM2, which frees USART3's PB1: four Bratiški
+  on USART2, USART3, UART4 and UART5, the echo kept, 33 of its 35 I/Os, so one processor serves the
+  module and the glove (the owner's wish; see [hardware](HARDWARE.md#the-glove)).
+- **The glove's line on one USART, no echo compared** (29 Oct 2026, for an hour), the fourth
+  Bratiška on the LPUART instead. The owner: the line needs its two receivers. The echo went to
+  the LPUART, which receives 19.66 MBd with room to spare, and nothing of a module's line was
+  given up.
 - **The module's firmware in two versions,** one adding the foot to its frame, the other
   sending the glove's as a second unit. One image for each kind of unit, the firmware split into
   parts only in its source.
@@ -31,7 +107,8 @@ thing waits in reserve, it says so.
   SDA, power and CLKIN, at a rate far below its 12.5 MHz. No SPI runs over a cable anywhere.
 - **The IMU clock over I3C** (synchronous timing control, SETXTIME) instead of the CLKIN wire.
   ST's documents disagree on whether the STM32H5's controller has it, and the ICM-42688-P
-  documents its sample rates only from CLKIN (DS-000347, 12.5). The wire stays.
+  documents its sample rates only from CLKIN (DS-000347, 12.5); the ICM-45686 has it, but on the
+  interpolator CLKIN uses (DS-000489, SIFS_I3C_STC_CFG). The wire stays.
 - **SPI4 for the ADS1299.** It takes frames of 4 to 16 bits only (DS14540, table 10); the
   ADS1299's 24-bit words want SPI1 to SPI3, which take up to 32.
 - **PC13 to PC15 for the LED.** They hang on the backup domain's power switch, 2 MHz and 30 pF at
@@ -46,8 +123,16 @@ thing waits in reserve, it says so.
 - **The bias through channel 8's multiplexer** (MUX = BIAS_DRN, IN8N the bias electrode, IN8P
   its spare). It kept the electrode connector at 16 positions, but cost the driving module two
   of its inputs and put the drive through the ADS1299. Reopened on 10 Oct 2026: the bias
-  electrode has a lead of its own through 4.99 kΩ and a TMUX1101, every input measures, and the
-  connector has 20 positions; what changed is under [hardware](HARDWARE.md#right-leg-drive).
+  electrode has a lead of its own through 4.99 kΩ, every input measures, and the connector grew
+  to 20 positions, 36 since 29 Oct 2026; what changed is under
+  [hardware](HARDWARE.md#right-leg-drive).
+- **The TMUX1101 on the bias electrode's lead** (10 to 29 Oct 2026). It parted a powered-down
+  bias amplifier's output from the electrode, since nobody knew what that output does with an
+  electrode on it. The datasheet's own bias lead-off check drives 6–24 nA through the pin with
+  the amplifier powered down and reads the node with a comparator (SBAS499C, 9.3.2.4.4), which
+  can only hold if the powered-down output leaks far less than that; so the switch went and the
+  TLV9001S of the strip's ground layer took its place, the same count of parts. Confirmed on the
+  first module by that very check.
 - **Measuring the bias drive's voltage** with BIAS_MEAS (MUX = 010). A channel so set measures
   BIASIN against the mid-supply with its own inputs cut off, and must not be in the bias sum
   (SBAS499C, 9.3.2.4.2); TI gives it for debugging. The differential channels do not
@@ -57,11 +142,15 @@ thing waits in reserve, it says so.
 - **The BIASINV wire between the ADS1299s** that the datasheet's figure 39 draws. A
   high-impedance node on a metre of cable would pick up the mains; one module's channels sense
   the body's common voltage well enough, since the body is one conductor.
+- **Several modules driving the bias at once,** each through its own electrode, a trial against
+  one (to 28 Oct 2026). The datasheet asks for all but one bias amplifier to be powered down
+  (SBAS499C, 9.3.2.4.5), and TI's answer on its E2E forum, *ADS1299: BIASOUT configuration*,
+  says the same; two loops driving one body would pull its voltage against each other.
 - **The glove's board on the back of the hand,** Staršaja and four Vnučata, five STM32H523CCU6 on
   the suit clock, joined by Interconnect, one half-duplex wire on the board (10–24 Oct 2026).
-  Vešč puts Staršaja on the sleeve before the wrist, an STM32H523 in LQFP64 with six U(S)ARTs,
-  and a small Bratiška on each finger's wire; Interconnect, its pull-up and the four processors'
-  oscillator inputs go.
+  Vešč came back to one board on the hand on 29 Oct 2026, with the hand's ADS1298 on it, small
+  STM32H503 Bratiški on their HSI and a full-duplex U(S)ART to each; what died here is
+  Interconnect, its pull-up, the five large processors and their oscillator inputs.
 - **The STM32H523CCU6 for the small processors, for its suit clock** (to 24 Oct 2026). The
   STM32H503KB in UFQFPN32, 5 × 5 mm, has no PH0-OSC_IN, and needs none: Staršaja makes the IMUs'
   CLKIN from the suit clock and sends it on one wire, so the IMUs sample in step with the suit and
@@ -75,13 +164,15 @@ thing waits in reserve, it says so.
   fifth slot that the module sent for it, until 24 Oct 2026. The glove is the arm's fourth unit
   with drivers of its own (see [Porjadok](../porjadok/WHY.md)).
 - **A simple glove,** Staršaja alone behind the forearm's module with three or four IMUs, in its
-  frame as an extension (to 24 Oct 2026). It was a second way of doing the hand, with a
-  firmware path of its own; the whole glove is now part of every suit with arms, and a hand that
-  takes no glove has the forearm's module's two IMUs beyond the wrist (see
-  [Bogatyr](../bogatyr/CONSTRUCTION.md#the-imus)).
+  frame as an extension (to 24 Oct 2026). It was a second way of doing the hand, with a firmware
+  path of its own; the whole glove is now part of every suit with arms, and a hand that takes no
+  full glove wears the glove's board with fewer finger strips, 12 or 8 IMUs by its table (29 Oct
+  2026; see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-imus)).
 - **BGA and WLCSP packages for the small processors.** The STM32H523's WLCSP39 would take the
   clock in 2.8 × 2.8 mm (DS14540), but at a 0.4 mm pitch it wants a dearer board and, on a hand
-  that bends, an underfill.
+  that bends, an underfill. The STM32H503's WLCSP25, 2.33 × 2.24 mm at 0.40 mm, stays the
+  Bratiška's fallback: USART2 on PA5 and PA15, the I3C pins, PA0, NRST and BOOT0 are all on it,
+  with VDDIO2 to feed and via-in-pad to route (DS14053 Rev 4, figure 4).
 
 ## The IMU
 
@@ -94,27 +185,46 @@ thing waits in reserve, it says so.
   CLKIN, filtered and decimated in the chip, nothing to compute. In noise it equals the sum of
   ten samples at 1,200 Hz, but a step of 8.3 ms taken as one rotation misses the coning term
   when a piece turns about two axes at once, a few degrees by the end of a fast swing; Movella's
-  MTw integrates at 1,000 Hz on the sensor for that reason. The block now sums at 1,200 Hz, and
-  the chip's 120 Hz stays a mode for the I2C fallback and for comparison.
+  MTw integrates at 1,000 Hz on the sensor for that reason. The block sums at the IMU's rate,
+  1,920 Hz on the ICM-45686, and the chip's 120 Hz stays a mode for the I2C fallback and for
+  comparison.
 - **Bosch BMI570.** Lower noise on paper, but we found no external clock input, and the suit
   runs every sensor from one clock.
-- **ICM-45686.** The same family's newer part; it would reach 120 Hz too, but its gyro is noisier
-  (3.8 against 2.8 mdps/√Hz) and its CLKIN takes 20–40 kHz. The noise decided for the
-  ICM-42688-P.
+- **ICM-45686** (to 28 Oct 2026). The same family's newer part; it would reach 120 Hz too, but
+  its gyro is noisier (3.8 against 2.8 mdps/√Hz) and its CLKIN takes 20–40 kHz, so the noise
+  decided for the ICM-42688-P. Taken on 28 Oct 2026, when the ICM-42688-P could not be had
+  (DigiKey: none, 5,000 expected in August 2027) and the gyro's offset drift was weighed above
+  its noise: the ICM-45686 drifts ±5 mdps/°C, as the ICM-42688-P does (see
+  [hardware](HARDWARE.md#the-imu)).
+- **The ICM-42688-P as the suit's IMU** (to 28 Oct 2026). The family's quietest gyro, but out of
+  stock everywhere, and its zero no steadier than the ICM-45686's. The IMU board takes it still,
+  should the ICM-45686's rate under CLKIN fail.
+- **IIM-42652** (28 Oct 2026, the same day). The ICM-42688's industrial twin (DS-000440), in
+  stock and fitting without a change, but its offset drifts ±20 mdps/°C, four times the
+  ICM-45686's at the same noise.
+- **The rest of the ICM-426xx family.** The ICM-42686-P is noisier, 5.3 mdps/√Hz, for a
+  ±4000 °/s the ICM-45686 has too; the ICM-42605 has no clock input; the ICM-42688-V is the
+  ICM-42688-P again and as hard to get (the family's table on DS-000347 Rev 1.6's first page;
+  DS-000439; DS-000292). An "ICM-42688-P" from TOKMAS at JLCPCB is another maker's chip under
+  the name, 9 mdps/√Hz and 170 µg/√Hz by its own sheet.
 
 ## The electrodes and the suit
 
-- **Ag/AgCl or titanium electrodes, for now.** Sintered Ag/AgCl comes to ~$2,000–3,700 for 288
-  of them, and titanium press studs are not sold off the shelf (the prices in
+- **Ag/AgCl or titanium electrodes, for now.** Sintered Ag/AgCl comes to ~$4,000–9,000 for 582
+  of them, and titanium discs cost $10 and more apiece at retail (the prices in
   [Construction](CONSTRUCTION.md#electrodes)). Stainless steel has more low-frequency noise and
-  drift, which EMG bears; the three are compared on a sample, and Ag/AgCl goes in only if the
-  steel drifts too far.
-- **A gain of 24.** It leaves ±187.5 mV, which an offset of 176 mV between metal electrodes, seen
-  on dry ones, nearly fills. A gain of 12 holds ±375 mV for 0.65 against 0.56 µVrms of noise
-  ([Software](SOFTWARE.md#the-ads1299s-settings)).
+  drift, which EMG bears; the four, with conductive silicone, are compared on a sample, and
+  Ag/AgCl goes in only if the steel drifts too far.
+- **Marine press studs in 316** (to 29 Oct 2026), the boat covers' snaps with their hand tool,
+  the polished cap the electrode. Their caps are ~15 mm and their studs ~10 mm, DOT's line 24,
+  and nothing smaller is made in 316; body jewellery's 316L discs come in 3 to 8 mm for the same
+  money, implant grade (see [construction](CONSTRUCTION.md#electrodes)).
+- **A gain of 24.** It leaves ±167 mV on the ADS1298 and ±187.5 mV on the ADS1299, which an
+  offset of 176 mV between metal electrodes, seen on dry ones, fills. A gain of 12 holds ±333 and
+  ±375 mV ([Software](SOFTWARE.md#the-ads129xs-settings)).
 - **316Ti steel.** Its titanium protects the steel at welding temperatures, not on the skin;
   316L, the steel of body jewellery, does.
-- **Dry electrodes.** A dry contact is ~1 MΩ, which the ADS1299's input would bear but the input
+- **Dry electrodes.** A dry contact is ~1 MΩ, which the chips' input would bear but the input
   filter would not: its corner falls to ~360 Hz, inside the band. A moist ring keeps the
   contact at tens of kilohms.
 - **A low-noise cable with a graphite layer** for the leads, as for piezo sensors. The band's
@@ -152,8 +262,8 @@ thing waits in reserve, it says so.
   fallback to the stretchable circuit.
 - **A switch on the reference electrode.** It was there in case the ADS1299's own switching
   behaved otherwise than its register table says; the SRB1 bit in MISC1 is that switch (figure
-  18), and an unused SRB1 may float (10.1.1). The bias keeps its switch: how a powered-down bias
-  amplifier's output behaves with an electrode on it, the datasheet does not say.
+  18), and an unused SRB1 may float (10.1.1). The bias lost its switch too, on 29 Oct 2026 (see
+  [The sensing module](#the-sensing-module)).
 - **Polyimide on the limbs.** A working biceps or calf swells more than a fixed ring takes; the
   limbs' rings are stretchable.
 - **Glued and suction electrodes.** They hold through a grip, but a glued one must be torn off

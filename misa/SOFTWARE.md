@@ -40,22 +40,31 @@ Each field is three bytes:
 |---|---|
 | 1 | the distance, logarithmic: 256 steps from 0.2 to 25 m, each ~1.9% |
 | 2 | the speed, ±25 m/s in 0.2 m/s steps, positive coming closer |
-| 3 | the confidence 0–15 (4 bits), the source: radar, ultrasound or both (2 bits), the kind: obstacle, floor or hole (2 bits) |
+| 3 | the confidence 0–15 (4 bits), the source's code (2 bits, below), the kind: obstacle, floor or hole (2 bits) |
 
 With a header of 4 B the whole sphere is 112 B:
 
 | B | the sphere |
 |---|---|
 | 0 | the frame's number |
-| 1 | the status: bit 0 the radar, 1 the ultrasound, 2 the IMU in order, 3 levelled |
+| 1 | the status: bits 0–1 the source's code, 2 the IMU in order, 3 levelled |
 | 2 | the head's turn since the last frame, signed, in steps of 2° |
 | 3 | the pitch, signed, in degrees |
 | 4–111 | the 36 fields of 3 B: the up row's 12 columns from column 0, then the middle, then the down |
 
-It is a chip of its own, **0x05, registers 0x00–0x6F,** read only, and he sends it himself after
-every radar frame in five answers of 34 B, 25 B of the sphere in each, unasked (see
+**The source's code,** the same in the header and in every field: 0 nothing, 1 the ultrasound, 2
+the radar, 3 both. In the header it says what the sphere was made from, in a field what saw the
+thing in it; a field with nothing in it is 0.
+
+It is a chip of its own, **0x05, registers 0x00–0x6F,** read only, and he sends it himself **10
+times a second** in five answers of 34 B, 25 B of the sphere in each, unasked (see
 [Porjadok](../porjadok/SOFTWARE.md#the-commands)), all five with the cycle's number at which it
-was done, by which the pieces are put together.
+was done, by which the pieces are put together:
+
+- **after every radar frame** while the radar runs;
+- **every 192 cycles of his count, 100 ms,** once two of the radar's frames are missed, 200 ms:
+  from the ultrasound alone, or, with neither, with the code 0 and every field empty, so that a
+  Míša who sees nothing is told from one who is gone.
 
 **His time** is his own: he takes the suit's clock off line 8 and counts its cycles from the
 heartbeat's numbers, so the sphere carries the suit's time with no one writing it to him.
@@ -85,8 +94,11 @@ heartbeat's numbers, so the sphere carries the suit's time with no one writing i
   matter.
 - **Up the line:** he sends his pieces in his own slot on line 8, slot 2, and Mamka's processor 2
   passes them to Baťa over her own SPI as they came (see
-  [Mamka](../mamka/SOFTWARE.md#processor-2s-two-spis)). His frame of data goes in cycle 15 of 32
-  and his diagnostics in cycle 31, as Nataša's.
+  [Mamka](../mamka/SOFTWARE.md#processor-2s-two-spis)). His diagnostics go in cycle 31 of 32, as
+  Nataša's.
+- **No frame of data:** his data are the sphere, his health the diagnostics, so he sends none
+  and has no place of data on Mamka's SPIs (see
+  [Porjadok](../porjadok/SOFTWARE.md#a-units-data)).
 - **Its readers:** Míša's program on Baťa beeps by direction and speaks, Borovičok draws it in
   the glasses, and the recordings keep it.
 - **Safety without Linux:** Nataša reads the sphere as it passes on the return pair and buzzes by
@@ -107,7 +119,7 @@ He adds:
 | USART2 and UART5, line 8 | the APB clock, OVER8 = 1, BRR = 0x0012: 19,660,800 Bd |
 | I3C1, the IMU | the APB clock: 196.608 MHz |
 | TIM1, the IMU | PSC = 0, ARR = 5,119, CH1 at CCR1 = 2,560: CLKIN at 38,400 Hz |
-| TIM2, line 8's cycle | PSC = 19: a tick of the suit clock; ARR = 2,559, a cycle of 260.4 µs, set by Mamka's heartbeat |
+| TIM2, line 8's cycle | PSC = 19: a tick of the suit clock; ARR = 5,119, a cycle of 520.8 µs, set by Mamka's heartbeat |
 
 ## DMA
 
@@ -146,5 +158,4 @@ vector table's (RM0481 Rev 5, table 153):
 - the wearer's own speed from the radar, the field margins and the 2-of-3 confidence, on the
   bench; the radar's view of the wearer's own arms and chest in the down row,
 - the floor, holes and steps from the tilt,
-- the chirps for a car faster than ~72 km/h,
-- what his frame of data carries, once in 32 cycles.
+- the chirps for a car faster than ~72 km/h.

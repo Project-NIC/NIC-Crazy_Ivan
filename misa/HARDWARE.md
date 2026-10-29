@@ -37,7 +37,7 @@ pins, and the radar beside the EMG.
 | THVD1452 | VSSOP-10, or SOIC-14 | 1 | line 8's return pair (see [Porjadok](../porjadok/HARDWARE.md#drivers-on-a-unit)) |
 | AM26LV32E | VQFN-16, 3.5 × 4 mm | 1 | line 8's pair from Mamka, the echo and the suit's clock |
 | Jorjin MT5C01-03 | module 15.5 × 7.0 mm, on a Hirose BM23PF0.8-14DS-0.35V | 1 | the radar, see below |
-| ICM-42688-P | LGA-14, 2.5 × 3 × 0.91 mm | 1 | the IMU: the head's tilt from gravity, short turns from the gyro |
+| ICM-45686 | LGA-14, 2.5 × 3 × 0.81 mm | 1 | the IMU: the head's tilt from gravity, short turns from the gyro |
 | ICU-20201 | LGA-14, 3.5 × 3.5 × 1.26 mm | 1 | the ultrasound ahead, in a 45° horn |
 | TPS62850x | SOT583, 2.1 × 1.6 mm | 3 | 4 V to 3.3 V, 1.8 V and 1.2 V for the radar module, after Jorjin's reference design (2.7–6 V in, 2 A) |
 | TPS7A2018 | X2SON, 1 × 1 mm | 1 | 3.3 → 1.8 V for the ultrasonic sensor's core |
@@ -78,7 +78,7 @@ He needs 25:
 
 - **The module's pins where the job is the same:** the clock in, SPI1, I3C1, CLKIN, SWD and the
   LED sit where the module has them, so the IMU and clock code carry over unchanged. SPI1 serves
-  the ultrasonic sensors instead of an ADS1299; the sensors have no interrupt lines, so a
+  the ultrasonic sensors instead of an ADS129x; the sensors have no interrupt lines, so a
   measurement is started by a write and its end read or waited for (see
   [the ultrasonic sensor](#the-ultrasonic-sensor)).
 - **The radar** talks over USART1 at 1,250,000 Bd, the one rate TI's demo takes (below), on the
@@ -87,7 +87,7 @@ He needs 25:
   into its flashing mode (see [the board](#the-board)); the exact pin names on the MT5C01-03's
   connector are to be read in Jorjin's sheet. Its host interrupt says when a frame of points is
   ready.
-- **The IMU** runs at 1,200 Hz as in a module, from the CLKIN that Míša makes from the suit's
+- **The IMU** runs at 1,920 Hz as in a module, from the CLKIN that Míša makes from the suit's
   clock, and the
   processor sums its steps the same way; its 12 B a step go into the sphere's header as the
   head's turn and pitch, not up the line.
@@ -176,12 +176,12 @@ those bursts have harmonics at 10, 20, 30 … Hz, right in the EMG band up to ~5
   electrodes in the headband next to Míša.
 - **When the radar chirped:** with TI's demo the frames run on the radar's own timer, not
   locked to the suit. Baťa then aligns the pattern that reaches the EMG to each frame by the
-  cycle's number the sphere carries, which Míša stamps from his own count of the suit's cycles,
-  averages it and takes it away; how much that stamp wanders against the chirps is for the
-  trial. Locked frames, each
-  started on the same ADS sample (10 Hz is 3,840 / 384), want a hardware trigger: the chip has
-  one, SYNC_IN, ~160 ns from the pulse to the frame (its datasheet), but TI's SDK 05.05 does not
-  use it yet, and Jorjin's pinout must bring it out.
+  cycle's number a sphere made with the radar carries, which Míša stamps from his own count of
+  the suit's cycles, averages it and takes it away; how much that stamp wanders against the
+  chirps is for the trial. Locked frames, each started on the same ADS sample (10 Hz is
+  1,920 / 192), want a hardware trigger: the chip has one, SYNC_IN, ~160 ns from the pulse to the
+  frame (its datasheet), but TI's SDK 05.05 does not use it yet, and Jorjin's pinout must bring
+  it out.
 - **The radar's 60 GHz itself** hardly reaches the leads: at a 5 mm wavelength they are poor
   antennas, and it sends +15 dBm EIRP. The ADS1299's datasheet advises small common-mode
   capacitors at the inputs, 10–20 times smaller than the differential one, where a system meets

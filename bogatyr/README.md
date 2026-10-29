@@ -20,14 +20,19 @@ physiotherapist, before any strip is drawn. Where a place is an estimate, it say
 
 ## What it lays out
 
-- **The EMG of 16 modules,** each with 16 electrodes, a bias electrode and a reference electrode,
-  288 in all, for both ways of measuring on one suit: differential, a channel P against N, and
-  against the reference, eight P against one point (see
-  [Rubaška](../rubaska/HARDWARE.md#right-leg-drive)). A channel's two electrodes lie 4–8 cm apart
-  where the muscle allows, 2–3 cm on small muscles and near the heart, along the fibres and across
-  them by turns, and across the spine only diagonally.
-- **The IMUs,** 48 on the body of 64 places, two or more on each segment of a limb and more where
-  the skin slides most, and the gloves' 2 × 20.
+- **The EMG of 16 modules:** fourteen of the body with two ADS1298, 32 electrodes and a bias
+  electrode each, measuring differentially, a channel P against N; the head's with two ADS1299, 32
+  electrodes, a bias and one reference electrode, the neck's with one ADS1299 and 16, both ways
+  there, against the reference the P against one point (see
+  [Rubaška](../rubaska/HARDWARE.md#right-leg-drive)): 514 electrodes on the modules, and the hand's
+  and the foot's sixteen with a bias on the glove's and the sock's own ADS1298, 582 in all. A
+  channel's two electrodes lie 4–8 cm apart where the muscle allows, 2–3 cm on small muscles and
+  near the heart, along the fibres and across them by turns, and across the spine only diagonally.
+  **The body's modules' second eight channels are not laid out yet:** this page has the first eight
+  of every module, and the rest is laid out with the physiotherapist (see
+  [construction](CONSTRUCTION.md#open-questions)).
+- **The IMUs,** 42 on the body of 64 places, two or more on each segment of a limb, more where
+  the skin slides most and four in a square on the head; the gloves' 2 × 20 and the socks' 2 × 8.
 - **What was left out,** the muscles surface EMG cannot reach and the places the body presses
   on, and the layouts before this one.
 
@@ -48,8 +53,9 @@ trunk not being set. Up close, each with its own modules alone:
 |---|---|---|
 | ![the left forearm's module](hand.png) | ![the left calf's module](foot.png) | ![the neck's module and the shoulders'](neck.png) |
 
-The hand is drawn with no glove, its two IMUs on the back of the hand; with the glove they are the
-glove's (see [construction](CONSTRUCTION.md#the-imus)).
+The hand and the foot are drawn with two IMUs each on their module; today they are the glove's and
+the sock's, with more (see [construction](CONSTRUCTION.md#the-imus)), and the body's modules'
+second eight channels are not drawn: the pictures wait for the layout's next round.
 
 | file | what is in it |
 |---|---|
@@ -65,5 +71,6 @@ What the electrodes, the strips and the harness are made of is under
 
 | | modules | electrodes | IMUs |
 |---|---|---|---|
-| the body | 16: the head, the neck with the upper back, the two shoulders, the chest with the abdomen, the lower back, the two hips, and two on each limb | 256, a bias and a reference electrode on each module, 288 | 48 of 64 places |
-| the gloves | — | — | 2 × 20 |
+| the body | 16: the head, the neck with the upper back, the two shoulders, the chest with the abdomen, the lower back, the two hips, and two on each limb | 496, 32 on a module of the body and on the head's, 16 on the neck's; a bias electrode on every module and a reference on the head's and the neck's, 514 | 42 of 64 places |
+| the gloves | one unit each, the hand's: an ADS1298 on the board | 2 × 17: sixteen and a bias | 2 × 20 |
+| the socks | one each, the foot's | 2 × 17 | 2 × 8 |

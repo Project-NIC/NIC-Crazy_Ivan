@@ -41,8 +41,9 @@ The project's name and the picture on the front page are a joke too, nothing mor
 | [**Rebjata**](rubaska/HARDWARE.md#sensing-module) | the kids | the sensing modules: Mamka's own children. |
 | [**Rebjonok**](rubaska/HARDWARE.md#sensing-module) | the child | one sensing module: the forearm's Rebjonok, the thigh's. |
 | [**Staršaja**](rubaska/HARDWARE.md#sensing-module) | the elder | every unit's main processor on the sensing lines, the same chip and the same task in a module and in the glove. |
-| [**Bratiški**](rubaska/HARDWARE.md#the-glove) | the little brothers | Staršaja's younger brothers, the small processors with IMUs alone, one on each finger of the glove. |
-| [**Vešč**](rubaska/HARDWARE.md#the-glove) | the Thing | the glove: the Addams' severed hand, which ends at the wrist as ours does. |
+| [**Bratiški**](rubaska/HARDWARE.md#the-glove) | the little brothers | Staršaja's younger brothers: the four small processors on the glove's and the sock's board, each reading one finger's IMUs. |
+| [**Vešč**](rubaska/HARDWARE.md#the-glove) | the Thing | the glove: the Addams' severed hand, which ends at the wrist as ours does; one board on the back of the hand, the hand's EMG and its IMUs. |
+| [**Nosok**](rubaska/HARDWARE.md#the-sock) | the sock | the glove's board and firmware for the foot, on the calf above the ankle: the foot's sixteen electrodes and up to eight IMUs. |
 | [**Pupovina**](porjadok/HARDWARE.md#links-between-boards) | the umbilical cord | the eight lines from Mamka, one a piece of the suit: power, the clock and data to the Rebjata and the gloves on lines 1–7 and to Nataša and Míša on line 8. |
 | [**Porjadok**](porjadok/README.md) | order | the household's rules, which every member keeps: processor, firmware, links, output. |
 | [**Pitanije**](porjadok/HARDWARE.md#power) | food, and a power supply | the suit's power, from Babuška down to every module; the Russian word means both. |
