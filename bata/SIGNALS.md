@@ -13,28 +13,26 @@ and where it all runs.
 ---
 
 Everything on this page runs on Baťa in software, and every step of it can change later:
-recordings, made when asked, keep the samples as the ADS1299s gave them, in BDF (see
+recordings, made when asked, keep the samples as the ADS1298s gave them, in BDF (see
 [Porjadok](../porjadok/SOFTWARE.md#ci-btp)), so the chain below is a first version to be tried on
 recordings, not a part of the suit. What has
 to hold now is only the interfaces: what the model takes, what goes out, and in what packets.
 
 ## The EMG channel
 
-280 channels at 1,920 SPS, 24 bits, 39.74 nV a step at a gain of 12 on the body's ADS1298 (±333 mV
-over 24 bits) and 44.70 nV on the head's and the neck's ADS1299 (±375 mV).
+280 channels at 1,920 SPS, 24 bits, 39.74 nV a step at a gain of 12 on every ADS1298 (±333 mV
+over 24 bits).
 
 - **The band:** a high-pass at ~10 Hz takes the electrodes' drift and most of the movement
   artefact; the upper edge is the chips' own, ~503 Hz at 1,920 SPS, 0.262 of the rate (SBAS459K,
-  Electrical Characteristics; SBAS499C, table 1), the 10–500 Hz band SENIAM recommends for
-  surface EMG. The movement
+  Electrical Characteristics), the 10–500 Hz band SENIAM recommends for surface EMG. The movement
   artefact of the electrode on the skin, larger than the cables', lies at 0–20 Hz, and De Luca
   filters from 20 Hz (*Surface Electromyography: Detection and Recording*, Delsys 2002); 10 Hz
   stays, and 20 Hz is tried on the first recordings, one number here.
 - **The mains at 50 Hz** is not notched: a fixed notch takes EMG with it. The right-leg drive and
-  the chips' CMRR, −105 dB at least on the ADS1298 and −110 on the ADS1299 (SBAS459K; SBAS499C),
-  leave little, and what is left is estimated as a slowly varying
-  sinusoid at 50 Hz and its first harmonics, tracked from quiet stretches, and subtracted. Whether
-  it is needed at all the first recordings will show.
+  the chips' CMRR, −105 dB at least on the ADS1298 (SBAS459K), leave little, and what is left is
+  estimated as a slowly varying sinusoid at 50 Hz and its first harmonics, tracked from quiet
+  stretches, and subtracted. Whether it is needed at all the first recordings will show.
 - **The radar's pattern** on the head's electrodes, aligned to each radar frame by the stamped
   arrival of a sphere made with the radar (its code 2 or 3), 10 frames a second, is averaged over
   hundreds of frames and subtracted (see [Míša](../misa/HARDWARE.md#radar-and-the-emg)).
@@ -75,7 +73,7 @@ EMG and kept as a measurement of its own.
   "absent") and raises an event.
 - **Quality 0–15** in the meta packet of the electrodes: from the channel's noise floor in the
   quietest stretches of the last seconds against the chip's own noise at this rate, 0.8 µVrms on
-  the ADS1298 and 0.46 on the ADS1299 (SBAS459K and SBAS499C, their noise tables), and from how
+  the ADS1298 at a gain of 12 (SBAS459K, its noise table), and from how
   much mains and movement artefact the channel shows
   compared with its neighbours. A channel of quality 0 is as good as off.
 

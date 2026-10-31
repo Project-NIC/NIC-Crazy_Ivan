@@ -17,7 +17,8 @@ converter of its own, so neither leans on the ROCK's one 3.3 V. The board plugs 
 slots on the ROCK 5T's underside at once and takes the battery through one connector. The ROCK
 itself is fed through its eFuse on [Mamka](../mamka/HARDWARE.md#the-computers-supply), so a suit
 without the Hailos, which runs its model on the RK3588's own NPU, has no Terem at all, and
-Borovičok, who has no Umnica, has none either.
+Borovičok, who has no Umnica, has none either: a plain aluminium plate takes its place in
+Mrazík, the block round the stack (see [Mamka](../mamka/CONSTRUCTION.md#the-stack)).
 
 Nothing bought does the ROCK's part: the adapters sold for a short module in a long slot are
 passive brackets or boards that pass the slot's own 3.3 V on, and the powered adapters all go the

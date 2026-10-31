@@ -195,7 +195,7 @@ class TestDiagnostics(unittest.TestCase):
                             [132, -265, 0, 1, 2, 3])
         b = d.pack()
         self.assertEqual(b[4:19], bytes.fromhex("feffffff ffffffff fbff ffff fe fb 7f".replace(" ", "")))
-        self.assertEqual(b[19:21], b"\x00\x84")                       # TEMP_DATA as the chip gives
+        self.assertEqual(b[19:21], b"\x84\x00")                       # OUT_TEMP as the chip gives
         self.assertEqual(b[31], 0)                                    # a power-on
         self.assertEqual(stp.Diagnostics.unpack(b), d)
         self.assertFalse(d.all_well)
@@ -206,8 +206,8 @@ class TestDiagnostics(unittest.TestCase):
         self.assertEqual(stp.Diagnostics.unpack(w, imus=2).reset, stp.RESET_IWDG)
         self.assertEqual(stp.skin_word(0xFB), 0xFFFB)                  # one chip: the high byte ones
         self.assertEqual(stp.skin_word(0xFF, 0x7F), 0x7FFF)
-        self.assertAlmostEqual(stp.temp_c(128), 26.0, places=2)                     # ICM-45686
-        self.assertAlmostEqual(stp.temp_c(132, stp.PART_ICM42688P), 26.0, places=2)
+        self.assertAlmostEqual(stp.temp_c(256), 26.0, places=2)                     # LSM6DSV16X
+        self.assertAlmostEqual(stp.temp_c(-2560), 15.0, places=2)
 
     def test_by_turns_and_bits(self):
         seen = set()
@@ -228,15 +228,15 @@ class TestTable(unittest.TestCase):
         self.assertEqual(stp.UnitTable.unpack(b), m)
         self.assertEqual(m.reads(), [(0x40, 25), (0x59, 5)])          # two reads
         self.assertEqual(m.chips[:2], [(0x01, stp.PART_ADS1298), (0x06, stp.PART_ADS1298)])
-        h = stp.module_table(bytes(12), 2, ads=(stp.PART_ADS1299,))   # the head's
-        self.assertEqual((len(h.pack()), h.chips[0]), (24, (0x01, stp.PART_ADS1299)))
+        h = stp.module_table(bytes(12), 2, ads=(stp.PART_ADS1298,))   # the neck's, one chip
+        self.assertEqual((len(h.pack()), h.chips[0]), (24, (0x01, stp.PART_ADS1298)))
         g = stp.end_table(bytes(12))                                  # the glove's
         self.assertEqual(len(g.pack()), 68)                           # an ADS1298, 4 Bratiški, 20 IMUs
         self.assertEqual(len(g.reads()), 3)
         self.assertEqual(g.chips[:2], [(0x01, stp.PART_ADS1298), (0x07, stp.PART_BRATISKA)])
         self.assertEqual((g.chips[5][0], g.chips[-1][0]), (0x10, 0x23))
         self.assertEqual(len(stp.end_table(bytes(12), stp.FOOT_IMUS, 2).pack()), 40)  # a sock's
-        self.assertEqual({p for _, p in m.chips[2:] + g.chips[5:]}, {stp.PART_ICM45686})
+        self.assertEqual({p for _, p in m.chips[2:] + g.chips[5:]}, {stp.PART_LSM6DSV16X})
         with self.assertRaises(ValueError):
             stp.end_table(bytes(12), 21)
 

@@ -55,10 +55,6 @@ under the ROCK, and what to watch when it is drawn.
     SHC0630-1R5M and a 1.5 µH), 2.8 mm in the model, under the cards' far ends, from ~15 to ~3
     mm before the standoffs. Terem has a window over each, ~0.5 mm round its body, so that it
     never lies on them, whatever their real height;
-  - **the heatsink's two pegs,** which come through the ROCK's board at its two holes of Ø3.2
-    mm, one at the corner of one socket and one under the other card (Radxa's drawing; the
-    model has no heatsink). Terem has a hole under each; how far a peg stands below the board
-    is not known;
   - **past the standoffs,** J2, the connector of the ROCK's clock battery, 3.5 mm, its leads
     ~10 mm beyond one standoff, and the stack's corner hole ~11.6 mm beyond the other, with its
     screw's nut (see [Mamka](../mamka/CONSTRUCTION.md#the-stack)). Terem ends ~0.5 mm before J2's
@@ -150,11 +146,13 @@ suit's lines are filtered on Mamka, and the battery cable here is 10 cm inside a
   from the module's drawing. Its pins take the air from any side. It lies on thermal pads over the
   modules' parts, 1.5 mm tall on top (Hailo's datasheet Rev. 1.0, 2.1), and is held by two M2 screws
   with springs through two holes drilled in its base, down the gap between the cards into two SMT
-  nuts on Terem's far face, on the centre line, clear of the windows. No fan of its own; the
-  backpack's air passes its pins.
-- **The heat:** two modules at their typical 2.5 W, 5 W in all, warm it ~22 K over the
-  channel's air at the 4.4 K/W of still air; both at the datasheet's 8.25 W, 16.5 W, would be
-  ~73 K, which wants the backpack's fan or a lighter load: the computer runs the fan by the
+  nuts on Terem's far face, on the centre line, clear of the windows. No fan of its own. Inside
+  Mrazík, the closed block round the stack, no air of the backpack reaches its pins; its way to
+  the block's wall under Terem is settled when Mrazík is drawn (see
+  [Babuška](../babuska/CONSTRUCTION.md#mrazík)).
+- **The heat:** two modules at their typical 2.5 W, 5 W in all, warm it ~22 K over the air
+  round it at the 4.4 K/W of still air; both at the datasheet's 8.25 W, 16.5 W, would be ~73 K,
+  which wants a better way to Mrazík's wall or a lighter load: the computer runs the fan by the
   Hailos' temperature and lowers their load if it stops (see
   [Babuška](../babuska/CONSTRUCTION.md#heat)).
 - **The height:** ~30 mm under the ROCK's board with the heatsink, an estimate until the sockets
@@ -166,8 +164,7 @@ suit's lines are filtered on Mamka, and the battery cable here is 10 cm inside a
   the sockets. The screws' heads lie under the cards, ~7.5 mm before the cards' own screws, in
   the 2.5 mm between Terem and a card: a low head, under ~1.5 mm, under the module's own parts,
   0.5 mm on its underside (Hailo's datasheet Rev. 1.0, 2.1). With the ROCK face-up the whole
-  chamber hangs below it, in the insert's channel (see
-  [Babuška](../babuska/CONSTRUCTION.md#the-backpack)).
+  chamber hangs below it, inside Mrazík (see [Babuška](../babuska/CONSTRUCTION.md#mrazík)).
 
 ## What to watch
 
@@ -183,9 +180,8 @@ suit's lines are filtered on Mamka, and the battery cable here is 10 cm inside a
 - **The cards' screws ~7.5 mm past the ROCK's:** not more than ~0.5 mm further, or the standoff of
   the card on the header's side meets J2; the socket is chosen and placed with that in view, its
   drawing against the ROCK's model.
-- **The two inductors and the two pegs** under Terem: the windows and the holes drawn from the
-  model and Radxa's 2D drawing, and the inductors and the pegs measured on a ROCK with its
-  heatsink before the board is ordered.
+- **The two inductors** under Terem: the windows drawn from the model and Radxa's 2D drawing,
+  and the inductors measured on a ROCK before the board is ordered.
 - **The first board** is tried with one module, the link speed read from the ROCK (`lspci -vv`
   shows the trained width and speed), then with two. If a link trains at Gen 2 or ×1 with four
   layers, the fault is the stack or the pads, not the idea.
@@ -198,11 +194,10 @@ suit's lines are filtered on Mamka, and the battery cable here is 10 cm inside a
 - the XT30's direction: a vertical one mated from below, or a horizontal one with its cable
   bent along the board, under the ROCK's overhang,
 - the heatsink on a sample: the holes in its base and in Terem, the pads' thickness over the
-  modules, its temperature at both modules' full load in the channel,
+  modules, its temperature at both modules' full load inside Mrazík; its way to the block's wall
+  under Terem, or a boss of that wall over pads in its place, as the SoC's, when Mrazík is drawn,
 - the trained speed and width of both links on the first board, read from the ROCK,
 - the ROCK's inductors L5001 and L5002 as fitted: in the model a 2280 card in the ROCK's own slot
   lies 0.3 mm on them,
-- how far the heatsink's pegs stand below the ROCK's board: a peg by the socket that stands more
-  than ~3 mm would meet the socket's body through its hole,
 - the Hailo-10H 2280's drawing: its chip's place for the heatsink, its underside's parts over
   Terem's screw heads.

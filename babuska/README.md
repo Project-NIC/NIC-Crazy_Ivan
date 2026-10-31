@@ -24,5 +24,5 @@ Mamka also reads the BMS.
 |---|---|
 | [HARDWARE.md](HARDWARE.md) | the energy the suit needs, the chemistry, the pack, the cells' limits, the BMS, the charging, the two power variants |
 | [SOFTWARE.md](SOFTWARE.md) | what is written into the BMS: thresholds, the state of charge, the currents, the temperatures |
-| [CONSTRUCTION.md](CONSTRUCTION.md) | the backpack: the shell, the insert, a connector for each piece of the suit, the heat and the air |
+| [CONSTRUCTION.md](CONSTRUCTION.md) | the backpack: the shell, the insert, a connector for each piece of the suit, Mrazík round the computers, the heat and the air |
 | [WHY.md](WHY.md) | what is not used, and why |

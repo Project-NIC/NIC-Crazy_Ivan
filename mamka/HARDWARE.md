@@ -15,34 +15,39 @@ functions and the whole suit's power.
 
 | part | package | count | what it does |
 |---|---|---|---|
-| STM32H562VG | LQFP100, 14 × 14 mm | 2 | processor 1, the limbs: lines 1–4 and one SPI to Baťa; processor 2, the head and the trunk: lines 5–8, two SPIs to Baťa, the sound, the battery and the power |
+| STM32H562VG or STM32H563VG | LQFP100, 14 × 14 mm | 2 | processor 1, the limbs: lines 1–4 and one SPI to Baťa; processor 2, the head and the trunk: lines 5–8, two SPIs to Baťa, the sound, the battery and the power |
 | SWD pads | | 2 | one set for each processor, for a programmer on the bench |
 | SiTime SiT8008BI-21-33N-9.830400D | 3.2 × 2.5 mm | 1 | the suit's clock, 9.8304 MHz: a MEMS oscillator, ±20 ppm in all (tolerance, temperature, supply, load and the first year's ageing) over −40…+85 °C, 3.3 V, 4.5 mA at most, pin 1 without function; 0.1 µF at its VDD |
 | SN74LVC126A | quad buffer, 14 pins | 3 | the suit clock from the oscillator to both processors' OSC_IN and the eight lines' clock drivers, two spare gates |
 | THVD1451 | 8 pins, full duplex, no enables | 8 | a line's data: drives the pair to the units, receives the return pair; a processor's lines with modules driven by her one TX |
 | THVD1450 | SOIC-8, VSSOP-8 or VSON-8 | 9 | eight drive the lines' clock, their DE on one pin a processor; one talks to the BMS |
-| LMR43610R3RPER | VQFN-HR, 2 × 2 mm | 11 | Mamka's own 3.3 V; 4 V for each of the eight lines, in two chains, the limbs' and the head's and the trunk's; 6 V for the suit; 5 V for the fan |
+| LMR43610MB3RPER | VQFN-HR, 2 × 2 mm | 11 | Mamka's own 3.3 V; 4 V for each of the eight lines, in two chains, the limbs' and the head's and the trunk's; 6 V for the suit; 5 V for the fan |
+| SWPA6045S100MT | 6 × 6 × 4.5 mm | 11 | the converters' inductor, 10 µH |
 | SWPA252012S2R2MT | 2.5 × 2.0 mm | 18 | the π filters behind the nine suit rails, two chokes side by side each |
 | GZ2012D301TF | 2.0 × 1.25 mm | 18 | the beads behind them, two side by side each |
 | EEHZA1H470P | SMD 8 × 10.2 mm | 2 | the bulk on the battery input: 47 µF 50 V hybrid polymer, the house part |
-| female header, 2 × 20, extra tall | 2.54 mm grid, body 23 mm (Adafruit 1979) | 1 | onto Baťa's header, raising her ~25.5 mm over his board, over his SoC's heatsink (see [construction](CONSTRUCTION.md#the-stack)) |
+| female header, 2 × 20, extra tall | 2.54 mm grid, body 23 mm (Adafruit 1979) | 1 | onto Baťa's header, raising her ~25.5 mm over his board, a window in her over his SoC for Mrazík's boss (see [construction](CONSTRUCTION.md#the-stack)) |
 | IDC box header, 2 × 5 | 2.54 mm grid | 9 | one per line, for the harness to the shell: three pairs and the supply; one for Terem's flat cable |
 | Noctua NF-A4x10 5V PWM | 40 × 40 × 10 mm | 1 | the backpack's fan: 4 wires, 5 V, 0.07 A, its own driver inside |
 | 4-pin PC fan header | 2.54 mm grid | 1 | the fan's +5 V, ground, PWM in and speed out |
 | Amass XT60 | | 1 | the battery in, from the pack's 2.5 mm² wire (see [Babuška](../babuska/HARDWARE.md#power-variants)) |
 | fuse, 5 × 20 mm, and its holder | Schurter OGN-SMD with the 0853 cover | 1 | on the battery input, before everything on the board: fast-acting, ceramic, sand-filled, as the pack's; its value from the measured starts (see [Babuška](../babuska/HARDWARE.md#power-variants)) |
 | Amass XT30 | | 0–1 | the battery out to Terem, behind the fuse, when Terem is fitted (see [Terem](../terem/HARDWARE.md#the-converters)) |
-| TPS26630 | VQFN-24, 4 × 4 mm | 1–2 | the eFuse for each ROCK 5T, Baťa's and Borovičok's if he is fitted: the battery to its DC jack, a current limit, a soft start, under- and overvoltage cutoffs, SHDN and PGOOD (SLVSE94G) |
+| TPS259474LRPWR | QFN-10, 2 × 2 mm | 1–2 | the eFuse for each ROCK 5T, Baťa's and Borovičok's if he is fitted: the battery to its DC jack, a circuit breaker, a soft start, under- and overvoltage lockouts, EN and PG, reverse current blocked (SLVSFC9C) |
 | DC cable with a 5.5 × 2.1 mm plug | | 1–2 | from each eFuse to its ROCK's jack |
 
 The STM32H562 (datasheet DS14258) in LQFP100 has 80 I/Os (49 in LQFP64), 4 SPIs, up to 6 USARTs
 and 6 UARTs and an LPUART, 2 SAIs (table 2), up to four I2Cs with Fast-mode Plus (1 Mbit/s),
 640 KB of RAM, and two GPDMA controllers of eight channels each (section 3.16); its USART reaches
-20 Mbaud. Both processors are the STM32H562VG, one part and one footprint: processor 2 needs 48
-I/Os, LQFP64's 49 all but one, and LQFP64 lacks PB9 and PB11 (pins 62 and 30–32 are VCAP and the
-supply, ST's pin data for the STM32H562RGTx). The STM32H523, the modules' part, has 4 USARTs, 2
-UARTs and 4 SPIs, three with I2S (DS14540), and 272 KB of RAM; processor 1 needs the larger
-memory (see [memory](SOFTWARE.md#memory)).
+20 Mbaud. Both processors are the STM32H562VG or the STM32H563VG, whichever costs less: one
+datasheet, one pin table (DS14258 Rev 6, table 14) and one footprint. ST's pin data for the
+STM32H563VGTx has the same 100 pins, each with every signal of the STM32H562VGTx's, and adds
+Ethernet and a second FDCAN, which Mamka leaves unused. The STM32H563 is taken in its LDO version,
+the STM32H563VGT6, not the ...Q with its own SMPS for the core (see [WHY](WHY.md)). Processor 2
+needs 48 I/Os, LQFP64's 49 all but one, and LQFP64 lacks PB9 and PB11 (pins 62 and 30–32 are VCAP
+and the supply, ST's pin data for the STM32H562RGTx). The STM32H523, the modules' part, has 4
+USARTs, 2 UARTs and 4 SPIs, three with I2S (DS14540), and 272 KB of RAM; processor 1 needs the
+larger memory (see [memory](SOFTWARE.md#memory)).
 
 **Processor 1's pins,** the limbs
 
@@ -76,7 +81,7 @@ memory (see [memory](SOFTWARE.md#memory)).
 | START from processor 1 | 1 | PB15, TIM12_CH2 (AF2), its edge resetting TIM12 |
 | the UART to processor 1 | 2 | UART4 at 115,200 Bd (AF8): TX on PA0, RX on PA1 |
 | the BMS | 3 | UART5 at 9,600 Bd (AF8): TX on PC12, RX on PD2, DE on PC8 |
-| EN and PGOOD: the first and the last of each 4 V chain, the 6 V, the computers' eFuses | 10 | the limbs' 4 V chain: EN PE8, PGOOD PE9; the head's and the trunk's: EN PE10, PGOOD PE11; the 6 V: EN PE12, PGOOD PE13; Baťa's eFuse: SHDN PE14, PGOOD PE15; Borovičok's: SHDN PD8, PGOOD PD9; the fan's 5 V follows Baťa's SHDN |
+| EN and PGOOD: the first and the last of each 4 V chain, the 6 V, the computers' eFuses (EN and PG) | 10 | the limbs' 4 V chain: EN PE8, PGOOD PE9; the head's and the trunk's: EN PE10, PGOOD PE11; the 6 V: EN PE12, PGOOD PE13; Baťa's eFuse: EN PE14, PG PE15; Borovičok's: EN PD8, PG PD9; the fan's 5 V follows Baťa's eFuse's EN |
 | Budilnik: HOLD to Mamka's own 3.3 V converter's EN | 1 | PB5, through a diode (see [Budilnik](#budilnik)) |
 | Baťa's 3.3 V from header pin 1 | 1 | PC0, read as "Baťa is up" |
 | the start button | 1 | PA2, a wake-up pin (WKUP2), through a divider from the button's node |
@@ -89,7 +94,8 @@ memory (see [memory](SOFTWARE.md#memory)).
 
 - **Checked by script** against ST's pin data for the STM32H562VGTx and the STM32H562RGTx, the
   STM32_open_pin_data that CubeMX reads: every pin in the package, its signal on it, no pin
-  twice. The AF numbers are DS14258's tables 15 and 16.
+  twice; and the STM32H563VGTx's against the STM32H562VGTx's, pin by pin. The AF numbers are
+  DS14258's tables 15 and 16.
 - **The plain GPIOs named here stay named,** data ready, the ENs and PGOODs, HOLD, the LEDs and
   Baťa's 3.3 V, checked with the rest; a plain GPIO added later is chosen when the board is drawn,
   as the clock drivers' DE is.
@@ -115,7 +121,7 @@ low on the board; nothing on the header resets them (see [firmware](SOFTWARE.md#
 ## On Baťa's header
 
 Mamka sits on the 40-pin header of the ROCK 5T, an extra-tall female header on her underside, as one
-board over the whole computer and his SoC's heatsink, short of the band of his ports (see
+board over the whole computer with a window over his SoC, short of the band of his ports (see
 [construction](CONSTRUCTION.md#the-stack)). From the header she takes only the data pins, the eight
 grounds and pin 1 as a signal: no 5 V and no 3.3 V, since she feeds herself.
 
@@ -235,16 +241,15 @@ Every rate in the suit is the base multiplied or divided by a whole number, apar
 
 | to | clock | from 9.8304 MHz |
 |---|---|---|
-| ADS129x | 1.96608 MHz | ÷ 5 |
-| ADS129x samples | 1,920 SPS | ÷ 5,120 |
-| ICM-45686, CLKIN input | 38,400 Hz | ÷ 256 |
-| ICM-45686 samples, the 1.6 kHz setting | 1,920 Hz, by our inference (see [Rubaška](../rubaska/HARDWARE.md#the-imu)) | ÷ 5,120 |
+| ADS1298 | 1.96608 MHz | ÷ 5 |
+| ADS1298 samples | 1,920 SPS | ÷ 5,120 |
+| LSM6DSV16X, its reference REF on INT2 | 24 Hz or 15 Hz | ÷ 409,600 or ÷ 655,360 |
+| LSM6DSV16X samples, the 1.6 kHz setting | 1,920 Hz, held to REF, 80 or 128 a period (DS13510 Rev 4, 6.6; AN5763 Rev 4, 3.3; see [Rubaška](../rubaska/HARDWARE.md#the-imu)) | ÷ 5,120 |
 | IMU steps | 120 Hz, 1,920 / 16 | ÷ 81,920 |
 | every line | 19,660,800 Bd | × 2 |
 
-The ADS1299 accepts 1.5 to 2.25 MHz, the ADS1298 1.94 to 2.25 (SBAS459K). The ADS1299's sample
-rates then come out as 240, 480, 960, 1,920, 3,840, 7,680 and 15,360 SPS, the ADS1298's in its
-high-resolution mode as 480 to 30,720.
+The ADS1298 accepts 1.94 to 2.25 MHz (SBAS459K); its sample rates in its high-resolution mode then
+come out as 480 to 30,720 SPS.
 
 A 9.8304 MHz clock means roughly 19.7 Mbit/s on the line. Its THVD1450 driver handles up to
 50 Mbit/s.
@@ -281,13 +286,14 @@ Mamka's whole power section, from her own supply and [Budilnik](#budilnik) to th
 [the computers' supply](#the-computers-supply), is *Kormilica*, the wet nurse (see
 [the names](../NAMES.md)).
 
-Mamka feeds herself and her children from the battery, all on one part, TI **LMR43610R3RPER**
+Mamka feeds herself and her children from the battery, all on one part, TI **LMR43610MB3RPER**
 (see [Converters](#converters)). Her own 3.3 V uses the fixed version's VOUT/FB straight on the
-output, with no divider (SNVSBY5B, device comparison table); the RT pin on ground sets 2.2 MHz.
+output, with no divider (SNVSBY5B, device comparison table); pin 1, MODE/SYNC, on ground runs it
+in auto mode.
 
 | consumer | current |
 |---|---|
-| 2 × STM32H562, both at 197 MHz with every peripheral clocked | ~61 mA typical, ~82 mA at 85 °C each at 200 MHz in VOS1 (DS14258, table 28); on silicon A or Z in VOS0 ~70 and ~102 mA (see [software](SOFTWARE.md#firmware)) |
+| 2 × STM32H562 or STM32H563, both at 197 MHz with every peripheral clocked | ~61 mA typical, ~82 mA at 85 °C each at 200 MHz in VOS1 (DS14258, table 28); on silicon A or Z in VOS0 ~70 and ~102 mA (see [software](SOFTWARE.md#firmware)) |
 | 8 × THVD1451, each driver always on, into two 120 Ω (~60 Ω) | ~37 mA each |
 | 8 × THVD1450 driving the clock, the same load, DE up while the lines run | ~37 mA each |
 | the receivers, the buffers, the LED | a few mA |
@@ -298,7 +304,7 @@ output, with no divider (SNVSBY5B, device comparison table); the RT pin on groun
 - **Eight lines' drivers** take ~0.6 A of it; should the first board show it tight, the drivers
   get a 3.3 V of their own.
 - **The fan's 5 V:** one more LMR43610 with the divider 48.7 kΩ over 12.1 kΩ, 5.02 V, for the
-  fan's 0.07 A. Its EN follows Baťa's SHDN: the fan runs while he does.
+  fan's 0.07 A, in auto mode. Its EN follows Baťa's eFuse's EN: the fan runs while he does.
 - **Nothing runs while the suit is off:** Mamka's own 3.3 V converter is held off, and the start
   button and processor 2 wake it and let it go, see [Budilnik](#budilnik) below.
 
@@ -323,51 +329,58 @@ between.
   the suit comes up.
 - **Stopping:** Baťa asks for it (the power's command 1, see
   [software](SOFTWARE.md#mamkas-own-registers)), or the button is held for five seconds.
-  Processor 2 tells the computers to halt, drops their SHDN once Baťa's pin 1 has fallen, or
-  Borovičok has answered, or after a timeout, drops the lines and the 6 V, and lets HOLD fall:
-  the 3.3 V converter stops and Mamka is off, processor 2 with her. What stays on the battery
-  then is the BMS, the eFuses in their 21 µA sleep and Terem's converters with EN low at
-  0.65 µA each: tens of microamps.
+  Processor 2 tells the computers to halt, pulls their eFuses' EN down once Baťa's pin 1 has
+  fallen, or Borovičok has answered, or after a timeout, drops the lines and the 6 V, and lets
+  HOLD fall: the 3.3 V converter stops and Mamka is off, processor 2 with her. What stays on the
+  battery then is the BMS, the eFuses shut down at ~4.4 µA each (SLVSFC9C, 6.5) with their
+  dividers' ~15 µA, and Terem's converters with EN low at 0.65 µA each: tens of microamps.
 - **A hang** ends the same way by itself: the watchdog resets processor 2, its pins go to
   inputs, HOLD falls and the suit is off, unless the button is being held.
 
 ## Converters
 
-All the suit's rails come from one part on Mamka, TI **LMR43610R3RPER** (1 A, datasheet
-SNVSBY5B), the RT version whose VOUT/FB pin takes either the output for a fixed 3.3 V or a
-divider for any other voltage. Mamka's own 3.3 V and the fan's 5 V use the same part.
+All the suit's rails come from one part on Mamka, TI **LMR43610MB3RPER** (1 A, datasheet
+SNVSBY5B), the MODE/SYNC version fixed at 1 MHz, whose VOUT/FB pin takes either the output for a
+fixed 3.3 V or a divider for any other voltage (device comparison table). Mamka's own 3.3 V and
+the fan's 5 V use the same part.
 
 | | |
 |---|---|
 | input | 3.0–36 V, transients to 42 V |
 | output | up to 1 A, set by a divider from 1 V to 95% of the input |
-| switching | 2.2 MHz (2.1–2.3 MHz) with the RT pin tied to ground |
+| switching | 1 MHz (0.9–1.1 MHz), fixed (7.5) |
+| pin 1, MODE/SYNC | under 1 V auto mode, pulses at light load; over 1.6 V forced PWM; a clock of 0.2–2.5 MHz synchronises it (7.5, 8.3.2) |
 | package | VQFN-HR, 9 pins, 2 × 2 mm |
 
 - **The cell,** the house buck cell:
 
   | position | value |
   |---|---|
-  | inductor | 4.7 µH, shielded, saturation 2.1 A or more, the LMR43610's highest peak current limit |
+  | inductor | 10 µH, shielded, saturation at least the 2.1 A of the LMR43610's highest peak current limit (IPEAKMAX, 7.5): Sunlord SWPA6045S100MT, 6 × 6 × 4.5 mm, 3.5 A saturation, 2.45 A rated, 48 mΩ (JLCPCB C79272) |
   | divider on VOUT/FB, against 1.00 V | bottom 12.1 kΩ; top 36.5 kΩ → 4.02 V, 60.4 kΩ → 5.99 V |
   | C_FF across the top resistor | 22 pF C0G |
   | C_IN | 4.7 µF 50 V X7R 1206 + 100 nF |
   | C_OUT | 3 × 10 µF 50 V 1206 + 100 nF |
   | VCC · BOOT | 1 µF · 100 nF |
-- **At its highest frequency, with no clock.** With the RT pin on ground the converter runs at
-  2.2 MHz with no resistor, no clock from the processor and no extra trace.
-- **The inductor's ripple:** from the nominal 12.8 V to 4.02 V, ~0.27 A, about a quarter of the
-  1 A, inside the 20–40% the datasheet asks for.
+  | MODE/SYNC | on Mamka's 3.3 V for the 6 V converter, forced PWM; on ground for the others, auto mode |
+- **TI's row at 1 MHz** (table 9-2): C_IN 4.7 µF + 100 nF, C_OUT at least 2 × 10 µF; the cell has
+  three. **The inductor** by TI's equation 7 at K = 0.3 and 1 A from 12.8 V is 9.2 µH for 4.02 V,
+  10.6 µH for 5.99 V and 8.2 µH for 3.3 V, so 10 µH serves all.
+- **Fixed at 1 MHz, with no clock** from the processor and no resistor; only the 6 V converter
+  runs in forced PWM (see [Filtering](#filtering)).
+- **The inductor's ripple:** from the nominal 12.8 V, 0.28 A to 4.02 V, 0.32 A to 5.99 V and
+  0.25 A to 3.3 V; from 14.6 V 0.29 A to 4.02 V and ~0.35 A to 5.99 V; inside the 20–40% of the
+  1 A the datasheet asks for (9.2.2.3).
 - **A converter for each line on 4 V, one for the whole suit on 6 V.** Eight make 4 V, one
   for each line; one makes 6 V:
 
   | rail | load | capacitance it charges at start | start |
   |---|---|---|---|
-  | 4 V, an arm's line, 1 or 2: three modules and the glove | ~0.31 A on average, ~0.50 A at worst | ~650 µF, an estimate: four units' bulks with their ceramics, the π filter, C_OUT | within the 3.5 ms soft start; at its fastest, 2 ms, briefly at the current limit |
-  | 4 V, a leg's line, 3 or 4: three modules and the sock | ~0.29 A on average, ~0.47 A at worst | ~600 µF, an estimate: four units' bulks with their ceramics, the π filter, C_OUT | within the 3.5 ms soft start; at its fastest, 2 ms, briefly at the current limit |
-  | 4 V, lines 5 and 6, a module each; line 7, two modules | ~0.07 A on average, ~0.14 A at worst; ~0.14 and ~0.23 A | ~200 µF: one module's, the π filter, C_OUT; ~350 µF with two | within the soft start |
-  | 4 V, line 8 | ~0.35 A on average, ~1.0 A for a millisecond when the radar chirps while two motors run | ~900 µF, Nataša's two polymers and Míša's among them | within the 3.5 ms soft start; at its fastest, briefly at the current limit |
-  | 6 V, the whole suit | ~0.10 A, ~7 mA a module | ~1.4 mF: sixteen modules' 10TPE47MAZB with their ceramics | at the current limit, ~7–8 ms |
+  | 4 V, an arm's line, 1 or 2: three modules and the glove | ~0.31 A on average, ~0.50 A at worst | ~400 µF, an estimate: four units' inputs, each an RC beside its ceramics (see [Filtering](#filtering)), the π filter, C_OUT | within the 3.5 ms soft start; at its fastest, 2 ms, briefly at the current limit |
+  | 4 V, a leg's line, 3 or 4: three modules and the sock | ~0.29 A on average, ~0.47 A at worst | ~350 µF, an estimate: four units' inputs, the π filter, C_OUT | within the 3.5 ms soft start; at its fastest, 2 ms, briefly at the current limit |
+  | 4 V, lines 5 and 6, a module each; line 7, two modules | ~0.07 A on average, ~0.14 A at worst; ~0.14 and ~0.23 A | ~140 µF, an estimate: one module's, the π filter, C_OUT; ~230 µF with two | within the soft start |
+  | 4 V, line 8 | ~0.35 A on average, ~1.0 A for a millisecond when the radar chirps while two motors run | ~800 µF, an estimate, Nataša's motors' polymer and Míša's input polymer among them | within the 3.5 ms soft start; at its fastest, briefly at the current limit |
+  | 6 V, the whole suit | ~0.10 A, ~7 mA a module | ~0.8–1.0 mF, an estimate: the units' inputs, each an RC beside its ceramics | at the current limit, ~5–6 ms |
 
 - **At the current limit** the converter holds the inductor's current between its high-side peak
   and low-side valley limits, cycle by cycle, and delivers about their average: at least
@@ -375,9 +388,12 @@ divider for any other voltage. Mamka's own 3.3 V and the fan's 5 V use the same 
   down; the current stays there even with the output at zero. A large capacitance so only
   charges more slowly.
 - **TI's limit:** the output capacitance should stay under about ten times the design value or
-  1000 µF, or else the start at full load and the loop's stability are to be studied (9.2.2.4).
-  The 4 V lines stay under 1000 µF. The 6 V's ~1.4 mF is to be checked by simulation and
-  measurement; should it fail, 6 V splits into two converters for two lines each, ~700 µF.
+  1000 µF, whichever is smaller, or else the start at full load and the loop's stability are to
+  be studied (9.2.2.4). Ten times the cell's 30 µF is ~300 µF: lines 5–7 stay under it, and
+  every rail stays under 1000 µF, the 6 V at its edge; most of what the lines charge sits behind
+  the cable, the π filters and the units' 0.5 Ω. The others' start and loops, the 6 V's first,
+  are to be checked by simulation and measurement; should the 6 V fail, it splits into two
+  converters for two lines each, ~400–500 µF.
 - **The lines come up one after another,** in two chains, the limbs' four and the head's and the
   trunk's four: each 4 V converter's PGOOD drives the next one's EN, so processor 2 needs each
   chain's first EN and last PGOOD, the battery takes one line's inrush at a time, and a Mamka for
@@ -399,36 +415,50 @@ parts:
 1. **On Mamka,** right behind each converter: a π filter with the modules' parts, two chokes
    SWPA252012S2R2MT side by side (2.2 µH, 0.17 Ω and 1.85 A each, so 1.1 µH and 0.085 Ω) with 10 µF
    and 100 nF on both sides, then two ferrite beads GZ2012D301TF side by side (300 Ω at 100 MHz, at
-   most 0.2 Ω and 500 mA each). At an arm's line's worst ~0.50 A the pair drops ~0.09 V. No polymer
-   sits at the board's outputs: the lines' bulks sit at the modules, and one here would only add to
-   what the converter charges at start. The converters sit on one side of the board with copper
-   poured under them, away from the clock and the processor.
+   most 0.2 Ω and 500 mA each). At an arm's line's worst ~0.50 A the pair drops ~0.09 V. No bulk
+   sits at the board's outputs: the lines' inputs are damped at the units, and one here would only
+   add to what the converter charges at start. The converters sit on one side of the board with
+   copper poured under them, away from the clock and the processor.
 2. **The cable:** every supply wire runs twisted with a ground wire as a pair, so plus and minus
    lie against each other. Mamka is up to about a metre from the modules.
 3. **On the module:** capacitors at the input, the LDO, and behind it a π filter with a choke
    whose self-resonance lies at 69 MHz (see [Rubaška](../rubaska/HARDWARE.md#power)). The digital
    branch has the same.
-4. **Inside the ADS129x:** its own supply circuits behind AVDD.
+4. **Inside the ADS1298:** its own supply circuits behind AVDD.
 
 **Polymers and ceramics.** A ceramic capacitor loses capacitance under DC voltage. The house
 rule's 50 V parts lose little at 3.3–6 V, which is why it takes them, but the loss grows at the
 battery's 10–14.6 V.
 
-- **A polymer bulk wherever a cable arrives:** the battery input (the hybrid polymers above)
-  and the modules' inputs (see [Rubaška](../rubaska/HARDWARE.md#power) and
-  [Nataša](../natasa/HARDWARE.md#power)). Mamka's outputs carry none, to keep what each
-  converter charges small (see [Converters](#converters)).
+- **An RC at every input where a cable arrives:** a 22 µF 25 V X5R 1206 behind 0.5 Ω, two 1 Ω
+  0603 side by side, beside the input's 10 µF, at the modules', the glove's, the sock's and
+  Nataša's inputs (see [Rubaška](../rubaska/HARDWARE.md#power) and
+  [Nataša](../natasa/HARDWARE.md#power)); the 22 µF keeps ~16 µF at 4 V and ~12 µF at 6 V
+  (Samsung's DC-bias curves). A module plugged into a live line then peaks at ≤ 4.52 V on 4 V,
+  under the TPS7A2033's 6.5 V (SBVS338H, 5.1), and at ≤ 6.94 V on 6 V, under the LP2985's 16 V
+  (SLVS522S), computed for a line of 0.2–1.0 µH and 0.08–0.35 Ω (the 3M 3811 ~0.44 µH/m, an
+  estimate). Each input leaves ~26 µF for its converter to charge at start. Mamka's outputs
+  carry no bulk, to keep that small (see [Converters](#converters)).
+- **Polymers stay where a ceramic cannot do it:** Mamka's two hybrids at the battery input
+  (above), Míša's input polymer, which bridges the radar's chirps (see
+  [Míša](../misa/HARDWARE.md)), and Nataša's motors' behind their choke.
 - **Ceramics stay where a datasheet puts them:** at a converter's VIN pins, its hot loop, and on
   its output, its control loop; at the LDOs; the 100 nF at every pin; the charge pumps.
 - **The π filters' 10 µF stay ceramic.** At 3.3–6 V on 50 V their loss is small, and at the
-  converters' 2 MHz a ceramic filters better than a polymer with its ESR and ESL. The exception
+  converters' 1 MHz a ceramic filters better than a polymer with its ESR and ESL. The exception
   is Nataša's motor branch, where a polymer behind the choke puts the corner below the motor
   drivers' 20 kHz.
 
-One LC stage, 2.2 µH into 10 µF with its corner at ~34 kHz, takes ~2 MHz down by ~70 dB on
-paper, and the chain has several. The LDOs reject best at low frequencies, where the EMG lies.
-Neither the converter's exact frequency, nor a lock to the suit's clock, nor its pulse mode at
-light load (this version has no forced PWM) therefore matters.
+One LC stage, 2.2 µH into 10 µF with its corner at ~34 kHz, takes the converters' 1 MHz down by
+~59 dB on paper, Mamka's own of 1.1 µH ~53 dB, and the chain has several. The LDOs reject best at
+low frequencies, where the EMG lies.
+
+- **Forced PWM on the 6 V converter,** its pin 1 on Mamka's 3.3 V: its light load, ~0.10 A, stays
+  at 1 MHz, out of the EMG's band. The others run in auto mode, pin 1 on ground.
+- **No clock synchronises them.** At 983.04 kHz, the suit clock ÷ 10, a converter would switch
+  at twice the ADS1298's modulator (f_CLK / 4 = 491.52 kHz, SBAS459K 9.3.1.5.3), and its ripple
+  would fold to DC; free running near 1 MHz it lands ~17 kHz away, which the filters and the
+  ADS1298's decimation take.
 
 ## The computers' supply
 
@@ -436,32 +466,43 @@ The ROCK 5T takes 9–20 V on its DC jack, and Radxa recommends 12 V; its USB-C 
 (Radxa's FAQ). The pack gives 10–14.6 V at its limits, 12.8 V nominal, a narrow band between 20
 and 80% to be measured (see [Babuška](../babuska/HARDWARE.md#the-battery)), so each ROCK runs
 straight from the battery, with no converter, through an eFuse on Mamka: one for Baťa, and a
-second for Borovičok if he is fitted. Mamka drives each eFuse's SHDN and reads its PGOOD, so she
+second for Borovičok if he is fitted. Mamka drives each eFuse's EN and reads its PG, so she
 switches the computers on after the start button and off once they have shut down (see
 [Budilnik](#budilnik)). The Umnicas have their own converters on [Terem](../terem/README.md),
 which takes the battery from Mamka, behind her fuse, on a cable of its own; a suit without them
 has no Terem. The battery comes to Mamka alone: pack → fuse → BMS → 2.5 mm² cable → Mamka's
 fuse → the eFuses, Terem's cable and Mamka's own converters.
 
-- **TI TPS26630** (SLVSE94G): 4.5–60 V, up to 6 A through its own 31 mΩ FET, the current limit
-  set by a resistor, the output's rise by a capacitor, an undervoltage and an overvoltage cutoff
-  set by a divider, a shutdown pin and PGOOD. The protection chain of the suit is then the
-  pack's fuse, the BMS, Mamka's fuse, and in every branch its own limit: Mamka's converters
-  have theirs, Terem a chip fuse at its input and its converters' limits, and each ROCK, which
-  has no converter and no fuse of its own (the schematic V1.2 has a bead and a TVS at its jack),
-  gets its eFuse.
-- **Its values:** R(ILIM) 6.04 kΩ for a limit of ~3 A (the sheet's table runs 30 kΩ for 0.6 A
-  to 3 kΩ for 6 A, ~18 kΩ·A); C(dVdT) 22 nF for an output ramp of ~4.6–6.7 ms over 10–14.6 V
-  (t = 20.8 × 10³ × V(IN) × C, equation 2), so the ROCK's input capacitors charge gently and the
-  cable does not ring; the divider from IN_SYS, 866 kΩ, 75 kΩ and 66.5 kΩ to ground, puts the
-  undervoltage cutoff at ~8.5 V and the overvoltage cutoff at ~18 V against the 1.2 V
-  thresholds of UVLO and OVP (equations 9 and 10). The divider is a must: with UVLO at ground
-  the part's own default of 15.5 V would never let the battery through. MODE open: a fault
-  latches off, and processor 2 clears it by cycling SHDN.
-- **SHDN and PGOOD:** Baťa's on PE14 and PE15, Borovičok's on PD8 and PD9. SHDN is driven (the eFuse
-  sleeps at ~21 µA with it low); PGOOD is an open drain pulled up to Mamka's 3.3 V. FLT is not
-  wired: a ROCK that does not come up shows on PGOOD, and Baťa on header pin 1 too.
-- **Its loss** at 3 A is ~0.3 W in the 31 mΩ; the ROCK's 17 W at 12.8 V is 1.3 A, ~0.06 W.
+- **TI TPS259474LRPWR** (SLVSFC9C): 2.7–23 V, 28 V absolute maximum, 5.5 A through its own
+  back-to-back FETs of 28 mΩ, reverse current blocked; an undervoltage lockout on EN/UVLO and an
+  overvoltage lockout on OVLO, each set by a divider against 1.20 V; a circuit breaker set by a
+  resistor on ILM, 0.5–6 A, with a transient blanking time on ITIMER; the output's rise by a
+  capacitor on dVdt; PG, an open drain, its threshold on PGTH; the L version latches off after a
+  fault, and EN pulled under 0.45 V starts it again (sections 4, 6.5 and 7.3.9); QFN-10, 2 × 2 mm.
+  The protection chain of the suit is then the pack's fuse, the BMS, Mamka's fuse, and in every
+  branch its own limit: Mamka's converters have theirs, Terem a chip fuse at its input and its
+  converters' limits, and each ROCK, which has no converter and no fuse of its own (the
+  schematic V1.2 has a bead and a TVS at its jack), gets its eFuse.
+- **Its values:** R(ILM) 1.10 kΩ for a breaker at ~3.0 A (R = 3,334 Ω·A / I, equation 5, ±10 %
+  above 1 A); C(dVdt) 1 nF for a rise of ~2 V/ms (C = 2,000 pF / SR in V/ms, equation 4), ~5–7.3
+  ms over 10–14.6 V with the typical 2.21 µA on the pin, so the ROCK's input capacitors charge
+  gently and the cable does not ring; the divider from IN, 866 kΩ to EN/UVLO, 75 kΩ on to OVLO
+  and 66.5 kΩ to ground, puts the undervoltage lockout at ~8.5 V and the overvoltage lockout at
+  ~18.2 V (equations 10 and 11), its ~15 µA more than twenty times the pins' 0.1 µA of leakage,
+  as TI asks (8.2.2.2). PGTH takes a divider from OUT (equation 16), its threshold under the pack's
+  10 V end, its values when drawn; ITIMER's capacitor (equation 6) is chosen from the ROCK's
+  measured peaks.
+- **EN and PG:** Baťa's on PE14 and PE15, Borovičok's on PD8 and PD9. Processor 2 holds EN/UVLO
+  under 0.45 V to keep the eFuse off, shut down at ~4.4 µA (ISD), and lets the divider lift it to
+  switch it on; how her pin and the divider share EN/UVLO, so that the eFuse stays off also while
+  she is unpowered, is drawn with the schematic. PG is pulled up to Mamka's 3.3 V: a ROCK that
+  does not come up shows on PG, and Baťa on header pin 1 too.
+- **Its loss** at 3 A is ~0.25 W in its 28 mΩ (45 mΩ at most, ~0.4 W); the ROCK's 17 W at
+  12.8 V is 1.3 A, ~0.05 W.
+- **Its 28 V against the pack plugged in:** 14.6 V through 20–60 mΩ and 0.3–1.2 µH into Mamka's
+  30–45 µF of ceramics and her two EEHZA1H470P rings to 15.1–23.8 V, the worst a long cable and
+  little resistance; the hybrids' 15 mΩ together damp little, the path's resistance does. The
+  cells' ≤ 3 mΩ are EVE's figure, the rest estimates.
 - Under 9 V, 2.25 V a cell, below LiFePO4's 2.5 V end, the ROCK 5T would go out; the suit shuts
   down at 20% long before,
   and the eFuse's 8.5 V is only the backstop.
@@ -483,13 +524,17 @@ fuse → the eFuses, Terem's cable and Mamka's own converters.
   and PA5 TT, PB8 FT, WKUP2 on PA2 (the LQFP64 plan of that morning had processor 2's NSS on PB9,
   which LQFP64 lacks); the clock tree (see [software](SOFTWARE.md#clocks)) and the DMA table, 7 and
   12 of 16 channels (see [software](SOFTWARE.md#dma)), to check on the first board,
-- the TPS26630's current limit against the ROCK 5T's real peaks with the glasses on its USB-C,
-  measured; the jack's pin, 2.0 mm by the model, checked with a calliper on the board,
-- the converters' ripple in the ADS129x data: confirm by measurement,
-- the 6 V converter's start into ~1.4 mF and its loop's stability: simulation and measurement;
-  SNVSBY5B lists a hiccup time (tHICCUP, 30–75 ms) that its section 8.3.9 does not describe, so
-  when the part hiccups, and whether a long start at the current limit triggers it, is to be
-  found out first,
+- the eFuse's breaker at ~3 A against the ROCK 5T's real peaks with the glasses on its USB-C,
+  measured, and ITIMER's capacitor from them; how processor 2's pin and the divider share
+  EN/UVLO so that the eFuse stays off while Mamka is unpowered; whether the DC cable's negative
+  spike when the breaker opens wants TI's Schottky from OUT to ground (SLVSFC9C, 8.3.1); the
+  jack's pin, 2.0 mm by the model, checked with a calliper on the board,
+- the converters' ripple in the ADS1298 data: confirm by measurement; a converter running near
+  983.04 kHz, inside its 0.9–1.1 MHz, would fold its ripple close to DC,
+- the 6 V converter's start into ~0.8–1.0 mF, the lines' into theirs, and their loops'
+  stability: simulation and measurement; SNVSBY5B lists a hiccup time (tHICCUP, 30–75 ms) that
+  its section 8.3.9 does not describe, so when the part hiccups, and whether a long start at the
+  current limit triggers it, is to be found out first,
 - no other helper function is planned; the clock, the sound bridge, Budilnik and the GPS are
   all the board carries.
 

@@ -51,8 +51,8 @@ made.
   side.
 - **Míša** sits in the middle of the forehead on a tap of his own on line 8, the line's cable
   reaching him in the headband, and works with the glasses on.
-- **The board** lies flat in the headband: its polymers are 1.4–1.8 mm tall, where Mamka's 50 V
-  hybrid polymer stands 10.2 mm. It sits on the back half, which has no electrodes: the
+- **The board** lies flat in the headband: the motors' polymer is 1.4 mm tall, where Mamka's
+  50 V hybrid polymer stands 10.2 mm. It sits on the back half, which has no electrodes: the
   headband is one piece with the head's band of 16 on its front half (see
   [Bogatyr](../bogatyr/CONSTRUCTION.md#the-modules)). Without electrodes it is Nataša's alone.
 - **The headphones** are any wired pair in the 3.5 mm jack.

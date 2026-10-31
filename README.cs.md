@@ -16,7 +16,7 @@ až se dvěma AI akcelerátory Hailo-10H, a celé tělo se stává ovladačem po
 
 </div>
 
-> **Beta 0.5:** koncept ve stádiu návrhu, nic ještě není postaveno; co je uzavřené, co otevřené a
+> **Beta 0.6:** koncept ve stádiu návrhu, nic ještě není postaveno; co je uzavřené, co otevřené a
 > co je jen odhad, je ve [stavu projektu](STATUS.md) (anglicky). Ostatní stránky jsou anglicky.
 
 ---

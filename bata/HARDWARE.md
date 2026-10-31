@@ -133,6 +133,13 @@ him only over Ethernet.
   [Mamka](../mamka/HARDWARE.md#the-computers-supply)), so Mamka
   switches both computers, and the backpack takes the 10 A power variant (see
   [Babuška](../babuska/HARDWARE.md#power-variants)).
+- **His block:** the same Mrazík as Baťa's, with the plate, or an SSD's card, under his ROCK and no
+  Mamka (see [Babuška](../babuska/CONSTRUCTION.md#mrazík)). Its fan runs from his ROCK's own fan
+  connector (schematic V1.2, sheet 34, *Power_DC 5V/FAN*): U90087, two pins at 1.25 mm, pin 2 on
+  VCC5V0_SYS (5.148 V), pin 1 switched to ground by an N-MOSFET, Q9518 (BL8810), through 0.1 Ω, its
+  gate through 1 kΩ from GPIO0_C0, PWM1_M0, a 1N5819 across the fan; no speed read back. So a plain
+  two-wire 5 V fan on a 1.25 mm plug, its speed set by Linux's pwm-fan; a 40 mm fan's ~0.07 A is
+  taken to fit, the BL8810's own rating not read.
 
 ## Ďaďa Sem
 

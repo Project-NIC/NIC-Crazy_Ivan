@@ -19,13 +19,13 @@ named. What the electrodes and the strips are made of is under
 
 ## The electrodes' rules
 
-- **Two chips on the body and on the head, one on the neck:** a module of the body has two ADS1298,
-  16 channels on 32 electrodes and a bias electrode, 33, measuring differentially, each channel P
-  against N; the head's module two ADS1299, 16 channels on 32 electrodes, a bias and one reference
-  electrode, 34, and the neck's one ADS1299, 8 channels on 16 electrodes, a bias and a reference,
-  18, both ways on both: against the reference (MISC1 0x20) an ADS1299 puts SRB1 on every channel's
-  negative input, so its eight P measure against the reference and the N are idle, INnN reaching the
-  amplifier through a switch that is closed only while SRB1 is off (SBAS499C, figure 18; see
+- **Two chips on the body and on the head, one on the neck,** every one an ADS1298: a module of the
+  body has two, 16 channels on 32 electrodes and a bias electrode, 33, measuring differentially,
+  each channel P against N; the head's module two, 16 channels on 32 electrodes, a bias and one
+  reference electrode, 34, and the neck's one, 8 channels on 16 electrodes, a bias and a reference,
+  18, both ways on both: differential, or against the reference, an electrode that the strip itself
+  wires to every channel's negative input, so that the eight P measure against it. The ADS1298 has
+  no SRB1 to switch it, so the strip's wiring sets the way, not a register (SBAS459K; see
   [Rubaška](../rubaska/HARDWARE.md#right-leg-drive)); 514 electrodes on the modules, and the glove's
   and the sock's sixteen with a bias each, 582 in all. **The body's second eight channels are not
   laid out yet:** every module below has its first eight, and the second eight, the crossed pairs
@@ -56,12 +56,16 @@ named. What the electrodes and the strips are made of is under
 - **Across the spine only diagonally, on the erectors' bulges:** a P on one bulge, its N on the
   other a few centimetres higher or lower, ~5–9 cm, so the chords cross in X and each takes both
   sides.
-- **The bias over bone,** as SENIAM puts its reference over bone (C7, the wrist, the ankle), and
-  on the head and the neck the reference over bone near the middle of the area, close to all
-  eight P; the body's modules carry no reference, the ADS1298 having no SRB1.
-  Where an IMU needs the same bone, both stay on it a few centimetres apart (see
-  [the IMUs](#the-imus)). One bias electrode drives the body and the others wait as spares (see
-  [Rubaška](../rubaska/HARDWARE.md#right-leg-drive)).
+- **The bias over bone,** as SENIAM puts its reference over bone (C7, the wrist, the ankle), and on
+  the head and the neck the reference over bone near the middle of the area, close to all eight P;
+  the body's modules carry no reference, measuring differentially. Where an IMU needs the same bone,
+  both stay on it a few centimetres apart (see [the IMUs](#the-imus)). One bias electrode drives the
+  body and the others wait as spares (see [Rubaška](../rubaska/HARDWARE.md#right-leg-drive)).
+- **A ring's strips do not stretch:** on the limbs as on the torso an elastic gap in the band's
+  fabric takes the swell, and two or three short strips a module, ~20 cm at most, meet at it (see
+  [Rubaška](../rubaska/CONSTRUCTION.md#electrodes)); the upper arm's, the forearm's and the calf's
+  gaps below carry their IMUs, the upper arm's and the calf's the bias too. Where a ring wants its
+  gap where its module is not, the module moves, settled when the band is drawn.
 - **Nothing pressed onto a nerve that lies on bone under the skin:** the common peroneal nerve
   winds round the neck of the fibula, the ulnar nerve rests on the back of the medial epicondyle
   (Gray's *Anatomy of the Human Body*, 1918); an electrode pressed by its band would press the
@@ -297,8 +301,9 @@ output; see [Porjadok](../porjadok/SOFTWARE.md#output).
 
 **The rules:**
 
-- **Four IMUs a module at most:** two I3C buses of two, since the ICM-45686 has one address pin
-  (DS-000489, 9.3); 64 places on 16 modules, 42 fitted. The gloves come on top, 20 each, and the
+- **Four IMUs a module at most:** two I3C buses of two, since the LSM6DSV16X has one address pin,
+  SDO/SA0, for 0x6A or 0x6B, and its I3C identity differs only by it (DS13510 Rev 4, 5.1.2 and
+  table 17); 64 places on 16 modules, 42 fitted. The gloves come on top, 20 each, and the
   socks, 8.
 - **At least the segments of a commercial suit:** Xsens MVN puts 17 sensors on the pelvis (the
   sacrum), the sternum, the head, both shoulders (the scapula), the upper arms, the forearms,
@@ -409,12 +414,12 @@ IEEE TBME 2011 and 2012; De Luca et al., J Biomech 2012; Merletti & Cerone, J El
 Kinesiol 2020; Nedios et al., J Electrocardiol 2014; Oltmann et al., IEEE TBME 2025; Castroflorio
 et al. 2005; Gray's *Anatomy of the Human Body*, 20th edition (1918): the splenius capitis, the
 ulnar nerve, the common peroneal nerve, the carotid triangle; StatPearls, carotid sinus
-hypersensitivity; TI's ADS1299 datasheet, SBAS499C. For the IMUs: Xsens MVN's 17 segments in
+hypersensitivity; TI's ADS1298 datasheet, SBAS459K. For the IMUs: Xsens MVN's 17 segments in
 PMC3651313; Peters et al., *Quantification of soft tissue artifact in lower limb human motion
 analysis: a systematic review*, Gait & Posture 2010; Stagni et al., Clin Biomech 2005 (thigh up to
 31 mm, shank up to 21 mm); Cutti et al., *Soft tissue artefact assessment in humeral axial
 rotation*, Gait & Posture 21, 2005; Warner & Heller, J Biomech 2025; Karduna et al., *Dynamic
 measurements of three-dimensional scapular kinematics: a validation study*, J Biomech Eng 2001,
 with the review PMC4019455; Stebbins et al., *Repeatability of a model for measuring multi-segment
-foot kinematics in children*, Gait & Posture 23, 2006, the Oxford Foot Model; ICM-45686 DS-000489
-Rev 1.1.
+foot kinematics in children*, Gait & Posture 23, 2006, the Oxford Foot Model; ST's LSM6DSV16X
+datasheet, DS13510 Rev 4.

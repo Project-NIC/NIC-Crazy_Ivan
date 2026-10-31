@@ -123,7 +123,7 @@ comes by itself an answer to a read sent unasked, as Míša's sphere.
 |---|---|---|
 | 0x00–0x01 | the firmware's version | read |
 | 0x02 | the state: bit 0 the firmware on trial, 1 the last update failed, 2 Nataša present, 3 Míša present | read |
-| 0x03–0x04 | the power (u16): bits 0–1 the limbs' 4 V chain's first EN and last PGOOD, 2–3 the head's and the trunk's, 4–5 the 6 V's EN and PGOOD, 6–7 Baťa's eFuse's SHDN and PGOOD, 8–9 Borovičok's | read |
+| 0x03–0x04 | the power (u16): bits 0–1 the limbs' 4 V chain's first EN and last PGOOD, 2–3 the head's and the trunk's, 4–5 the 6 V's EN and PGOOD, 6–7 Baťa's eFuse's EN and PG, 8–9 Borovičok's | read |
 | 0x05–0x06 | the fan, rpm | read |
 | 0x07–0x08 | her temperature, 0.1 °C | read |
 | 0x09 | the last reset's cause, as a unit's (see [Porjadok](../porjadok/SOFTWARE.md#watchdogs)) | read |
@@ -199,9 +199,10 @@ voice or vibration through Nataša, and at 20% shuts the suit down in order.
 ## Memory
 
 The STM32H562 has 640 KB of RAM in three blocks, SRAM1 of 256 KB, SRAM2 of 64 KB and SRAM3 of
-320 KB, and 4 KB of backup SRAM (ST's CMSIS header stm32h562xx.h). The STM32H563 has the same
-memory and adds Ethernet, with its own DMA on the bus, and a second SDMMC; Mamka needs neither,
-the network is Baťa's. The STM32H523 has 272 KB, 128, 80 and 64 KB, and 2 KB of backup SRAM.
+320 KB, and 4 KB of backup SRAM (ST's CMSIS header stm32h562xx.h). The STM32H563, the other part
+either processor may be, has the same memory (DS14258 Rev 6, table 2) and adds Ethernet, with
+its own DMA on the bus, which stays off: the network is Baťa's. The STM32H523 has 272 KB, 128, 80
+and 64 KB, and 2 KB of backup SRAM.
 All three have two GPDMAs of eight channels, channels 6 and 7 of each with 2D addressing.
 
 - **The bus is no limit.** Processor 1 moves ~1,064 B every 521 µs, ~2.0 MB/s in from the lines
@@ -220,7 +221,8 @@ All three have two GPDMAs of eight channels, channels 6 and 7 of each with 2D ad
 - **While firmware goes down the lines** nothing is measured; processor 1 passes the blocks on
   and holds no image.
 - **Processor 2** needs as many UARTs and SPIs as processor 1 and more, and a ring of her own;
-  both are the STM32H562VG, one part on the board and one base for the firmware.
+  both are the STM32H562VG or the STM32H563VG, one footprint on the board and one base for the
+  firmware (see [hardware](HARDWARE.md#what-is-on-it)).
 
 ## Clocks
 

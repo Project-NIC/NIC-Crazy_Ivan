@@ -37,7 +37,7 @@ pins, and the radar beside the EMG.
 | THVD1452 | VSSOP-10, or SOIC-14 | 1 | line 8's return pair (see [Porjadok](../porjadok/HARDWARE.md#drivers-on-a-unit)) |
 | AM26LV32E | VQFN-16, 3.5 × 4 mm | 1 | line 8's pair from Mamka, the echo and the suit's clock |
 | Jorjin MT5C01-03 | module 15.5 × 7.0 mm, on a Hirose BM23PF0.8-14DS-0.35V | 1 | the radar, see below |
-| ICM-45686 | LGA-14, 2.5 × 3 × 0.81 mm | 1 | the IMU: the head's tilt from gravity, short turns from the gyro |
+| LSM6DSV16X | LGA-14L, 2.5 × 3 × 0.83 mm | 1 | the IMU, the suit's: the head's tilt from gravity, short turns from the gyro; 100 nF at each supply pin and 1 kΩ in series with INT2, as on the IMU board (see [Rubaška](../rubaska/HARDWARE.md#the-imu)) |
 | ICU-20201 | LGA-14, 3.5 × 3.5 × 1.26 mm | 1 | the ultrasound ahead, in a 45° horn |
 | TPS62850x | SOT583, 2.1 × 1.6 mm | 3 | 4 V to 3.3 V, 1.8 V and 1.2 V for the radar module, after Jorjin's reference design (2.7–6 V in, 2 A) |
 | TPS7A2018 | X2SON, 1 × 1 mm | 1 | 3.3 → 1.8 V for the ultrasonic sensor's core |
@@ -47,11 +47,12 @@ pins, and the radar beside the EMG.
 - **The radar to the processor:** its UART, and its reset and SOP0, so the processor can put it
   into flashing mode and load new radar firmware; the radar can be updated through the suit.
 - **The ultrasonic sensors:** one SPI with a chip select each and no interrupt lines, as below.
-- **On line 8,** a unit of his own, 0x82, with a tap and two packages of drivers as the glove's
-  Staršaja: the line's pairs, its 4 V and ground, and the suit's clock from its pair (see
-  [Porjadok](../porjadok/HARDWARE.md#links-between-boards)). Nataša beside him may be missing.
-  The forehead's vibration motor sits in Míša's housing off the skin but is Nataša's, its two
-  wires from her board (see [Nataša](../natasa/HARDWARE.md#míša-beside-her)).
+- **On line 8,** a unit of his own, 0x82, with a tap, the Picoflex PF-50 header 90814-0816 where the
+  line's cable passes (see [Porjadok](../porjadok/HARDWARE.md#cable-and-connectors-in-the-suit)),
+  and two packages of drivers as the glove's Staršaja: the line's pairs, its 4 V and ground, and the
+  suit's clock from its pair (see [Porjadok](../porjadok/HARDWARE.md#links-between-boards)). Nataša
+  beside him may be missing. The forehead's vibration motor sits in Míša's housing off the skin but
+  is Nataša's, its two wires from her board (see [Nataša](../natasa/HARDWARE.md#míša-beside-her)).
 - **The suit's clock** comes off the line as to every unit, so his slot keeps in step and the
   radar's rhythm is as precise as the suit's clock, a SiT8008 of ±20 ppm.
   He counts the suit's cycles himself, so the suit's time is his own (see
@@ -70,15 +71,15 @@ He needs 25:
 | the radar: its UART, NRESET, SOP0, its host interrupt | 5 | USART1_TX PA9 (30), USART1_RX PA10 (31), AF7; NRESET PA11 (32) and SOP0 PA12 (33), outputs; the interrupt PA15 (38), an input on EXTI15 |
 | the radar's supplies: EN of its three converters together | 1 | PB10 (21), an output, so the processor can power the module down and up |
 | the ultrasonic sensors: one SPI and a chip select each | 7 | SPI1 (AF5): SCK PA5 (15), MISO PA6 (16), MOSI PA7 (17), mode 3, at most 13 MHz (DS-000478), 78.6432 MHz ÷ 8 = 9.83 MHz; CS as outputs: the sensor on the board PA4 (14), the three sockets PB0, PB1, PB2 (18–20) |
-| the IMU: one I3C bus and CLKIN | 3 | I3C1_SCL PB6 (42), I3C1_SDA PB7 (43), AF3; CLKIN from TIM1_CH1 on PA8 (29), AF1, 38,400 Hz from the suit's 9.8304 MHz ÷ 256 |
+| the IMU: one I3C bus and REF | 3 | I3C1_SCL PB6 (42), I3C1_SDA PB7 (43), AF3; REF from TIM1_CH1 on PA8 (29), AF1, to the IMU's INT2, 24 or 15 Hz from the suit's 9.8304 MHz ÷ 409,600 or ÷ 655,360 |
 | line 8: transmit, the echo, DE, receive from Mamka | 4 | USART2_TX PA2 (12), the echo on USART2_RX PA3 (13), USART2_DE PA1 (11), AF7; Mamka's frames on UART5_RX PB5 (41), AF14 (tables 14 and 15), the radar keeping USART1, NRESET and SOP0 on PA9–PA12 |
 | SWD and SWO | 3 | PA13 (34), PA14 (37), PB3 (39), AF0 |
 | status LED | 1 | PB12 (25), as on a module |
 | **total** | **25** | 10 I/Os free |
 
-- **The module's pins where the job is the same:** the clock in, SPI1, I3C1, CLKIN, SWD and the
+- **The module's pins where the job is the same:** the clock in, SPI1, I3C1, REF, SWD and the
   LED sit where the module has them, so the IMU and clock code carry over unchanged. SPI1 serves
-  the ultrasonic sensors instead of an ADS129x; the sensors have no interrupt lines, so a
+  the ultrasonic sensors instead of an ADS1298; the sensors have no interrupt lines, so a
   measurement is started by a write and its end read or waited for (see
   [the ultrasonic sensor](#the-ultrasonic-sensor)).
 - **The radar** talks over USART1 at 1,250,000 Bd, the one rate TI's demo takes (below), on the
@@ -87,10 +88,12 @@ He needs 25:
   into its flashing mode (see [the board](#the-board)); the exact pin names on the MT5C01-03's
   connector are to be read in Jorjin's sheet. Its host interrupt says when a frame of points is
   ready.
-- **The IMU** runs at 1,920 Hz as in a module, from the CLKIN that Míša makes from the suit's
-  clock, and the
-  processor sums its steps the same way; its 12 B a step go into the sphere's header as the
-  head's turn and pitch, not up the line.
+- **The IMU** runs at 1,920 Hz as in a module: its 1.6 kHz setting is held to the REF that Míša
+  makes from the suit's clock on his own timer, the ODR-triggered mode (DS13510 Rev 4, 6.6; AN5763
+  Rev 4, 3.3, table 15). REF stays low until the IMU is set, its INT2 being an output forced to
+  ground from power-on (DS13510 Rev 4, table 23); should the IMU reset while REF runs, the 1 kΩ
+  holds the current to 3.3 mA. The processor sums its steps the same way; its 12 B a step go into
+  the sphere's header as the head's turn and pitch, not up the line.
 - BOOT0 to ground through 10 kΩ, NRST to the SWD pads, 2.2 µF on each VCAP (DS14540, table 21),
   PC13 to PC15 left free (table 13, note 2), as on a module. Should LQFP64 be chosen for the
   layout, the pins keep their names and only their numbers change.
@@ -171,7 +174,7 @@ about a millisecond a frame. At Míša's 10 frames a second
 those bursts have harmonics at 10, 20, 30 … Hz, right in the EMG band up to ~500 Hz.
 
 - **Line 8 has a converter of its own** on Mamka and its own π filter, so the bursts do
-  not share a supply with the body; each module's analog side has its own TPS7A47. What is left
+  not share a supply with the body; each module's analog side has its own LP2985. What is left
   is the common ground at Mamka and the field around the current loop, worst with a module of
   electrodes in the headband next to Míša.
 - **When the radar chirped:** with TI's demo the frames run on the radar's own timer, not
@@ -183,9 +186,9 @@ those bursts have harmonics at 10, 20, 30 … Hz, right in the EMG band up to ~5
   frame (its datasheet), but TI's SDK 05.05 does not use it yet, and Jorjin's pinout must bring
   it out.
 - **The radar's 60 GHz itself** hardly reaches the leads: at a 5 mm wavelength they are poor
-  antennas, and it sends +15 dBm EIRP. The ADS1299's datasheet advises small common-mode
-  capacitors at the inputs, 10–20 times smaller than the differential one, where a system meets
-  high-frequency interference; they are added if a measurement asks for them.
+  antennas, and it sends +15 dBm EIRP. The ADS1298 has an RC filter at every input, ~3 MHz
+  (SBAS459K, 9.3.1.1), and a module's inputs keep empty places for small common-mode capacitors
+  (see [Rubaška](../rubaska/HARDWARE.md#sensing-module)), filled if a measurement asks for them.
 - **Bulk capacitors** on Míša's board soften the bursts' edges, the higher harmonics.
 
 ## Open questions

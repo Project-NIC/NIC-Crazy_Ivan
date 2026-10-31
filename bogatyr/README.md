@@ -20,16 +20,16 @@ physiotherapist, before any strip is drawn. Where a place is an estimate, it say
 
 ## What it lays out
 
-- **The EMG of 16 modules:** fourteen of the body with two ADS1298, 32 electrodes and a bias
-  electrode each, measuring differentially, a channel P against N; the head's with two ADS1299, 32
-  electrodes, a bias and one reference electrode, the neck's with one ADS1299 and 16, both ways
-  there, against the reference the P against one point (see
-  [Rubaška](../rubaska/HARDWARE.md#right-leg-drive)): 514 electrodes on the modules, and the hand's
-  and the foot's sixteen with a bias on the glove's and the sock's own ADS1298, 582 in all. A
-  channel's two electrodes lie 4–8 cm apart where the muscle allows, 2–3 cm on small muscles and
-  near the heart, along the fibres and across them by turns, and across the spine only diagonally.
-  **The body's modules' second eight channels are not laid out yet:** this page has the first eight
-  of every module, and the rest is laid out with the physiotherapist (see
+- **The EMG of 16 modules,** every chip an ADS1298: fourteen of the body with two, 32 electrodes and
+  a bias electrode each, measuring differentially, a channel P against N; the head's with two, 32
+  electrodes, a bias and one reference electrode, the neck's with one and 16, both ways there,
+  against the reference the P against one point, which the strip wires to the channels' negative
+  inputs (see [Rubaška](../rubaska/HARDWARE.md#right-leg-drive)): 514 electrodes on the modules, and
+  the hand's and the foot's sixteen with a bias on the glove's and the sock's own ADS1298, 582 in
+  all. A channel's two electrodes lie 4–8 cm apart where the muscle allows, 2–3 cm on small muscles
+  and near the heart, along the fibres and across them by turns, and across the spine only
+  diagonally. **The body's modules' second eight channels are not laid out yet:** this page has the
+  first eight of every module, and the rest is laid out with the physiotherapist (see
   [construction](CONSTRUCTION.md#open-questions)).
 - **The IMUs,** 42 on the body of 64 places, two or more on each segment of a limb, more where
   the skin slides most and four in a square on the head; the gloves' 2 × 20 and the socks' 2 × 8.

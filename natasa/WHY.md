@@ -33,3 +33,7 @@ thing waits in reserve, it says so.
   to plug in (the owner): he has a tap of his own on line 8, with his drivers and his slot.
 - **Four motors at once.** Two keep the current at ~0.2 A; four starting together with the rest
   of Nataša would come close to line 8's 1 A converter.
+- **A POSCAP at the input,** the 6TPE100M, 100 µF where the cable arrives (to 31 Oct 2026). A
+  22 µF ceramic behind 0.5 Ω damps a plug into a live line as well, ≤ 4.52 V against the
+  TPS7A2033's 6.5 V, leaves line 8's converter ~26 µF to charge at start instead of ~110, and is
+  a JLCPCB Basic part; the motors' polymer behind their choke stays.
