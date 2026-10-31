@@ -19,7 +19,7 @@ converters down to the LDOs on every module.
 
 The suit runs from a LiFePO4 battery of 12.8 V nominal, charged between 20 and 80%.
 [Mamka](../mamka/HARDWARE.md#converters) makes two supply rails from it with LMR43610 buck
-converters at 2.2 MHz: **4 V** for the digital parts, a converter for each line, and **6 V** for
+converters at 1 MHz: **4 V** for the digital parts, a converter for each line, and **6 V** for
 the analog parts, one converter for the whole suit. Each module brings them down with its own
 LDOs: 3.3 V for everything digital, 5 V for the analog side. The RS-485 drivers run from 3.3 V as
 well, which lowers the current on the lines. How a sensing
@@ -31,11 +31,11 @@ processor at its datasheet maximum and the line driver sending:
 | rail | one module, average | one module, peak | 16 modules |
 |---|---|---|---|
 | 4 V | ~69 mA | ~135 mA | ~1.10 A, ~4.4 W |
-| 6 V | ~7 mA, the head's ~15, the neck's ~8 | the same | ~0.12 A, ~0.73 W |
+| 6 V | ~7 mA, the neck's ~4 | the same | ~0.11 A, ~0.65 W |
 
-- **Two ADS1298 draw what one ADS1299 did:** 2 × 3.1 mA against 7.14 on the analog rail and 2 ×
-  0.5 against 1 on the digital (SBAS459K and SBAS499C, Electrical Characteristics), so a module's
-  budget stands with its second chip (see [Rubaška](../rubaska/HARDWARE.md#power)).
+- **An ADS1298 takes 3.1 mA on the analog rail and 0.5 mA on the digital** (SBAS459K, Electrical
+  Characteristics), so a module of two chips draws ~7 mA from the 6 V, the neck's of one ~4 mA
+  (see [Rubaška](../rubaska/HARDWARE.md#power)).
 - **The processor is counted as at 200 MHz in VOS0,** for margin (see
   [Rubaška](../rubaska/HARDWARE.md#power)); its core at 49.152 MHz saves an estimated ~14 mA
   more (see [software](SOFTWARE.md#the-clock-tree)), not taken off here.
@@ -44,8 +44,10 @@ processor at its datasheet maximum and the line driver sending:
   ~0.31 A on the 4 V rail on average and ~0.50 A at worst, the most any line of the body draws; a
   leg's, three modules and the sock at ~0.09 A and ~0.17 A, ~0.29 A and ~0.47 A.
 - The digital rail at 4 V costs ~0.3 W across the suit against 3.7 V and buys the margin the
-  LDOs and the head's motors need (see [WHY](WHY.md)). The analog rail stays at 6 V: 5.5 V would
-  save only ~0.06 W, and the headroom helps the TPS7A47 reject ripple from Mamka's converters.
+  LDOs and the head's motors need (see [WHY](WHY.md)). The analog rail is 6 V, the 5 V LDO's
+  output plus 1 V, the input at which the LP2985-5.0's sheet gives its figures, its 70 dB of
+  ripple rejection at 1 kHz among them (SLVS522S, Electrical Characteristics); 5.5 V would save
+  only ~0.06 W.
 
 ## Links between boards
 
@@ -56,9 +58,8 @@ Nataša and Míša.
 Eight lines leave Mamka, **a line a piece of the suit,** at most four units a line, so that the suit
 comes apart in its pieces with no connector along it: each piece's cable goes straight to the
 backpack, an arm's over its shoulder and down the arm, the units chained along it. Fully populated,
-that is 35 ADS129x, two ADS1298 on a module of the body, two ADS1299 on the head's, one on the
-neck's and one ADS1298 on each glove and sock, 280 channels; 64 IMU places in the modules, two
-gloves of 20 IMUs and two socks of 8.
+that is 35 ADS1298, two on every module but the neck's, which has one, and one on each glove and
+sock, 280 channels; 64 IMU places in the modules, two gloves of 20 IMUs and two socks of 8.
 
 | line | processor | the piece | slots 1–4 |
 |---|---|---|---|
@@ -111,7 +112,7 @@ What travels on the lines, the frames, the slots, the commands and the way into 
 ## Cable and connectors in the suit
 
 Inside the suit a line runs as one flat cable of **16 wires,** the **3M 3811/16** (3M TS-0122),
-with IDC sockets of 2 × 8 pressed onto it along the way, one where each unit taps in.
+with a Molex **Picoflex PF-50** receptacle pressed onto it where each unit taps in.
 
 - **The wires,** a ground between the pairs so that the 9.8 MHz clock does not talk into the
   data: ground, data down, ground, data up, ground, clock, ground, ten for the signals; then
@@ -123,18 +124,27 @@ with IDC sockets of 2 × 8 pressed onto it along the way, one where each unit ta
   pairs' own impedance the sheet does not give: the lines are terminated with 120 Ω, checked on
   the cable. PVC does here: the lines carry low-impedance digital signals, on which charge from
   friction does not show.
-- A 1.27 mm flat cable fits an ordinary IDC socket with two rows at 2.54 mm, one that takes
-  26 AWG stranded wire. A socket can be pressed on anywhere, so the taps sit along one cable
-  wherever a unit is.
+- **The Picoflex PF-50 in tin,** 1.27 mm, the cable's own pitch: the IDT receptacle 90327-0316
+  on the cable (LCSC C114117), the SMT header 90814-0816 on the unit (C17309979). The receptacle
+  takes 26 or 28 AWG of 7 strands, so the 3M 3811, and is feed-through: the cable runs on through
+  it, so a tap sits anywhere along one cable, wherever a unit is. 1.2 A a contact; 30 mating
+  cycles in tin; tin against tin, never gold against tin (Molex catalogue MX10, G-2 and G-4).
+- **Connectors for assembly and repair only:** the sensing units are potted whole, their
+  connectors mated, in Dow's SYLGARD 527, a silicone gel that can be removed for a repair, helped
+  by Dow's OS fluids, and the place patched with more gel (Dow, on SYLGARD 527). They stay on the
+  harness, Kaščej, which is rinsed in clean water while the clothes go into the washing machine,
+  and Strejda Al, a tight compression overall over it, presses the bands to the body (see
+  [Rubaška](../rubaska/CONSTRUCTION.md#harness-and-washing)). A connector is opened only when the
+  suit is put together or mended, which 30 cycles allow.
 - **The six grounds** hold the modules' grounds close together.
-- A broken cable is repaired with a new socket past the damage, or a piece of new cable between
-  two sockets.
+- A broken cable is repaired with a new receptacle past the damage, or with a new length of cable,
+  its receptacles pressed on anew.
 - **Sewn in, in meanders:** the cables are sewn into the suit along wavy paths, which take the
   stretch, and a pull has to tear the seams before it reaches the wires.
 - **Where the suit parts:** at the backpack, each piece's line through a connector of its own
-  (see [Babuška](../babuska/CONSTRUCTION.md#the-backpack)); and at each unit, which unplugs for
-  washing, the glove's board on the back of the hand as a module does, the line's cable sewn on
-  over the wrist to it. Nowhere else.
+  (see [Babuška](../babuska/CONSTRUCTION.md#the-backpack)), and nowhere else. The glove's board on
+  the back of the hand sits on its arm's line as a module does, the line's cable sewn on over the
+  wrist to it.
 - At these rates the stub from a tap to the unit's driver stays a few centimetres long, so each
   unit sits right at its tap.
 
@@ -144,6 +154,9 @@ with IDC sockets of 2 × 8 pressed onto it along the way, one where each unit ta
 the first trials the **GX16 of 10 pins** (29 CZK a half at dratek.cz; no sealing given, the shop's
 figures unreliable), with the same pinout. Amphenol's PT 12-10 was weighed, a bayonet and IP67,
 over 10,000 CZK for eight pairs ($33.64 the plug at PEI-Genesis, 2024); see [WHY](WHY.md).
+These and Mamka's IDC headers, where there is no gel, are the only connectors that take a contact
+spray: sulfur, amines, tin compounds or oils can stop a platinum-cured silicone from curing
+(general knowledge; Dow's list not read).
 
 **Untwisted and unshielded,** over 1–2 m: the twist matters less for the data than for what the
 line sends out towards the bands' strips and picks up, and in a flat cable the two wires of a
@@ -158,10 +171,10 @@ copper with a little for the tin and the lay, an estimate, 3M's sheet giving no 
 most it is taken as ~151 Ω/km, UL 1571's 239 Ω/km for 28 AWG of 7 × 0.127 mm (LTK's sheet)
 scaled by the cross-section, so the six grounds come to ~0.025 Ω/m: a unit a metre out sits
 ≤ ~13 mV off Mamka's ground at an arm's worst 0.50 A, two units on different lines twice that at
-most. Against the volts of the ADS129x's common-mode range it is nothing.
+most. Against the volts of the ADS1298's common-mode range it is nothing.
 
-The 6 V rail carries little, ~8 mA per module, so one wire would be plenty; the cable gives it
-two.
+The 6 V rail carries little, ~7 mA a module at most, so one wire would be plenty; the cable gives
+it two.
 
 ### End to end
 
@@ -179,7 +192,7 @@ arm's three modules and the glove), so the margin is a little larger than it sho
 | the harness in the backpack, 20 cm of 28 AWG, one wire each way | 2 × 48 mΩ | 52 mV |
 | the backpack's Weipu SP21, +4 V on one contact, ground on two | ~10 mΩ, taken as 7 mΩ a contact, Weipu's figure not read | 6 mV |
 | a metre of the cable at ~151 Ω/km (above), +4 V on two wires, ground on six | 0.10 Ω | 54 mV |
-| the module's IDC, two contacts for +4 V, six for ground | ~13 mΩ | 7 mV |
+| the unit's Picoflex, two contacts for +4 V, six for ground | ~13 mΩ at ~20 mΩ a contact, an estimate (Molex's figure not read) | 7 mV |
 | **at the LDO** | | **≥ 3.67 V**, ~3.83 V from typical figures |
 
 - **The suit's lines hold** the 3.6 V at the worst corner. The glove's LDOs sit at the end of its
@@ -246,19 +259,19 @@ one impedance table and one order.
 |---|---|---|
 | [Mamka](../mamka/README.md) | the backpack | two processors, eight line drivers at 19.66 Mbaud and eight clock drivers at 9.83 MHz, the converters, the clock |
 | [Terem](../terem/README.md) | under the ROCK 5T | ten PCIe Gen 3 pairs at 85 Ω in 0.5 mm pitch; 0.8 mm thick for the M.2 sockets |
-| the sensing module | [Rubaška](../rubaska/HARDWARE.md#sensing-module) | two ADS129x, one on each side, or the neck's one ADS1299, beside a processor and line drivers on one narrow board: analog and digital returns apart on a plane |
+| the sensing module | [Rubaška](../rubaska/HARDWARE.md#sensing-module) | two ADS1298, one on each side, or the neck's one, beside a processor and line drivers on one narrow board: analog and digital returns apart on a plane |
 | the IMU board | [Rubaška](../rubaska/HARDWARE.md#the-imu) | small; the same stack for the same order, I3C over a plane |
 | the glove's, Vešč, and the sock's, Nosok | [Rubaška](../rubaska/HARDWARE.md#the-glove) | one board on the back of the hand, or on the calf above the ankle for the foot: an ADS1298 with its inputs on one side, Staršaja, the line's drivers and four Bratiški on the other; the same stack as a module's |
 | [Míša](../misa/README.md) | the headband | the radar module, the ultrasound, a processor, the line's drivers |
 | [Nataša](../natasa/README.md) | the headband | I2S, the DAC and the amplifier beside the processor |
 
-Beside them two kinds of flexible circuit, no boards but drawn the same way: the torso's strips,
-polyimide of two layers, signals and a ground, from JLCPCB, and the stretchable circuits of the
-limbs' bands and the glove, copper on TPU, from a maker of such (see
+Beside them the flexible circuits, no boards but drawn the same way, all polyimide from JLCPCB:
+the bands' strips, on the torso and the limbs alike, of four layers, a ground on both faces and
+the leads inside, and the finger strips, bare flex soldered to the IMU boards (see
 [Rubaška](../rubaska/CONSTRUCTION.md#electrodes)).
 
-The ADS1299's own example layout is drawn for a minimum of two layers, with inner layers for
-power where there are more (its datasheet, 12.2); it is the processor and the drivers on the same
+The ADS1298's own example layout is drawn for a minimum of two layers, with inner layers for
+power where there are more (SBAS459K, 12.2); it is the processor and the drivers on the same
 board, and the module's narrow shape, that make the plane worth having there. Thickness follows
 the board: 0.8 mm where an M.2 socket demands it, otherwise the house's standard 1.6 mm, and
 thinner for the IMU board and the glove's board if the suit asks, decided at construction. The
@@ -268,8 +281,10 @@ rest of the family is software or bought: Baťa and Borovičok, the BMS, the cab
 
 - cable length: confirm by measurement that a metre of the cable carries ~20 Mbit/s on every
   line, and whether 24.576 Mbaud holds,
-- the 3M 3811/16 on a sample: its pairs' impedance against the 120 Ω terminations, the IDC
-  sockets that take its 26 AWG, and its resistance against the ~151 Ω/km taken,
+- the 3M 3811/16 on a sample: its pairs' impedance against the 120 Ω terminations, the Picoflex
+  receptacle pressed onto its 26 AWG, and its resistance against the ~151 Ω/km taken,
+- the Picoflex parts' drawings: the header's length and the mated height, and the contact's
+  resistance against the ~20 mΩ taken,
 - the Weipu SP21's contact resistance, from its sheet or measured,
 - the cable's two tests: the eye at 20 Mbaud over 2 m, and a band's strip alongside, read by a
   module; first on an old 40-wire IDE cable (1.27 mm, 28 AWG), the sleeve only if the strip

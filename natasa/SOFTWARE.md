@@ -114,7 +114,7 @@ within ~17 ms.
 | 7–31 | zeros |
 | 32–33 | CRC-16 |
 
-- **Her diagnostics** are a unit's with no ADS129x (see
+- **Her diagnostics** are a unit's with no ADS1298 (see
   [Porjadok](../porjadok/SOFTWARE.md#the-diagnostics)): the chips alive, her temperature and her
   lowest 3.3 V.
 - **The buttons:** Mamka's processor 2 compares them with the frame before and sends Baťa an

@@ -22,8 +22,8 @@ Each entry says what it was and why it went, so that nobody digs it up without k
   of a few centimetres that 37.5 MHz bears; with the Pi gone only the ROCK's is left.
 - **A strip over the header and a wing past the computer's edge,** the first layout.
   The wing stuck out of the computer's outline and made the backpack's insert wider; one board
-  over the whole ROCK on an extra-tall header keeps the stack inside its 110 × 82 mm, over the SoC's
-  heatsink (see [construction](CONSTRUCTION.md#the-stack)).
+  over the whole ROCK on an extra-tall header keeps the stack inside its 110 × 82 mm, over the SoC
+  (see [construction](CONSTRUCTION.md#the-stack)).
 - **Taking 5 V or 3.3 V from the header.** Mamka runs from the battery and feeds herself, and
   she could feed a switched-off computer back through its pins' protection diodes; so she takes
   only the data pins and the grounds, and pin 1's 3.3 V as the signal "Baťa is up".
@@ -32,12 +32,15 @@ Each entry says what it was and why it went, so that nobody digs it up without k
 - **An STM32H523 for processor 1.** Its 272 KB would spare ~192 KB for the ring, ~0.08 s of
   cycles for Baťa; the STM32H562's 640 KB give a ring of 512 KB, ~0.22 s. For processor 2 the
   STM32H523 might still do (no SAI, so the sound through an SPI in I2S mode); both are the
-  STM32H562VG, one part and one firmware base.
+  STM32H562VG or the STM32H563VG, one footprint and one firmware base.
 - **The LQFP64** (to 24 Oct 2026). Processor 2 needs 48 I/Os of its 49, and it lacks PB9 and
   PB11, pins 62 and 30–32 being VCAP and the supply (ST's pin data); both processors are in
   LQFP100, 80 I/Os.
-- **The STM32H563.** The same memory plus Ethernet and a second SDMMC, which Mamka does not
-  need: the network is Baťa's.
+- **The STM32H563 in its SMPS version,** the ...Q, its core fed by a converter of its own: a
+  2.2 µH inductor, 4.7 µF of at most 10 mΩ, 10 µF on VCAP and 220 pF on VLXSMPS (DS14258 Rev 6,
+  table 23), a converter switching beside the clock's buffers to save a fraction of a watt, and
+  JLCPCB stocks none (31 Oct 2026). The LDO version, the STM32H563VGT6, takes the STM32H562VG's
+  place as it is.
 - **The RP1's UARTs for the lines,** on the Raspberry Pi. They reach 6.25 Mbit/s at most,
   without DMA; the lines run at 19.66 Mbaud into the STM32H562.
 - **Processor 1's UART to Baťa,** on header pins 8 and 10 until 22 Oct 2026, for the modules'
@@ -117,11 +120,21 @@ Each entry says what it was and why it went, so that nobody digs it up without k
   with two processors and the drivers' receivers would draw ~0.3 W or more with the suit off,
   and the 256 Wh pack would be flat in a month. Budilnik holds the converter off instead: the
   button wakes it, processor 2 holds it, and the suit switches itself off completely.
-- **A polymer bulk at Mamka's outputs.** The lines' bulks sit at the modules, where the cables
-  arrive; one here would only add to what each converter charges at start.
-- **A resistor on RT, a sync to the suit's clock, or forced PWM** for the converters. With RT on
-  ground the LMR43610 runs at 2.2 MHz with no part and no trace; the chain of filters takes 2 MHz
-  down by ~70 dB a stage, so neither the exact frequency nor the light-load pulse mode matters.
+- **A polymer bulk at Mamka's outputs.** The lines' inputs are damped at the modules, where the
+  cables arrive; one here would only add to what each converter charges at start.
+- **A polymer bulk wherever a cable arrives,** the house rule to 31 Oct 2026: a POSCAP at every
+  unit's input, ~110 µF on 4 V for a converter to charge at start. An RC, 22 µF behind 0.5 Ω,
+  damps a module plugged into a live line under its parts' ratings and leaves ~26 µF (see
+  [hardware](HARDWARE.md#filtering); the POSCAPs themselves in [Rubaška](../rubaska/WHY.md)).
+  Polymers stay only where a ceramic cannot do it: the battery input, Míša's input, Nataša's
+  motors.
+- **The LMR43610R3, the RT version at 2.2 MHz** (to 31 Oct 2026). With RT on ground it ran at
+  2.2 MHz with no part and no trace, but it costs four times the MB3 version fixed at 1 MHz,
+  $10.26 against $2.12 at JLCPCB, ~$75 more a suit by the thousand; at 1 MHz the chain of filters
+  still takes ~59 dB a stage, and the MB3's pin 1 gives the forced PWM the 6 V converter wants.
+- **A sync to the suit's clock** for the converters. At 983.04 kHz, the suit clock ÷ 10, they
+  would switch at twice the ADS1298's modulator, and their ripple would fold to DC; free running
+  near 1 MHz it lands ~17 kHz away, which the filters and the decimation take.
 - **One 4 V converter for the whole suit.** One per line: a short or a faulty module takes down
   only its line, the lines come up one after another, and the battery takes one line's inrush
   at a time.
@@ -130,10 +143,24 @@ Each entry says what it was and why it went, so that nobody digs it up without k
 - **A converter for the ROCK 5T.** Its DC jack takes 9–20 V, and the pack gives 10–14.6 V; it
   runs straight from the battery through its eFuse here.
 - **A bare P-MOSFET as the ROCK 5T's switch.** At 14.6 V its gate needs a level shifter and a
-  slow turn-on anyway, three or four parts with no current limit; the TPS26630 eFuse brings the
-  limit, the soft start, the under- and overvoltage cutoffs and a shutdown pin in one part, and
-  the branch is protected like every other.
+  slow turn-on anyway, three or four parts with no current limit; an eFuse brings the limit, the
+  soft start, the under- and overvoltage cutoffs and an enable in one part, and the branch is
+  protected like every other.
+- **The TPS26630 as the ROCK's eFuse** (to 31 Oct 2026): 4.5–60 V, 6 A, 31 mΩ, in VQFN-24 of
+  4 × 4 mm (SLVSE94G), at $13.26 against the TPS259474L's $1.29 at JLCPCB, ~$10 more a ROCK by
+  the thousand. The pack gives at most 14.6 V, and its ring on plugging in, 15.1–23.8 V by an
+  estimate, stays under the TPS259474L's 28 V (see
+  [hardware](HARDWARE.md#the-computers-supply)). Tokmas's and Maxinmicro's copies of the
+  TPS26630, $1.16 and $0.77, lost to TI's own part at that price.
 - **CAN to the BMS.** The JK BMS speaks RS485 Modbus too, and the THVD1450 is already on the
   board for the lines' clock.
 - **A GPS in a box of its own, or on USB.** The module sits on Mamka with a UART to processor 2,
   its antenna on the shoulder strap; its PPS goes into a timer that counts the suit clock.
+
+## The stack
+
+- **Radxa's Heatsink 6240B on the SoC** (to 31 Oct 2026): 62 × 40 × 9 mm of aluminium with its
+  own 5 V fan, pressed by two pegs into the ROCK's board, ~13.5 mm of air between it and Mamka.
+  Inside Mrazík, the closed block round the stack, its fan would only stir the air shut in with
+  it; a boss of the block's top wall through a window in Mamka takes the SoC's heat to the fins
+  outside (see [construction](CONSTRUCTION.md#the-stack)).

@@ -37,3 +37,4 @@ Each entry says what it was and why it went, so that nobody digs it up without k
 | a frame of data of his own, once in 32 cycles as Nataša's (to 28 Oct 2026) | it had nothing to carry: his data are the sphere, his health the diagnostics, his IMU goes into the sphere's header and the firmware's state is at 0x88 of his chip 0x00; it would have been 28 B of zeros 120 times a second |
 | two spheres, one a sensor | 224 B in ten pieces, and the nearer of the two every reader's to pick, Nataša's own warning too; the source's code in one sphere tells the same |
 | the sphere only after a radar frame (to 28 Oct 2026) | with the radar gone no sphere came: the ultrasound, there for glass, reached nobody, and Nataša took Míša for gone |
+| the ICM-45686 as his IMU (to 31 Oct 2026) | the suit's IMU is the LSM6DSV16X, $3.36 against $11.94 at JLCPCB, its rate held to the suit's by a reference that ST documents (see [Rubaška](../rubaska/WHY.md#the-imu)) |

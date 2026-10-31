@@ -9,12 +9,12 @@ from dataclasses import dataclass, field
 from ci import stp
 
 ADS_SPS = stp.ADS_SPS
-LSB_PER_UV = 1 / 0.04470        # gain 12, ±375 mV over 24 bits: 44.70 nV a step
+LSB_PER_UV = 1 / 0.03974        # the ADS1298 at gain 12, ±333 mV over 24 bits: 39.74 nV a step
 MISA_EVERY = ADS_SPS // 10      # cycles between Míša's spheres, 10 a second
 P1_LINES = range(1, 5)          # the arms and the legs, on processor 1
 
-# where each module sits, by line and slot, with its IMUs (Bogatyr) and its ADS129x chips, two
-# ADS1298 on the body, two ADS1299 on the head and one on the neck, in the order a smaller suit
+# where each module sits, by line and slot, with its IMUs (Bogatyr) and its ADS1298 chips, two
+# on the body and the head and one on the neck, in the order a smaller suit
 # takes them; an arm's line is its shoulder, upper arm, forearm and glove, a leg's its hip,
 # thigh, calf and sock
 PLACES = [(1, 2, "upper arm L", 4, 2), (1, 3, "forearm L", 2, 2), (2, 2, "upper arm R", 4, 2),
@@ -49,7 +49,7 @@ class Unit:
     rng: random.Random = field(default_factory=lambda: random.Random(1))
     uid: bytes = b""
     kind: int = 0
-    ads: int = 0                # its ADS129x chips: two ADS1298, one ADS1299, none
+    ads: int = 0                # its ADS1298 chips: two, one or none
     bratiski: int = 0           # the glove's and the sock's Bratiški, chips of their Staršaja
 
     def __post_init__(self) -> None:
@@ -71,7 +71,7 @@ class Unit:
         return stp.place_len(self.kind, self.ads)
 
     def diagnostics(self, cycle: int, temp_c: int = 32) -> bytes:
-        temps = [int((26.0 - 25) * 128)] * len(stp.which_imus(cycle, self.imus))   # ICM-45686
+        temps = [int((26.0 - 25) * 256)] * len(stp.which_imus(cycle, self.imus))   # LSM6DSV16X
         alive = stp.chip_bits(self.chips, [True] * self.chips)
         skin = stp.skin_word(0xFF, 0xFF if self.ads == 2 else 0xFF)
         return stp.Diagnostics(self.number, cycle, alive, alive, skin, skin, temp_c=temp_c,
@@ -84,8 +84,7 @@ class Unit:
 
 @dataclass
 class Module(Unit):
-    """A sensing module: two ADS1298 on the body, two ADS1299 on the head, one on the neck, and
-    its IMUs."""
+    """A sensing module: two ADS1298 on the body and the head, one on the neck, and its IMUs."""
     trunk: bool = False         # the ECG shows strongly on the trunk's modules
     kind: int = stp.KIND_EMG
     ads: int = 2

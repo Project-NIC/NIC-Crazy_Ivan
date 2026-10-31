@@ -91,9 +91,12 @@ and 80% come from a measurement on a sample.
 - At 20% the pack is far above the ~6.5 V the 6 V rail needs.
 
 - **Four cells, not five.** Full, four cells give 14.6 V, and Mamka's own 3.3 V from it at
-  2.2 MHz is 103 ns of on-time against the converter's minimum of 75 ns at worst (SNVSBY5B,
-  tON-MIN); five would give 18.25 V and 82 ns, and a higher input costs more in switching losses
-  at light load. Light load is no trouble here: the rails take ~1.7 A and ~0.13 A.
+  1 MHz is ~226 ns of on-time against the converter's minimum of 75 ns at worst (SNVSBY5B,
+  tON-MIN). Five would give 18.25 V, over the computers' eFuses' ~18.2 V overvoltage lockout, and
+  plugged in they would ring to ~19–30 V against the eFuses' absolute maximum of 28 V, where four
+  ring to 15.1–23.8 V (the same estimate, see [Mamka](../mamka/HARDWARE.md#the-computers-supply));
+  a higher input also costs more in switching losses at light load. Light load is no trouble
+  here: the rails take ~1.7 A and ~0.13 A.
 - **The low end.** The 6 V rail needs ~6.5 V at its converter. The BMS's backstop at 2.5 V a
   cell (10 V) keeps above it; close to the limit the converter stretches its period and keeps
   regulating.

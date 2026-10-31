@@ -37,7 +37,7 @@ class TestSimulator(unittest.TestCase):
         self.assertIsNone(u.frames(31, 0.0, [])[0])
         self.assertNotIn(suit.unit("Míša"), suit.placed(2))           # no frame of data
         self.assertEqual(len(suit.placed(2)), 5)
-        self.assertEqual(len(suit.unit("head").frames(0, 0.0, [])[0]), 58)    # two ADS1299
+        self.assertEqual(len(suit.unit("head").frames(0, 0.0, [])[0]), 58)    # two ADS1298
         self.assertEqual(len(suit.unit("neck and upper back").frames(0, 0.0, [])[0]), 34)  # one
         self.assertEqual(len(suit.unit("thigh L").frames(0, 0.0, [])[0]), 58) # two ADS1298
         g = suit.unit("glove L").frames(0, 0.0, suit.steps)[0]

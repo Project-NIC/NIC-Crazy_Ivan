@@ -41,5 +41,5 @@ under [software](SOFTWARE.md); how the board sits over the computer under
 |---|---|
 | [HARDWARE.md](HARDWARE.md) | the parts, both processors' pins, Baťa's header, the lines, the clock, the helper functions, Mamka's own supply, the converters, the filtering |
 | [SOFTWARE.md](SOFTWARE.md) | processor 1's SPI, processor 2's two, the wires between them, Mamka's own registers, the sound and the clock on Baťa's side, the BMS's protocol, the memory, the firmware and its update |
-| [CONSTRUCTION.md](CONSTRUCTION.md) | the stack of the ROCK, Terem and Mamka, the heatsink, the connectors, what to keep clear of |
+| [CONSTRUCTION.md](CONSTRUCTION.md) | the stack of the ROCK, Terem and Mamka in Mrazík, the window for the SoC's boss, the connectors, what to keep clear of |
 | [WHY.md](WHY.md) | what is not used, and why |

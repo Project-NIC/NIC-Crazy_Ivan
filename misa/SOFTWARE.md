@@ -118,7 +118,7 @@ He adds:
 | USART1 to the radar | the APB clock, 16×, BRR = 0x009D: 196.608 MHz ÷ 157 = 1.2523 MBd, 0.18% from 1.25 MBd |
 | USART2 and UART5, line 8 | the APB clock, OVER8 = 1, BRR = 0x0012: 19,660,800 Bd |
 | I3C1, the IMU | the APB clock: 196.608 MHz |
-| TIM1, the IMU | PSC = 0, ARR = 5,119, CH1 at CCR1 = 2,560: CLKIN at 38,400 Hz |
+| TIM1, the IMU's REF | PSC = 255; ARR = 31,999, CH1 at CCR1 = 16,000: 24 Hz; or ARR = 51,199, CCR1 = 25,600: 15 Hz |
 | TIM2, line 8's cycle | PSC = 19: a tick of the suit clock; ARR = 5,119, a cycle of 520.8 µs, set by Mamka's heartbeat |
 
 ## DMA

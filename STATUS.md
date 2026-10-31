@@ -2,9 +2,10 @@
 
 # Status
 
-**Beta 0.5, 29 Oct 2026:** the path from the skin to the module decided, two ADS1298 a module,
-the head on two ADS1299 and the neck on one, the hand and the foot each a unit of one ADS1298 and
-its IMUs on one board, 280 channels at 1,920 SPS and 98 IMUs; still all on paper, nothing built.
+**Beta 0.6, 31 Oct 2026:** every module on the ADS1298, the IMU the LSM6DSV16X held to the suit's
+clock by a reference, the strips polyimide shielded on both faces, the units potted on the harness
+with connectors for assembly only, Mamka's converters at 1 MHz, Mrazík the cooling block; 280
+channels at 1,920 SPS and 98 IMUs, still all on paper, nothing built.
 
 ↑ [NIC-Crazy_Ivan](README.md)
 
@@ -23,17 +24,37 @@ part has been bought. What is here is of four kinds, and each page says which:
 | **an estimate** | a figure with no source yet, marked as such | board stacks, cable capacitances, the ROCK 5T's consumption, the Hailo's heat |
 | **awaiting measurement** | what only a sample or a board can tell | the open questions at the end of every page |
 
-## In 0.5
+## In 0.6
 
-- **the path from the skin to the module decided:** the band's strip with a solid ground layer on
-  its outer face, on ground or driven at the body's common mode by a TLV9001S on the first chip's
-  BIASINV, and a follower's place at every stud under a 0 Ω part; one board and one strip carry
-  all three levels, the first arm is the test, no test board
-  ([Rubaška](rubaska/HARDWARE.md#the-strips-ground-layer)),
-- **two ADS1298 a module** in cascade on one SPI, 16 channels on 32 electrodes, the head on two
-  ADS1299 with one reference electrode and the neck on one, the same board; with the gloves' and the
-  socks' 280 channels, 582 electrodes; the bias electrode straight on BIASOUT, the switch gone
+- **the suit's IMU, the LSM6DSV16X,** held to the suit's clock by a reference on INT2, 24 or 15 Hz
+  from the suit clock, its 1.6 kHz setting at 1,920 Hz; two a bus by their addresses; the IMU board
+  with what ST asks and 1 kΩ on INT2 ([Rubaška](rubaska/HARDWARE.md#the-imu)),
+- **the ADS1298 on every module,** the head and the neck too: one chip, one board, one firmware; a
+  reference electrode wired on its strip where a strip wants one
   ([Rubaška](rubaska/HARDWARE.md#sensing-module)),
+- **the modules' analog supply on the LP2985,** and an RC at every input where a cable arrives
+  ([Rubaška](rubaska/HARDWARE.md#power)),
+- **the strips polyimide everywhere,** the limbs too: the strip does not stretch, an elastic gap in
+  the fabric does; two or three short strips a module; four layers, the leads between two grounds,
+  the layer driven at the body's common mode by a TLV9001S, a follower's place at every stud under a
+  0 Ω part ([Rubaška](rubaska/HARDWARE.md#the-strips-ground-layer)),
+- **connectors for assembly and repair only:** the units potted whole in a gel on Kaščej, which is
+  rinsed while the clothes are washed, **Strejda Al** the compression overall over it; the line on
+  Picoflex in tin, a tap anywhere on the cable; the strips and the IMU boards on connectors on the
+  first arm, soldered in a series
+  ([Porjadok](porjadok/HARDWARE.md#cable-and-connectors-in-the-suit),
+  [Rubaška](rubaska/CONSTRUCTION.md#harness-and-washing)),
+- **the finger strips** polyimide meanders soldered to the IMUs' boards
+  ([Rubaška](rubaska/CONSTRUCTION.md#the-glove)),
+- **Mamka's converters at 1 MHz,** forced PWM on the 6 V; her processors the STM32H562VG or H563VG;
+  the eFuse in front of each ROCK the TPS259474 ([Mamka](mamka/HARDWARE.md#converters)),
+- **Mrazík,** the cooling: a closed aluminium block, IP55, around the ROCK with Mamka over it and
+  Terem or a plate under it, a boss to the SoC through a window in Mamka, the fans outside on its
+  fins; its closure comes with the schematics ([Babuška](babuska/CONSTRUCTION.md#mrazík)),
+- every board's parts gone through for price, JLCPCB's basic parts first,
+- **two ADS1298 a module** in cascade on one SPI, 16 channels on 32 electrodes, the neck's one chip;
+  with the gloves' and the socks' 280 channels, 582 electrodes; the bias electrode straight on the
+  first chip's RLDOUT, no switch ([Rubaška](rubaska/HARDWARE.md#sensing-module)),
 - **1,920 SPS the rate,** the professionals', 3,840 the setting to try; the step 16 samples,
   120 Hz; one frame of data a unit, 58 B for a module of two chips, 0x24, and for the glove and the
   sock, 0x25, 34 B for the rest; the diagnostics for 16 channels; 1,064 B a cycle to Baťa from
@@ -95,8 +116,6 @@ part has been bought. What is here is of four kinds, and each page says which:
   ([output](porjadok/SOFTWARE.md#ci-btp)),
 - the units' cores at 49.152 MHz, the lines on a PLL of their own
   ([Porjadok](porjadok/SOFTWARE.md#the-clock-tree)),
-- the ADS1298's register table beside the ADS1299's, the chips told by their ID
-  ([Rubaška](rubaska/SOFTWARE.md#the-ads129xs-settings)),
 - a connector a branch in the backpack, the Weipu SP21, and a flat cable of 16 wires, the 3M 3811
   ([Porjadok](porjadok/HARDWARE.md#cable-and-connectors-in-the-suit)),
 - the battery on LiFePO4, the EVE C40 in 4S1P the first candidate ([Babuška](babuska/HARDWARE.md)),
@@ -143,12 +162,15 @@ Each page ends with its open questions. The largest:
   ([Bogatyr](bogatyr/CONSTRUCTION.md#open-questions)); first the hand: its eight channels and its
   IMUs on one inner layer under the board, and how many channels the thumb wants, asked before any
   glove is made; the foot's eight channels and the sock's places on the foot; the steel discs
-  against Ag/AgCl, titanium and conductive silicone; the flexible and stretchable strips, washed and
-  worn,
-- the strip's own artifact and the three levels of its ground layer, on the first arm; the
-  powered-down bias output's leakage, on the first module,
-- the backpack's heat with the *brutal* fitting, up to ~40 W against a fan drawn for 15 W
-  ([Babuška](babuska/CONSTRUCTION.md#heat)),
+  against Ag/AgCl, titanium and conductive silicone; the polyimide strips, washed and worn,
+- the four-layer strip's own artifact and its ground layer on ground and driven, on the first arm;
+  the powered-down bias output's leakage, the LP2985's noise with the inputs shorted inside, the
+  IMUs' reference on INT2 and its 1 kΩ, on the first module; the glove on two Bratiški of eight
+  IMUs, two SCL branches a finger, to be tried there,
+- the backpack's heat with the *brutal* fitting, up to ~40 W; Mrazík's closure, the Hailos' path to
+  its wall and its fans, drawn with the schematics ([Babuška](babuska/CONSTRUCTION.md#mrazík));
+  Mamka's converters free near 1 MHz against the ADS1298's 983.04 kHz, and the 6 V starting into
+  ~0.8–1.0 mF ([Mamka](mamka/HARDWARE.md#converters)),
 - the model itself: its window and features are a first guess.
 
 ## What anyone can check

@@ -39,7 +39,7 @@ Two modes for the whole system:
    unit (see [Before the first start](#before-the-first-start)); nothing else runs but tests by
    hand.
 2. **active,** from the first *start*: *start* on lines 1–7 at once takes START high on every
-   ADS129x. From then on DRDY is always there and **the slots always count from it.**
+   ADS1298. From then on DRDY is always there and **the slots always count from it.**
 
 **One rule:** on lines 1–7, no DRDY, question and answer; DRDY, the slots, each DRDY correcting the
 cycle anew. **Line 8 runs by its slots always** (see [Line 8](#line-8)). **The clock switches
@@ -48,19 +48,19 @@ every unit takes it straight after its reset, with a number or without one, and 
 19.66 Mbaud (see [the clock tree](#the-clock-tree)). A unit with no number stays silent but for
 *discover*.
 
-**The ADS129x run on idle through the whole active mode.** The active mode has two states,
+**The ADS1298 run on idle through the whole active mode.** The active mode has two states,
 *stopped* and *measuring*, and a later *stop* or *start* leaves START alone: it only says from
-which cycle the data count. Idle costs what a chip costs converting, an ADS1298 17.5 mW typical in
-its high-resolution mode and an ADS1299 39 mW, 42 at most (SBAS459K and SBAS499C, Electrical
-Characteristics), ~0.57 W for the suit's thirty; what START low would save the datasheets do not
-give. Only the lines' power off and on ends the sync,
+which cycle the data count. Idle costs what a chip costs converting, 17.5 mW typical in its
+high-resolution mode at 5 V (SBAS459K, Electrical Characteristics), ~0.61 W for the suit's 35;
+what START low would save the datasheet does not give. Only the lines' power off and on ends the
+sync,
 Mamka's power command 3 (see [Mamka](../mamka/SOFTWARE.md#mamkas-own-registers)): every unit
 starts again as after power-on, in the service mode. A bring-up of 5–10 minutes is fine.
 
 **The master's heartbeat:** while measuring Mamka speaks only when she has something to say, and
 otherwise sends *heartbeat* (0x14) every **1 s**, the cycle's number in it. A unit that has heard
 nothing for **3 s** asks *Mamka?* (0x15) in its slot, which every unit on the line hears on the
-return pair; with no frame from Mamka within **1 s** more, all of them stop: *stopped*, the ADS129x
+return pair; with no frame from Mamka within **1 s** more, all of them stop: *stopped*, the ADS1298
 on idle and still in step. It is done in software, in the interrupt that takes Mamka's frames
 anyway.
 
@@ -89,8 +89,9 @@ or too few.
   by it. 2 B, wrapping after 34 s; the full count is kept by Mamka and Baťa. In the commands and
   their answers the same place carries the command's number, in the firmware's frame the
   block's.
-- **Little-endian,** every field of 16 and 32 bits, the CRC too; the ADS129x's samples go most
-  significant first, as the chips send them, and an IMU's TEMP_DATA too, as the chip gives it.
+- **Little-endian,** every field of 16 and 32 bits, the CRC too, and an IMU's temperature, its
+  OUT_TEMP low byte first, as the chip gives it; the ADS1298's samples go most significant first,
+  as the chips send them.
 - **The CRC-16** of every frame is CRC-16/CCITT-FALSE: polynomial 0x1021, initial value 0xFFFF,
   no reflection, no final XOR, over the bytes in the order they are sent, stored little-endian.
   The STM32H5's CRC unit computes it in hardware: its polynomial and its size, 7, 8, 16 or 32
@@ -107,17 +108,16 @@ glove and the sock, one chip and many IMUs:
 | the unit's number | 0 | 0 | 0 |
 | the kind | 1 | 1 | 1 |
 | the frame's number, the cycle's | 2–3 | 2–3 | 2–3 |
-| the first ADS129x's 8 channels, 3 B each, as the chip sends them; its 3 B of status are not in the frame | 4–27 | 4–27 | 4–27 |
+| the first ADS1298's 8 channels, 3 B each, as the chip sends them; its 3 B of status are not in the frame | 4–27 | 4–27 | 4–27 |
 | the second ADS1298's 8 channels, the same way | — | 28–51 | — |
 | the IMUs' steps | 4 B, 28–31 | 4 B, 52–55 | 28 B, 28–55 |
 | CRC-16 | 32–33 | 56–57 | 56–57 |
 
-- **One frame a unit, its length by its kind,** as with every frame: a module of the body, with two
-  ADS1298 (see [Rubaška](../rubaska/HARDWARE.md#sensing-module)), sends 0x24, the head's with two
-  ADS1299 too; the glove and the sock, with one ADS1298 and their IMUs, 0x25; the neck's module,
-  with one ADS1299, and Nataša send 0x20. Six bytes of header and CRC on 52 B of data, where two
-  frames of 34 B would have cost sixteen and four empty bytes (see
-  [WHY](WHY.md#the-frames-and-the-modes)).
+- **One frame a unit, its length by its kind,** as with every frame: a module with two ADS1298
+  (see [Rubaška](../rubaska/HARDWARE.md#sensing-module)), the body's and the head's, sends 0x24;
+  the glove and the sock, with one ADS1298 and their IMUs, 0x25; the neck's module, with one, and
+  Nataša send 0x20. Six bytes of header and CRC on 52 B of data, where two frames of 34 B would
+  have cost sixteen and four empty bytes (see [WHY](WHY.md#the-frames-and-the-modes)).
 - **The IMUs' steps:** a step is 16 ADS samples, 1/120 s: the IMU's turn and mean force over it,
   summed by the unit from sixteen samples at 1,920 Hz, or the chip's own 120 Hz sample (see
   [Rubaška](../rubaska/SOFTWARE.md#the-imus-settings)), 12 B an IMU. The unit lays its IMUs'
@@ -157,18 +157,21 @@ samples, so a scan of the words for all ones is enough, and a zero is looked int
 | 16 | bit 0 the bias electrode on the skin, bit 1 the frames from Mamka without an error; the rest 1 |
 | 17 | the processor's temperature, signed, in °C |
 | 18 | the lowest 3.3 V since the last diagnostics, in 10 mV above 2.00 V |
-| 19–30 | the IMUs' temperatures, 2 B each as the chip gives them (TEMP_DATA), six at most |
+| 19–30 | the IMUs' temperatures, the LSM6DSV16X's OUT_TEMP, 2 B each as the chip gives them, OUT_TEMP_L first, six at most |
 | 31 | the last reset's cause (see [Watchdogs](#watchdogs)) |
 | 32–33 | CRC-16 |
 
 - **The electrodes:** the chips' own bits are 1 for an electrode off (LOFF_STATP and LOFF_STATN,
-  SBAS499C, table 23; the ADS1298's registers of the same names), read with every sample in the
-  status word; the module turns them over and keeps a 0 for the 32 samples, the second chip's in
-  the high byte. **The bias electrode** is the first chip's BIAS_STAT, CONFIG3 bit 0 (SBAS499C,
-  9.6.1.4; RLD_STAT on the ADS1298), 1 for off, turned over the same way. A unit with no ADS129x
-  sends ones, a module with one chip ones for the second's eight.
-- **The processor's temperature** stands for the board's: neither chip has a temperature
+  12h and 13h, SBAS459K, 9.6.1.12–13), read with every sample in the status word (9.4.1.3.1); the
+  module turns them over and keeps a 0 for the 32 samples, the second chip's in the high byte.
+  **The bias electrode** is the first chip's RLD_STAT, CONFIG3 bit 0 (9.6.1.4), 1 for off, turned
+  over the same way. A unit with no ADS1298 sends ones, a module with one chip ones for the
+  second's eight.
+- **The processor's temperature** stands for the board's: the ADS1298 has no temperature
   register, its sensor being read only by switching a channel's MUX to it.
+- **An IMU's temperature** is the LSM6DSV16X's OUT_TEMP (20h and 21h), a 16-bit word in two's
+  complement, 256 LSB/°C and 0 at 25 °C, typical, so °C = value / 256 + 25, the offset within
+  ±15 °C (DS13510 Rev 4, table 6 and its note 3; 9.29).
 - **The lowest 3.3 V** is measured by the processor's own ADC against its VREFINT, no part added.
 - **More than six IMUs** go by turns, which six told by the frame's number: the glove's 20 in
   four diagnostics, ~67 ms, a sock's 8 in two. A temperature once a minute would do.
@@ -196,7 +199,7 @@ slots take the cycle's first half; its second half is quiet.
 
 | µs from DRDY | four slots |
 |---|---|
-| 0 | DRDY, every ADS129x at once |
+| 0 | DRDY, every ADS1298 at once |
 | 0–22.0 | each unit reads its two chips, 216 bits each on SPI at 19.66 MHz, a unit of one chip in 11.0; nothing on the line |
 | slot 1 | 22.0–87.1, a module's frame 22.0–51.5, a frame of 34 B to 39.3 |
 | slot 2 | 87.1–152.2, the frame 87.1–116.6 |
@@ -221,12 +224,12 @@ slots take the cycle's first half; its second half is quiet.
   slots, filling the cycle, the IMU step and the envelope counted in 32 samples instead of 16, at
   120 Hz as before; a full line at 45 %, processor 1's SPI at 87 % (see [Into Baťa](#into-baťa)).
 
-The ADS129x take SCLK at most at 20 MHz (a 50 ns period), and the STM32H523's SPI kernel clock
-at most 100 MHz in VOS1 (DS14540, table 20), so the line's 196.608 MHz cannot feed it. PLL1's
-second output does: the suit clock straight in, × 40 = a 393.216 MHz VCO, which gives the SPI
-78.6432 MHz ÷ 5; the SPI divides that by 4 to 19.66 MHz (50.9 ns). The input and the VCO lie in
-the PLL's wide range of 2–16 MHz and 128–560 MHz (DS14540, table 46); a read takes 11.0 µs, a
-module's two 22.0.
+The ADS1298 takes SCLK at most at 20 MHz (a 50 ns period, SBAS459K, 7.6), and the STM32H523's
+SPI kernel clock at most 100 MHz in VOS1 (DS14540, table 20), so the line's 196.608 MHz cannot
+feed it. PLL1's second output does: the suit clock straight in, × 40 = a 393.216 MHz VCO, which
+gives the SPI 78.6432 MHz ÷ 5; the SPI divides that by 4 to 19.66 MHz (50.9 ns). The input and
+the VCO lie in the PLL's wide range of 2–16 MHz and 128–560 MHz (DS14540, table 46); a read takes
+11.0 µs, a module's two 22.0.
 
 ### Line 8
 
@@ -288,31 +291,30 @@ with the command's number back. One register is written in 8 B, more in 34 B.
 
 - **The result** in the answers: 0 done; otherwise an error's code, 1 the chip did not answer, 2
   no such chip, 3 no such register, 4 the unit refuses for its state. *Get ready*'s answer: 0
-  ready, 1 an ADS129x does not answer, 2 an IMU missing against its table, 3 settings missing.
-- **The chips:** 0x00 the unit itself, 0x01 the first ADS129x, 0x02 the sound (Nataša's register
+  ready, 1 an ADS1298 does not answer, 2 an IMU missing against its table, 3 settings missing.
+- **The chips:** 0x00 the unit itself, 0x01 the first ADS1298, 0x02 the sound (Nataša's register
   0x00, the microphones), 0x03 the motors, 0x04 the BMS (Mamka's processor 2), 0x05 Míša's sphere,
-  0x06 a module's second ADS1298, 0x0F every IMU, 0x10… one IMU. An
-  ICM-45686's bank 0 is read and written as any chip's registers; its indirect registers, at a
-  16-bit address (DS-000489, 13), the unit's firmware alone sets, a frame's register address
-  being one byte. An ICM-42688-P's bank is switched by writing its own REG_BANK_SEL (0x76,
-  DS-000347 rev. 1.2, 14.59) like any register.
+  0x06 a module's second ADS1298, 0x0F every IMU, 0x10… one IMU. An LSM6DSV16X's registers
+  have an address of one byte, as a frame's register address is, and are read and written as any
+  chip's (DS13510 Rev 4, 8); its pages of the embedded functions and of the sensor hub open by a
+  write of FUNC_CFG_ACCESS (01h, 9.1) like any register.
 - **Each unit takes only what it has:** a write to the chip 0x01 for the whole system reaches the 16
   modules, the gloves and the socks, one to 0x06 the fifteen with two chips; a write to every IMU
-  reaches them all. The ADS1298's registers 01h–19h, 25 B, go in one frame, the ADS1299's 01h–17h,
-  23 B; the unit skips LOFF_STATP and LOFF_STATN (12h and 13h, read only, SBAS499C, 9.6), since what
-  writing them does is not given. The two chips' codes differ in a few registers (see
+  reaches them all. The ADS1298's registers 01h–19h, 25 B, go in one frame; the unit skips
+  LOFF_STATP and LOFF_STATN (12h and 13h, read only, SBAS459K, table 16), since what writing them
+  does is not given. A unit's channels and its bias are its own (see
   [Rubaška](../rubaska/SOFTWARE.md#the-ads129xs-settings)), so the settings go to each unit by
   itself, Baťa's by its UID. Starting one unit alone is safe, the chips running on idle.
 - **Direct write:** up to 26 B that the unit passes to the chip as they are, a chip's own
-  commands (WREG, RREG, SDATAC) or an ICM's register and data. It goes past the unit's knowledge
-  of the chip, so it is a tool for debugging, with no answer: in RDATAC the ADS129x takes another
-  command only after SDATAC (SBAS499C, 9.5.3.7).
-- **The ADS129x while running:** the commands go on the pair down, Mamka's alone, and take
+  commands (WREG, RREG, SDATAC) or an IMU's register and data. It goes past the unit's knowledge
+  of the chip, so it is a tool for debugging, with no answer: in RDATAC the ADS1298 takes another
+  command only after SDATAC (SBAS459K, 9.5.2.6).
+- **The ADS1298 while running:** the commands go on the pair down, Mamka's alone, and take
   nothing from the slots up; between two reads the unit sends SDATAC, WREG and RDATAC again.
   Conversions go on and START stays high. The bytes of a multi-byte command must be 4 CLK periods
   apart (~2.0 µs), so writing one register takes an estimated ~16 µs.
 - **Kept free for what comes later:** the kinds 0x07–0x0F, 0x17–0x1F, 0x25–0x2F and 0x31–0x7F,
-  the chips 0x07–0x0E. A new sensor takes a chip's number and a map of registers and needs no
+  the chips 0x0B–0x0E. A new sensor takes a chip's number and a map of registers and needs no
   kind of its own; its slow data are read, its steady data come in the free part of its unit's
   slot.
 
@@ -330,13 +332,13 @@ read sent unasked.
 
 | registers | what |
 |---|---|
-| 0x00–0x3F | the unit's settings, held in RAM and sent at every start: 0x00 the bias, 0 off and 1 on, whether this unit's first chip drives the bias electrode (PD_BIAS, see [Rubaška](../rubaska/SOFTWARE.md#the-ads129xs-settings)); 0x01 the IMU mode, 0 sixteen samples at 1,920 Hz summed into the step, the main mode, 1 the chip's own 120 Hz, the fallback; 0x02 a module's status LED, 1 blinking for the map's application to find it (see [Baťa](../bata/SOFTWARE.md#the-map)), 0 back to the firmware's own, neither kept by Baťa nor sent at the start; 0x03 the strip's ground layer, 0 on ground and 1 driven at the body's common mode (see [Rubaška](../rubaska/HARDWARE.md#the-strips-ground-layer)); on Mamka's processors their state and their commands instead |
+| 0x00–0x3F | the unit's settings, held in RAM and sent at every start: 0x00 the bias, 0 off and 1 on, whether this unit's first chip drives the bias electrode (PD_RLD, see [Rubaška](../rubaska/SOFTWARE.md#the-ads129xs-settings)); 0x01 the IMU mode, 0 sixteen samples at 1,920 Hz summed into the step, the main mode, 1 the chip's own 120 Hz, the fallback; 0x02 a module's status LED, 1 blinking for the map's application to find it (see [Baťa](../bata/SOFTWARE.md#the-map)), 0 back to the firmware's own, neither kept by Baťa nor sent at the start; 0x03 the strip's ground layer, 0 on ground and 1 driven at the body's common mode (see [Rubaška](../rubaska/HARDWARE.md#the-strips-ground-layer)); on Mamka's processors their state and their commands instead |
 | 0x40–0x7F | the unit's table, read only (below) |
 | 0x80–0xBF | the firmware's update (see [Updating firmware](#updating-firmware)) |
 | 0xC0–0xFF | Mamka's events, the GPS and the UTC label, on her processors only (see [Mamka](../mamka/SOFTWARE.md#mamkas-own-registers)) |
 
-Everything else is a chip's own register, the gain, the lead-off, the channels on, MISC1, or no
-setting at all: the timings, the heartbeat's 1, 3 and 1 s and the sleep after ~10 s, are fixed in
+Everything else is a chip's own register, the gain, the lead-off, the channels on, or no setting
+at all: the timings, the heartbeat's 1, 3 and 1 s and the sleep after ~10 s, are fixed in
 the firmware, the number is given by *assign*, the IMU bytes' places by the frame's number.
 Nataša's and Míša's maps are on their pages; Mamka's two processors, 0xF1 and 0xF2, are units of
 this kind too (see [Mamka](../mamka/SOFTWARE.md#mamkas-own-registers)).
@@ -352,13 +354,13 @@ is fixed in the firmware, and the unit fills it in RAM at every start.
 | 3–4 | the firmware's version |
 | 5–16 | the UID, 12 B |
 | 17 | how many chips follow |
-| 18… | 2 B a chip: its number (0x01, 0x06, 0x10…) and its part: 1 the ADS1299, 2 the ICM-42688-P, 3 the ICM-45686, 4 the sound (TAD5142 and ICS-43434), 5 the motors (DRV2603), 6 Míša's sphere, 7 the ADS1298, 8 a Bratiška |
+| 18… | 2 B a chip: its number (0x01, 0x06, 0x10…) and its part: 1 the ADS1298, 2 the LSM6DSV16X, 3 the sound (TAD5142 and ICS-43434), 4 the motors (DRV2603), 5 Míša's sphere, 6 a Bratiška |
 
-- **Two kinds of sensing unit:** *a module*, one or two ADS129x and IMUs; *the glove and the sock*,
+- **Two kinds of sensing unit:** *a module*, one or two ADS1298 and IMUs; *the glove and the sock*,
   one ADS1298, four Bratiški and their IMUs on one board. A chip's part says which map of registers
-  applies, so the head's ADS1299 and the body's ADS1298 sit at 0x01 alike, and another kind of IMU
-  may sit at 0x1n with nothing else changed.
-- **The chips' order:** the ADS129x first, 0x01 and then 0x06; the glove's and the sock's
+  applies, so another kind of chip may sit at 0x01 or another kind of IMU at 0x1n with nothing
+  else changed.
+- **The chips' order:** the ADS1298 first, 0x01 and then 0x06; the glove's and the sock's
   Bratiški 0x07–0x0A; the IMUs from 0x10, a module's 0x10–0x13, two on I3C1 and two on I3C2;
   the glove's 20 from 0x10 to 0x23, its Staršaja's own four first, then Bratiška by Bratiška; a
   sock's from 0x10 to 0x17.
@@ -416,13 +418,11 @@ answer, a question of 8 B and its answer of 34 B in ~22 µs.
   that and the map Baťa has an application (see [Baťa](../bata/SOFTWARE.md#the-map)), which
   blinks a module's LED and asks; a module replaced takes the place of the one missing on its
   line.
-- **Asleep:** a unit in the service mode sleeps after ~10 s of silence, in Stop mode, its ADS129x
-  in standby by the STANDBY command (04h, an ADS1299 at 5.1 mW with the internal reference;
-  WAKEUP, 02h, on waking; SBAS499C, 9.5.3.2–3; the ADS1298's commands the same, SBAS459K), its
-  IMUs asleep. A byte on its line wakes it, every USART and UART
-  of the STM32H5 waking from Stop (RM0481 Rev 5, table 625): Mamka raises the clock's DE again,
-  sends a byte and waits ~10 ms.
-  It wakes on its HSI and takes the clock again as after a reset (see
+- **Asleep:** a unit in the service mode sleeps after ~10 s of silence, in Stop mode, its ADS1298 in
+  standby by the STANDBY command (04h, 4 mW at 5 V; WAKEUP, 02h, on waking; SBAS459K, 9.5.2.1–2 and
+  Electrical Characteristics), its IMUs asleep. A byte on its line wakes it, every USART and UART of
+  the STM32H5 waking from Stop (RM0481 Rev 5, table 625): Mamka raises the clock's DE again, sends a
+  byte and waits ~10 ms. It wakes on its HSI and takes the clock again as after a reset (see
   [the clock tree](#the-clock-tree)); how the byte at the line's rate wakes it is open (see
   [Open questions](#open-questions)). A suit left hanging long is switched off by
   [Budilnik](../mamka/HARDWARE.md#budilnik).
@@ -451,35 +451,32 @@ counters. The PRBS is PRBS-9 of ITU-T O.150, x⁹ + x⁵ + 1, as Osmocom's libos
 test runs then.
 
 ***Get ready*** (0x10) goes to each unit by itself, well under a millisecond for the whole body.
-The unit sets its ADS129x, holds START low, turns off its other interrupts and waits only for
+The unit sets its ADS1298, holds START low, turns off its other interrupts and waits only for
 *start*; it answers 0x90 with its result. With no *start* within 1 s it gives up waiting, and
 Mamka calls *get ready* again.
 
 ### Starting a measurement
 
-Every ADS129x in the suit should start converting at the same moment:
+Every ADS1298 in the suit should start converting at the same moment:
 
-1. Mamka sends each unit its settings, and the unit writes them into its ADS129x and the IMUs,
+1. Mamka sends each unit its settings, and the unit writes them into its ADS1298 and the IMUs,
    even if the chips should still remember them; the chips are reset and prepared with their
    START pin held low. The rate, 1,920 SPS or the 3,840 to try, is set here only: a write of
-   CONFIG1 resets a chip's digital filter (SBAS499C, 9.4.2), which while running would break the
+   CONFIG1 resets a chip's digital filter (SBAS459K, 9.3.2.3), which while running would break the
    sync.
 2. *Get ready* to each unit, as above.
 3. **The first *start*** (0x11) goes down lines 1–4 on processor 1's one sender and down lines
    5–7 on processor 2's at the same moment: processor 1 raises the START wire to processor 2,
    and both send *start* a fixed count of suit-clock ticks after its edge (see
    [Mamka](../mamka/SOFTWARE.md#the-wires-between-the-processors)). Each unit takes the START pin
-   of its chips high after a fixed number of suit-clock ticks (below) and leaves it there, an
-   ADS1299's 511 CLK periods later than an ADS1298's.
+   of its chips high after a fixed number of suit-clock ticks (below) and leaves it there.
 
-**START stays high for the whole active mode.** According to the ADS1299's datasheet (SBAS499C,
-9.4.1 and 9.4.5), conversions begin once START has been high for at least 2 CLK periods and go on
-until START goes low; a short pulse would stop them after the first conversion. The delay from
-START to the first DRDY is fixed for a given data rate and differs between the chips: on the
-ADS1298 in its high-resolution mode 4,616 CLK periods at the 2 kSPS setting, 1,920 SPS here,
-2.35 ms, and 2,312 at 4 kSPS (SBAS459K, table 12); on the ADS1299 4,105 and 2,057 (SBAS499C,
-table 7). **So an ADS1299's START goes high 511 CLK periods after an ADS1298's,** 255 at 3,840
-SPS, and every chip's first DRDY falls together: 23,080 ticks of the suit clock after the body's
+**START stays high for the whole active mode.** According to the ADS1298's datasheet (SBAS459K,
+9.4.1.1 and 9.4.1.5), conversions begin once START has been high for at least 2 CLK periods and
+go on until START goes low; a short pulse would stop them after the first conversion. The delay
+from START to the first DRDY is fixed for a given data rate: in the high-resolution mode 4,616 CLK
+periods at the 2 kSPS setting, 1,920 SPS here, 2.35 ms, and 2,312 at 4 kSPS (SBAS459K, table 12).
+**So every chip's first DRDY falls together:** 23,080 ticks of the suit clock after the body's
 START, then every 5,120 ticks, 1,024 CLK.
 
 The spread between units, an estimate:
@@ -493,7 +490,7 @@ The spread between units, an estimate:
 | path from the processor pin to the ADS pin | the same on every unit, same boards |
 | **total** | **~100 ns** |
 
-An ADS129x reads START on its own clock (1.96608 MHz, a 509 ns period). If the dividers that
+An ADS1298 reads START on its own clock (1.96608 MHz, a 509 ns period). If the dividers that
 make it on the units are not in the same phase, conversions can drift apart by up to one ADS
 clock period, about 0.5 µs. That is still 0.1 % of the sample period (521 µs); for a 1 kHz signal,
 a phase error of ~0.2°.
@@ -545,7 +542,7 @@ source of false resets.
 The same thresholds stand in DS14053 Rev 4 (tables 20 and 46) and DS14258 Rev 6 (tables 25 and
 51).
 
-- **The inner loop:** each task a unit must run, in the active mode the ADS129x's reads, the IMUs'
+- **The inner loop:** each task a unit must run, in the active mode the ADS1298's reads, the IMUs'
   samples, the slot's frame and Mamka's frames read, sets its bit as it runs; the main loop feeds
   the IWDG only when every bit due since the last feed is set, and clears them. A task marks that
   it ran, not that its sensor answered: a sensor that fails is the diagnostics', never a reason
@@ -637,17 +634,17 @@ overnight, the suit on a hanger, by a script on Baťa. One image for each kind o
 firmware is split into parts only in its source, the communication one library for every kind.
 The way is made so that no unit is ever lost and a bad version returns to the old by itself.
 
-**Two banks.** Every STM32H5 here has its flash in two banks and reads one while writing the
-other (DS14540 Rev 3 and DS14258 Rev 6, 3.4; DS14053 Rev 4 for the STM32H503), so a failed update
-never leaves a unit without a firmware. An image is at most one bank: 128 KB on a module's
-STM32H523CC (two equal banks of its 256 KB, RM0481 Rev 5, table 53), the glove's Staršaja's too,
-256 KB on Nataša's STM32H523RE and 512 KB on Mamka's STM32H562VG; a Bratiška has no banks, his
-image going in through his Staršaja (below). The map of the blocks
-received shows 256 at a time, 128 KB, through a window, so a whole bank is mapped in one to four
-windows: a module's image in one, Nataša's in two, Mamka's in four. A bank is erased in
-64 ms, 320 ms at most, and 16 B are written in 31 µs, 100 µs at most, so a block of 512 B in
-~1 ms, 3.2 ms at most, against the 0.26 ms it takes to come at 19.66 Mbaud: the flash sets the
-pace. The program flash takes 10,000 cycles (DS14540 Rev 3, tables 49 and 50).
+**Two banks.** Every STM32H5 here has its flash in two banks and reads one while writing the other
+(DS14540 Rev 3 and DS14258 Rev 6, 3.4; DS14053 Rev 4 for the STM32H503), so a failed update never
+leaves a unit without a firmware. An image is at most one bank: 128 KB on a module's STM32H523CC
+(two equal banks of its 256 KB, RM0481 Rev 5, table 53), the glove's Staršaja's too, 256 KB on
+Nataša's STM32H523RE and 512 KB on Mamka's STM32H562VG or H563VG; a Bratiška has no banks, his image
+going in through his Staršaja (below). The map of the blocks received shows 256 at a time, 128 KB,
+through a window, so a whole bank is mapped in one to four windows: a module's image in one,
+Nataša's in two, Mamka's in four. A bank is erased in 64 ms, 320 ms at most, and 16 B are written in
+31 µs, 100 µs at most, so a block of 512 B in ~1 ms, 3.2 ms at most, against the 0.26 ms it takes to
+come at 19.66 Mbaud: the flash sets the pace. The program flash takes 10,000 cycles (DS14540 Rev 3,
+tables 49 and 50).
 
 | register (chip 0x00) | what |
 |---|---|
@@ -858,7 +855,7 @@ for, the snapshot wanting 256 and the meta packets 3, 4, 5 and 7 512.
   in one frame share one time; the meta packets carry the UTC label for it. A lost frame shows as
   a jump in the sample; a lost event would not, so the event packet counts its events.
 - **The ECG at one byte.** Cheap ECG recorders resolve about as much, and a doctor reads it. What
-  matters is the sample number: every ADS129x in the suit samples in the same instant on the same
+  matters is the sample number: every ADS1298 in the suit samples in the same instant on the same
   clock, so the ECG bytes of the trunk's electrodes line up to the sample, and a picture of how
   the current passes through the chest can be put together from them later.
 - **Recordings** are made only when asked, and then perhaps only parts: the EMG of a few
@@ -891,7 +888,7 @@ processor's table is on its own page ([the module and the glove](../rubaska/SOFT
   should one be needed, everywhere but on the glove's Staršaja, where two of the Bratiški's
   receivers take GPDMA1's.
 - **Priority,** GPDMA_CxCR.PRIO (16.4.11): 3, the time-sensitive class with a fixed precedence
-  over the rest, for the lines, the ADS129x's reads and the SPIs to Baťa; 2 for the sound and the
+  over the rest, for the lines, the ADS1298's reads and the SPIs to Baťa; 2 for the sound and the
   Bratiški's steps; 1 for the IMUs and Míša's radar; 0 for settings. The slow UARTs, the BMS's, the
   GPS's and the one between Mamka's processors, take no channel: their FIFO of 8 B and an
   interrupt are enough.
@@ -938,9 +935,14 @@ glove](../rubaska/SOFTWARE.md#clocks), [Mamka](../mamka/SOFTWARE.md#clocks),
   processor 2; R is off everywhere; PLL3 Q the lines' on a unit, off on Mamka; PLL2 off.
 - **The timers** count at the system clock, so a divider "÷ 5 of the suit clock" is ÷ 25 in a
   unit's timer and ÷ 100 in Mamka's; the pages give both.
-- **A Bratiška** runs on his own HSI and never takes the suit clock: his IMUs sample on the CLKIN
-  that his Staršaja makes from it, he only reads them and counts his steps by it, and the HSI
-  sets only his U(S)ART's bit rate (see [Rubaška](../rubaska/SOFTWARE.md#clocks)).
+- **The IMUs' REF,** 24 or 15 Hz, is the suit clock ÷ 409,600 or ÷ 655,360, a timer's output on
+  every unit with IMUs, ÷ 2,048,000 or ÷ 3,276,800 in a unit's timer: on it the LSM6DSV16X's
+  1.6 kHz setting runs at 1,920 Hz, +20 % of the ±33 % allowed, 80 or 128 samples a period, where
+  at least 64 and 40 ms are asked (its ODR-triggered mode, DS13510 Rev 4, 6.6; AN5763 Rev 4, 3.3,
+  table 15).
+- **A Bratiška** runs on his own HSI and never takes the suit clock: his IMUs sample on the REF
+  that his Staršaja makes from it, his steps run on their samples, and the HSI sets only his
+  U(S)ART's bit rate (see [Rubaška](../rubaska/SOFTWARE.md#clocks)).
 - **After a reset** every processor runs on its HSI, 32 MHz in VOS3 (RM0481 Rev 5, 10.7.2 and
   11.8.1), and takes the suit clock before anything else: VOS1, waiting for VOSRDY; the flash's
   latency; the HSE, waiting for HSERDY; the PLLs, waiting for their lock, 45 µs and 100 µs at most
@@ -958,7 +960,7 @@ glove](../rubaska/SOFTWARE.md#clocks), [Mamka](../mamka/SOFTWARE.md#clocks),
   and below it a straight line is assumed; for the modules, the gloves' and the socks' Staršaja and
   Nataša ~0.29 A in all. Míša and Mamka's processors stay at 196.608 MHz until checked.
 - **Checked on the first board:** the suit clock at the buffers' output against a counter, the
-  line at its rate, the ADS129x's CLK and the IMUs' CLKIN at their pins.
+  line at its rate, the ADS1298's CLK and the IMUs' REF at their pins.
 
 ## Interrupts
 
@@ -970,7 +972,7 @@ processor's table is on its page ([the module and the glove](../rubaska/SOFTWARE
 
 | level | for |
 |---|---|
-| 0 | the measurement's moment: the ADS129x's DRDY, line 8's cycle |
+| 0 | the measurement's moment: the ADS1298's DRDY, line 8's cycle |
 | 1 | the frame out: the read done, a slot's start |
 | 2 | the lines in: Mamka's frames and the echo; on Mamka the frames in and the SPIs to Baťa |
 | 4 | the links and the sound: the Bratiški's U(S)ARTs on their Staršaja, the link between Mamka's processors, the SAI and the I2S |
@@ -989,13 +991,11 @@ processor's table is on its page ([the module and the glove](../rubaska/SOFTWARE
 
 ## Open questions
 
-- the two chips' reads at 19.66 MHz, 22 µs for the pair, which the ADS1299's DVDD of 3.3 V allows
-  (SCLK period at least 50 ns at 2.7–3.6 V, SBAS499C, 7.6), the ADS1298's timing requirements read
-  the same way, the slots' 1 µs guards and the time a unit takes to build its frame after the reads,
-  seen on the first board,
-- the ADS129x: the ADS1299's datasheet does not say which CLK edge reads START; confirm by
-  measurement on both chips, and the two chips' first DRDYs together with the ADS1299's START 511
-  CLK periods later,
+- the two chips' reads at 19.66 MHz, 22 µs for the pair, which the ADS1298's DVDD of 3.3 V allows
+  (SCLK period at least 50 ns at 2.7–3.6 V, SBAS459K, 7.6), the slots' 1 µs guards and the time a
+  unit takes to build its frame after the reads, seen on the first board,
+- the ADS1298: its datasheet does not say which CLK edge reads START (SBAS459K, 9.4.1.1); confirm
+  by measurement, and every chip's first DRDY together,
 - the PRBS-9's polynomial against ITU-T O.150's own text,
 - how a byte at the line's rate wakes a unit from Stop: an edge on RX through the EXTI, or the
   USART's kernel clock on the HSI for the sleep alone, which the wake-up from Stop needs

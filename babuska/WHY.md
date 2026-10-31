@@ -28,9 +28,12 @@ thing waits in reserve, it says so.
   a kilogram against sodium's ~100–130: ~0.4–0.7 kg more for the same energy. It stays in
   reserve, with the 18650 and Toshiba's SCiB packs worked out, should the other two disappoint.
 - **Five cells in series.** Full, five LiFePO4 cells give 18.25 V, and Mamka's 3.3 V from it at
-  2.2 MHz is 82 ns of on-time against the LMR43610's worst-case minimum of 75 ns, little to spare;
-  four give 14.6 V and 103 ns. Five sodium cells, 20 V, came to exactly 75 ns. A higher input also
-  costs more switching loss at light load.
+  the converters' 2.2 MHz of the time was 82 ns of on-time against the LMR43610's worst-case
+  minimum of 75 ns, little to spare; four gave 14.6 V and 103 ns. Five sodium cells, 20 V, came to
+  exactly 75 ns. At 1 MHz the on-time no longer pinches (31 Oct 2026), but 18.25 V lies over the
+  computers' eFuses' ~18.2 V overvoltage lockout, and its ring on plugging in, ~19–30 V by an
+  estimate, past their 28 V (see [hardware](HARDWARE.md#the-battery)). A higher input also costs
+  more switching loss at light load.
 - **Smaller cells, 26700 in 4S3P.** The same energy as 32140 in 4S1P with three times the cells,
   the welds and the balancing; the 32140 won among the sodium cells.
 - **Charging the pack to 100% and down to 0%.** Between 20 and 80% the cells live longer, and the
@@ -57,9 +60,14 @@ thing waits in reserve, it says so.
   the insert, and the shell is bought.
 - **A dark shell.** In the sun it could come near the 40 °C and 50 °C the BMS allows for charging
   and discharging; the shell is light-coloured.
-- **A fan on the Hailos.** The modules lie in the channel under one heatsink, as Raspberry Pi
-  advises a heatsink for its AI HAT+ 2 with the same chip; a measurement is to confirm that the
-  channel's air is enough.
+- **A fan on the Hailos.** The modules lie under one heatsink, as Raspberry Pi advises a heatsink
+  for its AI HAT+ 2 with the same chip, inside Mrazík, whose fins the backpack's air passes; a
+  measurement is to confirm that it is enough.
+- **The computers' stack bare in the insert, or in a perforated metal box** of its size (to
+  31 Oct 2026). The backpack's air passed over the boards themselves, with its dust and the
+  moisture from under a jacket. Mrazík closes the stack in aluminium, IP55, and takes the heat out
+  through its walls to fins outside, where the air passes (see
+  [construction](CONSTRUCTION.md#mrazík)).
 - **The glasses' cable through a connector in the shell.** It passes through a grommet and plugs
   in inside, its strain held there, so it stays an ordinary cable.
 - **One connector for the whole suit,** an Amphenol PT 24-61 (MIL-DTL-26482 Series 1, 61

@@ -4,7 +4,7 @@ SPIs to Baťa and the firmware's blocks (porjadok/SOFTWARE.md).
 Byte orders, as the pages give them:
 - every field of 16 and 32 bits is little-endian, the frame's number and the CRC too;
 - an ADS129x channel is its 3 B as the chip sends them, most significant first (two's complement);
-- an IMU's TEMP_DATA is its 2 B as the chip gives them, TEMP_DATA1 first.
+- an IMU's temperature is its OUT_TEMP, 2 B as the chip gives them, OUT_TEMP_L first.
 
 Where the pages leave a detail to the code, the choice is said in the docstring.
 """
@@ -476,10 +476,10 @@ def byte_mv(b: int) -> int:
     return 2000 + 10 * b
 
 
-def temp_c(temp_data: int, part: int | None = None) -> float:
-    """An IMU's TEMP_DATA in °C by its part in the unit's table: the ICM-45686's / 128 + 25
-    (DS-000489, table 4), the ICM-42688-P's / 132.48 + 25 (DS-000347, 14.5)."""
-    return temp_data / (132.48 if part == PART_ICM42688P else 128) + 25
+def temp_c(out_temp: int) -> float:
+    """An IMU's OUT_TEMP in °C: the LSM6DSV16X's 256 LSB/°C, 0 at 25 °C (DS13510 Rev 4, table 6
+    and its note 3)."""
+    return out_temp / 256 + 25
 
 
 def which_imus(cycle: int, imus: int) -> range:
@@ -517,7 +517,7 @@ class Diagnostics:
     flags: int = 0xFF              # bit 0 the bias electrode on the skin, 1 Mamka's frames clean
     temp_c: int = 0                # the processor's, signed
     low_mv: int = 3300             # the lowest 3.3 V since the last
-    imu_temps: list[int] = field(default_factory=list)   # TEMP_DATA, six at most
+    imu_temps: list[int] = field(default_factory=list)   # OUT_TEMP, six at most
     reset: int = RESET_SUPPLY      # the last reset's cause, 0-6
 
     def pack(self) -> bytes:
@@ -525,7 +525,7 @@ class Diagnostics:
             raise ValueError("six IMU temperatures at most")
         body = struct.pack("<IIHHBbB", self.alive, self.clean, self.p_on, self.n_on, self.flags,
                            self.temp_c, mv_byte(self.low_mv))
-        body += b"".join(struct.pack(">h", t) for t in self.imu_temps)
+        body += b"".join(struct.pack("<h", t) for t in self.imu_temps)
         body = body.ljust(RESET_AT, b"\0") + bytes([self.reset])
         return Frame(self.unit, K_DIAGNOSTICS, self.cycle, body).pack()
 
@@ -536,7 +536,7 @@ class Diagnostics:
         if f.kind != K_DIAGNOSTICS:
             raise ValueError("not diagnostics")
         alive, clean, p, n, flags, t, mv = struct.unpack_from("<IIHHBbB", f.body)
-        temps = [struct.unpack_from(">h", f.body, TEMPS_AT + 2 * i)[0] for i in range(min(imus, 6))]
+        temps = [struct.unpack_from("<h", f.body, TEMPS_AT + 2 * i)[0] for i in range(min(imus, 6))]
         return cls(f.unit, f.number, alive, clean, p, n, flags, t, byte_mv(mv), temps,
                    f.body[RESET_AT])
 
@@ -574,8 +574,7 @@ def blink(unit: int, on: bool, number: int = 0) -> bytes:
     return write(unit, CHIP_UNIT, REG_LED, int(on), number)
 
 FW_MODULE, FW_GLOVE, FW_BRATISKA, FW_NATASA, FW_MISA, FW_P1, FW_P2 = range(1, 8)
-(PART_ADS1299, PART_ICM42688P, PART_ICM45686, PART_SOUND, PART_MOTORS, PART_SPHERE,
- PART_ADS1298, PART_BRATISKA) = range(1, 9)
+PART_ADS1298, PART_LSM6DSV16X, PART_SOUND, PART_MOTORS, PART_SPHERE, PART_BRATISKA = range(1, 7)
 
 
 @dataclass
@@ -609,10 +608,10 @@ class UnitTable:
         return [(REG_TABLE + i, min(VALUES, n - i)) for i in range(0, n, VALUES)]
 
 
-def module_table(uid: bytes, imus: int = 4, version: int = 0x0100, imu: int = PART_ICM45686,
+def module_table(uid: bytes, imus: int = 4, version: int = 0x0100, imu: int = PART_LSM6DSV16X,
                  ads: tuple[int, ...] = (PART_ADS1298, PART_ADS1298)) -> UnitTable:
-    """A sensing module's: its first ADS129x at 0x01, a second ADS1298 at 0x06, its IMUs from
-    0x10: two ADS1298 on the body, one ADS1299 on the head and the neck."""
+    """A sensing module's: its first ADS1298 at 0x01, a second at 0x06, its IMUs from 0x10: two
+    ADS1298 on the body and the head, one on the neck."""
     chips = [(CHIP_ADS, ads[0])] + ([(CHIP_ADS2, ads[1])] if len(ads) > 1 else [])
     chips += [(CHIP_IMU + i, imu) for i in range(imus)]
     return UnitTable(KIND_EMG, FW_MODULE, version, uid, chips)
@@ -623,7 +622,7 @@ END_IMUS = 20                      # the board's places: two I3C buses of two on
 
 
 def end_table(uid: bytes, imus: int = HAND_IMUS, bratiski: int = BRATISKI, version: int = 0x0100,
-              imu: int = PART_ICM45686) -> UnitTable:
+              imu: int = PART_LSM6DSV16X) -> UnitTable:
     """The glove's, and the sock's, the same board: its ADS1298 at 0x01, its Bratiški from 0x07,
     its IMUs from 0x10 in the frame's order, Staršaja's own first; 0x10-0x23 for the glove's 20."""
     if not 0 <= bratiski <= BRATISKI or not 1 <= imus <= END_IMUS:

@@ -39,12 +39,11 @@ drive](HARDWARE.md#right-leg-drive)).
   drawn. Marine press studs in 316 are too large for it, and cheap "stainless" snaps are 304 or
   plated brass (see [why not](WHY.md#the-electrodes-and-the-suit)).
 - Stainless steel has more low-frequency noise and drift than Ag/AgCl, which is acceptable for
-  EMG. The chips' inputs themselves would cope even with dry contacts (SBAS499C; SBAS459K):
-  1,000 MΩ of input impedance, 500 MΩ with the lead-off current on, and a bias current of
-  ±300 pA on the ADS1299, ±1 nA on the ADS1298, so a 1 MΩ contact shifts the input by 0.3 or
-  1 mV, and the input range is ±VREF / gain, ±333 mV at our gain of 12 on the ADS1298's 4 V
-  reference, ±375 mV on the ADS1299's. The input filter would not: with 1 MΩ contacts its corner
-  falls to ~360 Hz, inside the band.
+  EMG. The chips' inputs themselves would cope even with dry contacts (SBAS459K, Electrical
+  Characteristics): 1,000 MΩ of input impedance, 500 MΩ with the lead-off current on, and a bias
+  current of ±1 nA from 0 to 70 °C, so a 1 MΩ contact shifts the input by 1 mV, and the input
+  range is ±VREF / gain, ±333 mV at our gain of 12 on the 4 V reference. The input filter would
+  not: with 1 MΩ contacts its corner falls to ~360 Hz, inside the band.
 - **Moist, not dry.** A ring around each electrode holds the skin's moisture under it, so the
   contact sits far below the ~1 MΩ of a dry one; tens of kilohms are taken as the working
   figure, to be measured. The ring is of dissipative material, not plain plastic, which would
@@ -81,10 +80,11 @@ field.
 - Titanium films on steel come close to Ag/AgCl in the quality of surface EMG (Rodrigues et al.,
   Materials 2020, PMC7254203; Ti–Au films, Sensors 2021, 21, 8143); their offset was not
   measured. Titanium is covered by its oxide and so polarises like steel; that is our inference.
-- The gain is 12 for this, ±333 mV on the body's ADS1298 and ±375 mV on the head's and the
-  neck's ADS1299 (see [Software](SOFTWARE.md#the-ads129xs-settings)).
-- The offset needs no instrument: the chips' inputs are DC-coupled (SBAS499C, 10.1), so the
-  mean of a raw channel is the offset, and a few minutes recorded on Baťa show its drift.
+- The gain is 12 for this, ±333 mV on the ADS1298 (see
+  [Software](SOFTWARE.md#the-ads129xs-settings)).
+- The offset needs no instrument: the chips' inputs are DC-coupled, an AC coupling being the
+  datasheet's other way, not ours (SBAS459K, 10.1.2), so the mean of a raw channel is the
+  offset, and a few minutes recorded on Baťa show its drift.
 
 **The price** of the electrodes, as listed in October 2026, for 582 of them:
 
@@ -106,8 +106,8 @@ electrode is Ag/AgCl right through and is renewed by rubbing its face; the maker
 stability to a chloride gel, and how it fares on sweat alone was not found.
 
 **The band's strip.** The electrodes do not hang on wires: each band is a flexible printed
-circuit that carries the studs and runs to the module, on the torso polyimide of two layers
-made by JLCPCB, on the limbs copper on TPU (below).
+circuit that carries the studs and runs to the module, polyimide made by JLCPCB, four layers,
+on the torso and on the limbs alike.
 
 - **A piece of a cone's mantle.** A flat flexible circuit can be bent to a cylinder or a cone,
   but not to a sphere or an irregular surface (Vanfleteren et al., *Printed circuit board
@@ -116,34 +116,37 @@ made by JLCPCB, on the limbs copper on TPU (below).
   cone unrolled: its angle is the difference of the girths at its two edges over its width, its
   outer radius the larger girth over that angle; it then lies on the body without wrinkling or
   pulling sideways.
-- **The polyimide does not stretch.** It only wraps round the body, a static bend, which polyimide
-  bears well; a band of it closes with a stretch of elastic fabric, which takes the wearer's size
-  and the swell of a working muscle: after contractions an arm measured 0.4–1.0 cm more (Journal of
-  Sports Science and Medicine 2008, 7, table 2). Two or three lengths of strip for each band.
-- **The limbs' rings stretch:** a working biceps or calf swells more than a fixed ring takes,
-  and the forearm's and the calf's cross the wrist and the ankle, so all eight limb units are
-  the glove's stretchable circuit, copper on TPU, two layers for the ground (Würth's
-  STRETCH.flex is made single- and double-sided), one piece each into the module's one connector,
-  with a small elastic gap: over the ulna's edge on the forearm, over the tibia on the calf, on
-  the outer side of the upper arm and over the iliotibial tract on the thigh, so that the inner
-  side carries electrodes too; by anatomy, to be checked against the atlas. The module sits on
+- **The polyimide does not stretch; an elastic gap in the fabric does.** The strip only wraps
+  round the body, a static bend, which polyimide bears well. A band of it is **two or three short
+  strips** a module, ~20 cm at most (the owner), meeting at a gap of elastic fabric that takes
+  the wearer's size and the swell of a working muscle: after contractions an arm measured
+  0.4–1.0 cm more (Journal of Sports Science and Medicine 2008, 7, table 2), and the arm flexed
+  against relaxed 33.4 → 35.3 cm in men and 29.3 → 29.8 cm in women (Frontiers in Nutrition
+  2025, DOI 10.3389/fnut.2025.1534453, 139 players; flexed at the biceps' peak, so an upper
+  figure). On the limbs the gap lies over the ulna's edge on the forearm, over the tibia on the
+  calf, on the outer side of the upper arm and over the iliotibial tract on the thigh, so that
+  the inner side carries electrodes too; by anatomy, to be checked against the atlas. Where a
+  gap wants another place, the module moves, settled when the band is drawn. The module sits on
   the outer side, where nothing rubs it. The torso's areas, over the shoulder above all, which
-  turns in three axes, take what their layout asks for, polyimide where the skin does not
-  stretch, TPU where it does.
+  turns in three axes, take what their layout asks for.
 - **The pads** at their places (see [Bogatyr](../bogatyr/CONSTRUCTION.md)). The strip ends in a
-  stiffened tail in the module's locking flexible-circuit connector of 36 ways (see
-  [hardware](HARDWARE.md#sensing-module)); JLCPCB makes flexible circuits up to 234 × 490 mm in
-  regular orders, with stiffeners of polyimide, FR4 or steel (JLCPCB, *Flex PCB capabilities*).
-- **The second layer is ground,** solid, on the strip's outer face, the leads toward the skin:
-  12 µm of copper on the 25 µm core, 0.11 mm finished and still supple (JLCPCB, a bend radius of
-  ~1 mm). A hatch would shield little, its openings far wider than the trace's distance from it
-  (our inference, to be measured), and JLCPCB's shielding film of 18 µm is the alternative over
-  one; on the limbs' TPU strips only meanders stretch, so their shield is a mesh of meanders, the
-  one place the sample must show whether a passive strip holds. The layer sits on the module's
-  ground, or is driven at the body's common mode when the module says so, and every stud has a
-  follower's place beside it under a 0 Ω part, with a +5 V trace along the layer's edge, fitted
-  only if the strip's own noise asks (see [hardware](HARDWARE.md#the-strips-ground-layer)). A
-  channel's P and N run under the same ground.
+  stiffened tail, in the module's lever connector of 36 ways on the first arm and soldered to the
+  board in a series (see [hardware](HARDWARE.md#sensing-module)); JLCPCB makes flexible circuits
+  up to 234 × 490 mm in regular orders, with stiffeners of polyimide, FR4 or steel (JLCPCB, *Flex
+  PCB capabilities*).
+- **Ground on both faces:** JLCPCB's four-layer flex, 0.2 mm at the thinnest, ground on both
+  outer layers and the leads between them, vias along both edges every few centimetres that make
+  the two grounds one node, no fence of them, the leads a few tenths of a millimetre in from the
+  edge (our estimate), a clearance round every stud. It is about six times stiffer than a
+  two-layer flex of 0.11 mm, the thickness cubed, still inside JLCPCB's ten times the thickness
+  for a wrap, 2 mm; worse for any fold. A hatch would shield little, its openings far wider than
+  the trace's distance from it (our inference, to be measured). The cheaper alternative is two
+  layers and JLCPCB's 18 µm shielding film on the skin's side, joined to ground through
+  openings; copper inside polyimide is taken to bear washing better (our judgment). The layers
+  are driven at the body's common mode by default, or put on the module's ground, and every stud
+  has a follower's place beside it under a 0 Ω part, with a +5 V trace by the edge, fitted only
+  if the strip's own noise asks (see [hardware](HARDWARE.md#the-strips-ground-layer)). A
+  channel's P and N run side by side from where they meet, on thin leads, 3 mil.
 - **Less charge from friction.** In a cable the charge is made where the insulation rubs the
   shield as it bends (US patent 6,232,789); the low-noise cables put a graphite layer there
   (PCB Piezotronics, *WPL 43, Accelerometer Signals*). In a printed circuit the layers are bonded
@@ -185,16 +188,21 @@ triboelectric series, synthetics at its ends.
 
 ## Harness and washing
 
-The electrodes, the leads and the line cables ride on a simple strap harness worn under the
-clothes. The harness is rinsed in clean water; the clothes go into the washing machine. Taking
-the cables off and putting them back for every wash would wear them out sooner than wearing the
-suit does.
+The electrodes, the leads, the units and the line cables ride on a simple strap harness worn
+under the clothes. The harness is rinsed in clean water with everything on it; the clothes go
+into the washing machine. Taking the cables and the units off and putting them back for every
+wash would wear them out sooner than wearing the suit does.
 
-- The units unplug before rinsing. Rinsing washes the sweat salt off the IDC contacts; they then
-  dry thoroughly.
+- **The units stay on.** Each sits in a 3D-printed shell with a red star, potted whole in Dow
+  SYLGARD 527, a silicone dielectric gel, its connectors mated, so a connector opens only at
+  assembly and repair. For a repair the gel comes out, Dow's OS fluids helping, and the place is
+  cleaned, dried and patched with more gel (Dow, SYLGARD 527). The gel is soft, so the shell
+  holds it (our inference); Dow gives it no IP rating.
+- **Contact spray** goes only where there is no gel, on the Weipu connectors in their shells and
+  Mamka's IDC: sulfur, amines, tin compounds and oils can stop a platinum-cured silicone from
+  curing (general knowledge; Dow's list not read).
 - The cable bundles lie in the straps along the main axes of bending. That has to be drawn,
   tried and sewn as a prototype.
-- The units sit in 3D-printed enclosures, each with a red star.
 - **The harness, Kaščej (Venom), is cut from an overall.** A whole close-fitting overall, gloves
   included, is sewn, the bands' places are marked on the wearer, and the rest is cut away: the bands
   stay, joined by strips of fabric. The strips hold the bands to one another, so a band shifts and
@@ -203,6 +211,9 @@ suit does.
   is of the suit's cotton with some stretch.
 - **It zips at the back,** with a long cord on the zip's pull, as on a wetsuit, so the wearer
   closes it alone.
+- **Over it goes Strejda Al** (after South Park's Big Gay Al and his tight outfits), a tight
+  compression overall, one of the clothes: it presses the bands to the body, keeps the
+  electrodes' pressure and moisture, and goes into the washing machine with the rest.
 
 The cable and its connectors are described under
 [Porjadok](../porjadok/HARDWARE.md#cable-and-connectors-in-the-suit).
@@ -214,24 +225,28 @@ in a low enclosure of its own (see [hardware](HARDWARE.md#the-glove)); its 16 el
 its IMUs are laid out under [Bogatyr](../bogatyr/CONSTRUCTION.md#the-gloves).
 
 - **The hand's strip** carries the sixteen electrodes and the bias in its studs, as a band's
-  strip does (see [electrodes](#electrodes)), stretchable, copper on TPU, round the hand's edges
-  and over its back under the board, with a tail into the board's 20-way lever connector.
-- **The finger strips are stretchable printed circuits** too, copper on TPU with meanders,
-  laminated into the glove's inner layer: 5–20% of repeated stretch by its layout, turned round
-  and round without harm, gentle on the skin, softening at 155–185 °C, soldered with SnBi; samples
-  on request (Würth Elektronik, *STRETCH.flex*, webinar 2021; Murata makes the like). One a finger
-  and one for the thumb, five, each with seven wires, its two I3C buses, CLKIN, +3.3 V and ground,
-  from a tail stiffened over ~4 mm in its seven-way connector on the board, along the side of the
-  finger, never across its back, where the skin stretches least, with a branch to each IMU board's
-  five-way locking connector (see [the IMU board](HARDWARE.md#the-imu-board)); up to ~10 cm a
-  finger, ~6 cm to its last phalanx. A torn strip is replaced alone.
-- **A glove of two layers** with a hook-and-loop closure: the outer one comes off, the inner one
-  with the strips is pulled out and a new one goes in; the board stays, unplugged from its strips.
-- **The fallback** is PTFE wires of 28 AWG along the sides of the fingers, as the IMU board was
-  first drawn, should the stretchable circuit fail on a sample.
+  strip does (see [electrodes](#electrodes)), polyimide like the bands', round the hand's edges
+  and over its back under the board, its tail in the board's 20-way lever connector on the first
+  glove and soldered in a series.
+- **The finger strips are bare polyimide flex** from JLCPCB, cut as a meander, one a finger and
+  one for the thumb, five, in the glove's inner layer. Each has seven leads, SCL1, SDA1, SCL2,
+  SDA2, REF, +3.3 V and ground, its Bratiška's two I3C buses with two IMUs on each, and runs
+  along the side of the finger, never across its back, where the skin stretches least; up to
+  ~10 cm a finger, ~6 cm to its last phalanx. The IMU boards are small rigid islands soldered to
+  it through plated holes, as LED strips are joined, the joint widened, stiffened and potted
+  (see [the IMU board](HARDWARE.md#the-imu-board)); a repair is heat, lift, a new piece. The
+  strip's tail goes into a seven-way lever connector on the board on the first glove and is
+  soldered in a series. A torn strip is replaced alone. Its shape and its life are left to a
+  bending test.
+- **A glove of two layers** with a hook-and-loop closure: the outer one comes off, and the inner
+  one with the strips can be changed, its strips unplugged from the board on the first glove and
+  unsoldered in a series.
+- **The fallback** is the IMU boards on Kyocera AVX IDCs with PTFE wires of 28 AWG along the
+  sides of the fingers (see [the IMU board](HARDWARE.md#the-imu-board)), should the meander
+  fail its bending test.
 - **Across the wrist** goes the arm's line alone, its flat cable sewn in meanders over the wrist's
-  back to the board's IDC socket; the glove unplugs from the cable and its strips as a module
-  does. The glove is cut with the sleeve, one piece of the harness (see
+  back to the board's Picoflex header; the glove comes off the cable and its strips only for a
+  repair, as a module does. The glove is cut with the sleeve, one piece of the harness (see
   [Harness and washing](#harness-and-washing)).
 
 ## The sock
@@ -250,10 +265,13 @@ since each version is a circuit made and thrown away.
 
 - the band's strip on a sample: bent, tapped and rubbed while recording, on a dummy body of
   resistors first, its fit on the limb as a piece of a cone, the elastic gap over the bone, and
-  the girths that set two or three lengths,
-- the strip's ground layer: solid polyimide against the TPU strips' meanders, on ground and
-  driven, and what the strip generates by itself (see
+  the girths that set two or three short strips; the swell of a working muscle on the first arm,
+  and meanders moulded in silicone only if it wants them,
+- the strip's ground layers: the four-layer strip against two layers with the shielding film,
+  driven and on ground, its stiffness on the limb, and what the strip generates by itself (see
   [hardware](HARDWARE.md#the-strips-ground-layer)),
+- the units potted in the gel: rinsed with the harness again and again, and a potted module in
+  the washing test beside the materials; a repair, the gel dug out and patched,
 - the sock: its strips on the foot, gripping the floor and washing; the foot's strip across the
   ankle,
 - the stud on the strip: the disc spring, the sealant, washed again and again; the contact
@@ -268,9 +286,11 @@ since each version is a circuit made and thrown away.
 - the backpack's straps over the shoulders' units: they must run beside the electrodes or be
   padded,
 - a prototype of the harness, cut from an overall; how much stretch the cotton may carry,
-- the glove: the finger strips along the fingers, gripping and washing; the stiffened tails in
-  the locking connectors; the board on the back of the hand in a grip and a fall; the hand's
-  electrodes under the board and at the thumb's edge as the thumb turns to the palm,
+- the glove: the finger strips' meanders in a bending test, their shape and life, gripping and
+  washing; the risk the soldered islands carry, one IMU lost costing a piece of strip; the
+  joints widened, stiffened and potted; the tails in the lever connectors on the first glove;
+  the board on the back of the hand in a grip and a fall; the hand's electrodes under the board
+  and at the thumb's edge as the thumb turns to the palm,
 - the headband's electrodes above the ears, in the hair; the layout itself is under
   [Bogatyr](../bogatyr/CONSTRUCTION.md#open-questions).
 

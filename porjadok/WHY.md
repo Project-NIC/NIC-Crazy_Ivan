@@ -52,6 +52,15 @@ thing waits in reserve, it says so.
   pieces; the Weipu SP21 of 12 pins is the part, the GX16 for the trials.
 - **The Amphenol PT 12-10 a branch** (24 Oct 2026), a bayonet and IP67: over 10,000 CZK for eight
   pairs against ~2,500 CZK for the SP21, which is IP68 and screws on.
+- **IDC sockets of 2 × 8 at the taps** (to 30 Oct 2026), pressed onto the cable where each unit
+  plugged in, every unit coming off for the wash. The units are potted, stay on the harness and
+  are rinsed with it, so a connector opens only at assembly and repair and the smallest part does:
+  the Picoflex PF-50, 1.27 mm, the cable's own pitch, feed-through. A unit's board edge in a 3M
+  card-edge IDC on the line, weighed on 29–30 Oct 2026, stood 18 mm tall.
+- **The Picoflex in gold** (30–31 Oct 2026), 90327-3316 on the cable and 90814-3816 on the unit,
+  100 cycles, $2.81 a tap against $1.05 in tin at one to nine (JLCPCB, 31 Oct 2026). Thirty
+  cycles in tin do for assembly and repair, the joint under the gel, and tin mates with tin
+  (Molex catalogue MX10).
 - **Six grounds in the cable** (the 3M 1785/16, 16 wires). Ten pins a branch take two wires into
   each supply pin, so the cable has 14 wires and four grounds: on a metre at ~0.38 A the drop is
   ~57 mV against 51 mV, and a unit sits ≤ ~30 mV off Mamka's ground at the worst line. Taken
@@ -64,12 +73,12 @@ thing waits in reserve, it says so.
   under the 3.44 V its dropout (at most 140 mV) needs and the 3.6 V its ±1.5% asks (SBVS338H, 5.5),
   and the head's motors ~3.5–3.6 V, short of the 3.55 V their overdrive needs (SLOS754C). 4 V gives
   both room for ~0.3 W. The analog rail stays at 6 V: 5.5 V would save only ~0.06 W, and the
-  headroom helps the TPS7A47 reject ripple.
+  headroom helps the analog LDO reject ripple.
 
 ## The frame and the output
 
 - **A short START pulse.** Conversions run only while START is high; a pulse would stop the
-  measurement after the first conversion (SBAS499C, 9.4.1 and 9.4.5). START stays high.
+  measurement after the first conversion (SBAS459K, 9.4.1.1 and 9.4.1.5). START stays high.
 - **More than one byte per joint axis** on the output. Over 120° a byte's step is 0.47° and its
   rounding 0.14° RMS, under what IMUs and EMG deliver; more bits would carry noise, and the
   Hailo, where one is fitted, hands out UINT8 as it is.
@@ -119,7 +128,7 @@ What was tried for the frames and the modes and left:
   read back** (to 24 Oct 2026). The answer is the result in 8 B; whoever wants to check
   reads the registers.
 - **START low while stopped.** What it would save the datasheet does not give, and every new
-  start would need the sync again; the ADS129x run on idle through the whole active mode, and
+  start would need the sync again; the ADS1298 run on idle through the whole active mode, and
   only the lines' power off and on ends the sync.
 - **Two frames of 34 B for a module of two chips** (29 Oct 2026), the second chip's channels in
   a frame of their own, 0x24, back to back with the first in the slot. Sixteen bytes of header and
@@ -177,9 +186,10 @@ What was tried for the frames and the modes and left:
 - **CI-UTP, the firmware's container** behind the mark 0xC1A1 (to 24 Oct 2026). A block of
   firmware is a frame of its own kind, 519 B, so the suit has two protocols, CI-STP inside and
   CI-BTP out; the mark is left to CI-BTP's *subscribe*.
-- **A bank byte in every command** (to 24 Oct 2026). An IMU switches its bank by its own
-  REG_BANK_SEL like any register, and the unit's own chip has one space of registers in ranges,
-  so a read is the chip, the register and the count in 8 B.
+- **A bank byte in every command** (to 24 Oct 2026). An IMU switches its page of registers by a
+  register of its own like any other, the LSM6DSV16X by FUNC_CFG_ACCESS (DS13510 Rev 4, 9.1), and
+  the unit's own chip has one space of registers in ranges, so a read is the chip, the register
+  and the count in 8 B.
 - **The address by nibbles,** the line and the unit on it (23–24 Oct 2026). A unit's number is
   given by *assign*, 1–0x7F, the system's parts keeping theirs fixed; whether a number splits
   into a line and a unit is open.

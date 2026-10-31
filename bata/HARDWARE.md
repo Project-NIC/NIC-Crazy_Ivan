@@ -133,6 +133,9 @@ him only over Ethernet.
   [Mamka](../mamka/HARDWARE.md#the-computers-supply)), so Mamka
   switches both computers, and the backpack takes the 10 A power variant (see
   [Babuška](../babuska/HARDWARE.md#power-variants)).
+- **His block:** the same Mrazík as Baťa's, with the plate, or an SSD's card, under his ROCK and
+  no Mamka; its fan runs from his ROCK's own fan connector (see
+  [Babuška](../babuska/CONSTRUCTION.md#mrazík)).
 
 ## Ďaďa Sem
 

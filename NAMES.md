@@ -32,11 +32,12 @@ The project's name and the picture on the front page are a joke too, nothing mor
 | [**Perevodčica**](porjadok/SOFTWARE.md#output) | the interpreter | the converters on Baťa: she tells whoever asks, Unreal, Unity, VRChat, a lab or a robot, what the body does, each in its own tongue, and writes the recordings. |
 | **Nastěnka** | the good stepdaughter of *Mrazík*, the fairy tale | the main software, which had no name so far. |
 | **Macecha** | the stepmother of the same tale | the correcting software on Baťa: the strict one who lets nothing through. |
-| **Mrazík** | Father Frost of the same tale | the inner construction of the cooling. |
+| [**Mrazík**](babuska/CONSTRUCTION.md#mrazík) | Father Frost of the same tale | the inner construction of the cooling: a closed aluminium block round a ROCK 5T and the boards stacked with it, its heat out through the fins. |
 | **Kommunalka** | a communal flat | the backpack, where the whole family lives and shares one kitchen. |
 | [**Chodiki**](mamka/HARDWARE.md#clock) | the wall clock with weights | the suit's clock: the whole household lives by it. |
 | [**Rubaška**](rubaska/README.md) | the shirt | the suit. In Russian, as in Czech, a child born in a shirt is born lucky: the "shirt" is the caul, a second skin, and so is the suit. |
 | [**Kaščej**](rubaska/CONSTRUCTION.md#harness-and-washing) | Koschei the Deathless | the harness, the bare overall without the modules and the leads, called Venom while it was only an idea: skin-tight, so whoever puts it on looks like the skinny old immortal of the fairy tales. |
+| [**Strejda Al**](rubaska/CONSTRUCTION.md#harness-and-washing) | Uncle Al: Big Gay Al of *South Park* | the tight compression overall over Kaščej: it presses the bands to the body and keeps the electrodes' pressure and moisture. The owner named it after Big Gay Al, for his tight outfits. |
 | [**Bogatyr**](bogatyr/README.md) | the strongman of the byliny | the layout on the body: Kaščej dressed in the meat, the electrodes on the muscles and the IMUs on the bones. |
 | [**Rebjata**](rubaska/HARDWARE.md#sensing-module) | the kids | the sensing modules: Mamka's own children. |
 | [**Rebjonok**](rubaska/HARDWARE.md#sensing-module) | the child | one sensing module: the forearm's Rebjonok, the thigh's. |

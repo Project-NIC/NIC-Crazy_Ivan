@@ -18,7 +18,7 @@ controller for a computer or a game.
 
 </div>
 
-> **Beta 0.5:** a concept at the design stage, nothing is built yet; what is closed, what is
+> **Beta 0.6:** a concept at the design stage, nothing is built yet; what is closed, what is
 > open and what is only an estimate is under [Status](STATUS.md).
 
 ---

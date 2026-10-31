@@ -51,9 +51,9 @@ known.
   another accelerator or any other card of that length goes in, with only the software changed,
   as long as it stays within what its converter gives, 4 A of 3.3 V, ~13 W a slot, and works on
   the slot's two lanes. A card that wants more wants a Terem of its own.
-- **Height:** the sockets' and the modules' height under the ROCK, in the insert's channel, with
-  one heatsink over both modules (see [Terem](CONSTRUCTION.md#the-connectors-and-the-mounting), and
-  [Babuška](../babuska/CONSTRUCTION.md#the-backpack)).
+- **Height:** the sockets' and the modules' height under the ROCK, inside Mrazík, with one
+  heatsink over both modules (see [Terem](CONSTRUCTION.md#the-connectors-and-the-mounting), and
+  [Babuška](../babuska/CONSTRUCTION.md#mrazík)).
 
 ## The converters
 

@@ -112,7 +112,7 @@ fault instead of a recovery branch for each; our Tron, the program that fights f
   (`sd_notify`, `WATCHDOG=1`): a service that hangs without dying is aborted and restarted by its
   `Restart=` (systemd.service(5)), and one that keeps doing it is Storož's reason 8.
 - **What he watches:** Mamka's state and events, processor 1's on her SPI (a unit's place empty) and
-  processor 2's on hers (a unit gone, a BMS alarm, the eFuse's PGOOD, either processor silent to the
+  processor 2's on hers (a unit gone, a BMS alarm, the eFuses' PG, either processor silent to the
   other); the Umnicas' PGOOD on their header GPIOs (GPIO events); the Hailo devices on the bus (a
   `remove` from udev, HailoRT's errors); the SPIs' stream while measuring (no "data ready" for a
   second); the SoC's and the Hailos' temperatures in sysfs; the disk when recording; and systemd
@@ -165,8 +165,8 @@ From a sample to the output:
 
 | stretch | time |
 |---|---|
-| sample to the STM32H562s, by the unit's slot | 52–247 µs; a cycle's frames of data are complete at 247 µs |
-| the STM32H562s to Baťa, the frames as they came in places by the unit's kind | processor 1's 1,064 B in 227 µs at 37.5 MHz, processor 2's 384 B over her two SPIs in 138 µs at 11.1 MHz; ~0.47 ms from DRDY in all |
+| sample to Mamka's processors, by the unit's slot | 52–247 µs; a cycle's frames of data are complete at 247 µs |
+| Mamka's processors to Baťa, the frames as they came in places by the unit's kind | processor 1's 1,064 B in 227 µs at 37.5 MHz, processor 2's 384 B over her two SPIs in 138 µs at 11.1 MHz; ~0.47 ms from DRDY in all |
 | Linux waking on the "data ready" pin | tens of µs, sometimes more; to be measured |
 | the step's envelope and the model's window | 8.3 ms for the step; the window of 267 ms is history, not delay (see [signals](SIGNALS.md)) |
 | inference on the Hailo-10H | to be measured |
@@ -268,14 +268,13 @@ in its graphics, opened in the browser of a phone or of Borovičok.
   offering the line's free places. A unit of the map missing at a bring-up stays in it, shown as
   missing, until the person forgets it.
 - **What it shows,** one page, a table by line: the place, the UID's last four hex digits, the
-  kind, the firmware's version, present or missing; for a module whether it drives the bias, its
-  strip's ground layer, and on the head and the neck the way of measuring; while measuring, from
-  the diagnostics, the electrodes off, the
+  kind, the firmware's version, present or missing; for a module whether it drives the bias and
+  its strip's ground layer; while measuring, from the diagnostics, the electrodes off, the
   temperature, the lowest 3.3 V and the last reset's cause; and Storož's state, running or
   halted and why, with no button: resuming stays over SSH.
 - **What it sets:** which module drives the bias, the strips' ground layers on ground or driven,
-  the head's and the neck's way of measuring, the IMU mode; only in the service mode, in effect
-  from the next start, since Mamka sends the settings at every start.
+  the IMU mode; only in the service mode, in effect from the next start, since Mamka sends the
+  settings at every start.
 - **How:** one Python program, the standard library only; plain HTML forms with no JavaScript,
   the page reloading itself every 2 s; the map one JSON file keyed by the UID, which can be edited
   over SSH too; listening on Baťa's local network only.

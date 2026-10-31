@@ -48,9 +48,10 @@ thing waits in reserve, it says so.
   and those to the owner's layout.
 - **A reference electrode not fitted on the suit** (to 25 Oct 2026), the room for one kept on
   every module; then one on every module (to 29 Oct 2026). The body's ADS1298 have no SRB1, so
-  the reference stays on the head and the neck, where the ADS1299 is (see
-  [Rubaška](../rubaska/WHY.md#the-sensing-module)), and which way serves the model better is
-  tried there.
+  the reference stayed on the head and the neck, where an ADS1299's SRB1, switched by its MISC1,
+  gave both ways on one strip. With the ADS1298 there too (31 Oct 2026, see
+  [Rubaška](../rubaska/WHY.md#the-sensing-module)), the strip wires the reference to the
+  channels' negative inputs itself, and which way serves the model better is tried there.
 - **The foot behind the calf's module and the hand behind the forearm's,** an extension of up to
   four IMUs on a processor of its own (to 25 Oct 2026), then **two IMUs beyond the joint on the
   calf's and the forearm's module's strip** (to 29 Oct 2026). The hand and the foot want more than

@@ -14,9 +14,12 @@ headphones, the buttons, the motors, Míša beside her and the power.
 ## Line 8
 
 Nataša hangs on a line of its own, the eighth from [Mamka](../mamka/HARDWARE.md#lines), on her
-processor 2, with the same pairs, connector, frames and rate as lines 1–7, 19.66 Mbaud (see
-[software](SOFTWARE.md#line-8)). Beside her on that line is [Míša](../misa/HARDWARE.md), on a tap
-of his own; the head's sensing module is on line 5 and the neck's on line 7.
+processor 2, with the same pairs, frames and rate as lines 1–7, 19.66 Mbaud (see
+[software](SOFTWARE.md#line-8)), and the same connector as every unit, a Picoflex PF-50 header,
+90814-0816, where the line's cable passes (see
+[Porjadok](../porjadok/HARDWARE.md#cable-and-connectors-in-the-suit)). Beside her on that line is
+[Míša](../misa/HARDWARE.md), on a tap of his own; the head's sensing module is on line 5 and the
+neck's on line 7.
 
 ## The processor's pins
 
@@ -236,21 +239,24 @@ both sides (see [Rubaška](../rubaska/HARDWARE.md#power)).
   ~0.58 A for ~1 ms each frame, ten times a second, while the radar chirps (see
   [Míša](../misa/HARDWARE.md#the-board)). Line 8's converter sees ~0.35 A on
   average and, at the worst coincidence of a chirp with two motors, ~1.0 A for a millisecond, which
-  its current limit of at least 1.13 A carries (see [Mamka](../mamka/HARDWARE.md#converters)); the
-  polymers at the inputs bridge the microseconds the converter's loop takes.
+  its current limit of at least 1.13 A carries (see [Mamka](../mamka/HARDWARE.md#converters));
+  Míša's polymer at his input bridges the microseconds the converter's loop takes during a chirp,
+  the motors' own behind their choke their start.
 - **The LDO** to 3.3 V, the TPS7A2033 as in the sensing modules, and behind it a star of branches,
   each with its own π filter: the processor (choke and bead), the RS-485 drivers, the DAC, the
   headphone amplifier and the microphones. The parts' own capacitors from their
   datasheets sit at their pins.
-- **At the input,** a polymer bulk where the cable arrives: Panasonic POSCAP **6TPE100M** (TPE
-  series, case D2E), 100 µF 6.3 V, 7.3 × 4.3 × 1.8 mm, 25 mΩ at 100 kHz, 2.4 A of ripple,
-  105 °C, the same as in the sensing modules; it is small so that line 8's converter
-  charges little at start (see [Mamka](../mamka/HARDWARE.md#converters)). The motors' own polymer
-  behind their choke is the **6TPE470MAZU** (case D15E), 470 µF 6.3 V, 7.3 × 4.3 × 1.4 mm,
-  35 mΩ, 1.7 A of ripple, 85 °C / 2,000 h (5.0 V up to 105 °C), which carries their start. At
-  1.4–1.8 mm both lie flat in the headband, where Mamka's 50 V hybrid polymer stands
-  10.2 mm tall. Others of the series in the same footprint: 6TPE330MAP (330 µF, 25 mΩ, 1.8 mm)
-  and 6TPE220MI (220 µF, 18 mΩ, 1.8 mm, 105 °C).
+- **At the input,** where the cable arrives, an RC as on the sensing modules (see
+  [Rubaška](../rubaska/HARDWARE.md#power)): a 22 µF 25 V X5R 1206 behind 0.5 Ω, two 1 Ω 0603 side
+  by side, beside the 10 µF, damping the cable's inductance. Plugged into a live line it peaks
+  at ≤ 4.52 V, under the TPS7A2033's 6.5 V (SBVS338H, 5.1), computed for a line of 0.2–1.0 µH and
+  0.08–0.35 Ω (the 3M 3811 at ~0.44 µH/m, an estimate), and it leaves line 8's converter ~26 µF
+  to charge at start (see [Mamka](../mamka/HARDWARE.md#converters)). The motors' own polymer
+  behind their choke is the **6TPE470MAZU** (Panasonic POSCAP, TPE series, case D15E), 470 µF
+  6.3 V, 7.3 × 4.3 × 1.4 mm, 35 mΩ, 1.7 A of ripple, 85 °C / 2,000 h (5.0 V up to 105 °C), which
+  carries their start. At 1.4 mm it lies flat in the headband, where Mamka's 50 V hybrid polymer
+  stands 10.2 mm tall. Others of the series in the same footprint: 6TPE330MAP (330 µF, 25 mΩ,
+  1.8 mm) and 6TPE220MI (220 µF, 18 mΩ, 1.8 mm, 105 °C).
 - **The DRV2603 switches at ~20 kHz,** below a plain π filter's ~34 kHz corner. With the
   polymer behind the choke the corner falls to ~5 kHz (2.2 µH into ~480 µF), so the 20 kHz
   comes back through the choke ~19 dB down: at 20 kHz the polymer's 35 mΩ of ESR already
