@@ -20,7 +20,7 @@ P1_LINES = range(1, 5)          # the arms and the legs, on processor 1
 PLACES = [(1, 2, "upper arm L", 4, 2), (1, 3, "forearm L", 2, 2), (2, 2, "upper arm R", 4, 2),
           (2, 3, "forearm R", 2, 2), (3, 2, "thigh L", 4, 2), (3, 3, "calf L", 2, 2),
           (4, 2, "thigh R", 4, 2), (4, 3, "calf R", 2, 2), (6, 1, "chest and abdomen", 1, 2),
-          (7, 2, "lower back", 3, 2), (7, 1, "neck and upper back", 2, 1),
+          (7, 2, "lower back", 3, 2), (7, 1, "neck and upper back", 4, 1),
           (1, 1, "shoulder L", 3, 2), (2, 1, "shoulder R", 3, 2), (3, 1, "hip L", 1, 2),
           (4, 1, "hip R", 1, 2), (5, 1, "head", 4, 2)]
 TRUNK = ("chest and abdomen", "lower back", "neck and upper back")   # where the ECG shows

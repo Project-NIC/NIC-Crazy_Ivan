@@ -102,8 +102,8 @@ Each IMU's step is its turn Δθ over 1/120 s with the coning term and its mean 
 The model takes features at the IMUs' rate, not the raw EMG: 1.61 MB/s of raw samples into a
 network would cost what it does not need, and the envelopes carry the muscles' activity.
 
-- **In, every step of 1/120 s:** 280 EMG envelopes (log-RMS of the step) and 98 IMU steps of 6
-  values, **868 values a step**; a window of **32 steps**, 267 ms, 27,776 values. Absent IMUs and
+- **In, every step of 1/120 s:** 280 EMG envelopes (log-RMS of the step) and 100 IMU steps of 6
+  values, **880 values a step**; a window of **32 steps**, 267 ms, 28,160 values. Absent IMUs and
   masked channels take their "absent" value.
 - **Out, every step:** the 127 joint values, the 32 contact bits and, from longer windows, the
   fatigue below. Neural networks learn rotations better in a six-number form than as angles or
@@ -140,5 +140,5 @@ the meta packet of fatigue. Surface EMG hears the neighbouring muscles too, so g
   template reaches on the limbs, the breath from the EMG against a belt,
 - the complementary filter's gains and the joint constraints' weights, on a recorded walk against
   a camera,
-- the model's window and features: 32 steps of 868 values is the first guess, to be tuned,
+- the model's window and features: 32 steps of 880 values is the first guess, to be tuned,
 - the fatigue index against a known effort, on a recording with a dynamometer.

@@ -31,11 +31,17 @@ thing waits in reserve, it says so.
   longus, the extensores pollicis and indicis, the flexor pollicis longus), which arise from the
   middle third of the forearm's bones and lie deep (Gray's), the thumb showing in the hand's pairs
   and the IMUs; the masseter and the muscles that open the jaw, out of a headband's reach.
-- **The hand's other three dorsal interossei:** thin, under the extensors' tendons; the first,
-  between the thumb and the index, is larger than the other three (Gray's, the Interossei).
+- **The hand's other three dorsal interossei** (to 3 Nov 2026): thin, under the extensors' tendons;
+  the first, between the thumb and the index, is larger than the other three (Gray's, the
+  Interossei). Taken back as a trial when the glove's eight channels were all laid out by the main
+  muscle groups (the owner): what they tell under the tendons the recordings show.
 
 ## The layouts before this one
 
+- **The second eight left open** (to 3 Nov 2026): every module had its first eight, the forearm
+  and the calf five, the hand and the foot three, the rest to be laid out with someone who knows
+  the body. None was to be had, and every channel was laid out by the main muscle groups instead,
+  the second eight as rings and crossings on the same muscles, the first recordings to check it.
 - **Two rings a limb, each P to the N half a turn round** (to 25 Oct 2026), every channel running
   obliquely through the limb, the crossing called "tomography" in quotes, and the torso's units as
   areas whose chords crossed from one half to the other. Long pairs gather more crosstalk (De Luca
@@ -61,9 +67,9 @@ thing waits in reserve, it says so.
 
 ## The places weighed
 
-- **Electrodes on the palm and the back of the hand.** On the palm every grip presses them and
-  they wander; on the back the extensors' tendons cover all but the first dorsal interosseous.
-  The hand keeps three channels on its edges and that one muscle.
+- **Electrodes on the palm.** Every grip presses them and they wander. The hand keeps its edges,
+  the first web and the back of the hand, where the extensors' tendons cover all but the first
+  dorsal interosseous, the other three being a trial.
 - **Rings round the chest and the waist,** two modules each. A ring takes the torso at one
   height only; the torso's modules take areas, the neck to the skull, the shoulders, the front,
   the lower back and the hips, each muscle with its pair.

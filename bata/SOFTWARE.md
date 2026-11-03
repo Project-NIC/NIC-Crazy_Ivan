@@ -232,8 +232,8 @@ code runs on one core. The plan:
 - Learning takes more battery than plain running. That is accepted.
 - **The model's shape: convolutions only,** so that one model runs on the Hailo, on the
   RK3588's own NPU and on the cores alike, and the small fitting's fallback is the same model:
-  - **The input as an image,** 1 × 32 × 868: the window of 32 steps, the 280 envelopes and the
-    98 IMUs' 6 values of each step, 868 values a step (see [signals](SIGNALS.md)).
+  - **The input as an image,** 1 × 32 × 880: the window of 32 steps, the 280 envelopes and the
+    100 IMUs' 6 values of each step, 880 values a step (see [signals](SIGNALS.md)).
   - **Convolutions over time** with a kernel of 1 × k, **1 × 1 across the channels**, which also
     stands for the fully connected head; the 32 steps are covered by stacking layers or by a
     stride of 2, not by dilation.

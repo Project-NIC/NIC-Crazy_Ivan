@@ -6,7 +6,7 @@
 
 [English](README.md) · **Čeština** · [Русский](README.ru.md)
 
-**Neurální oblek:** až 582 elektrod a 98 inerciálních jednotek, 56 z nich v rukavicích a
+**Neurální oblek:** až 582 elektrod a 100 inerciálních jednotek, 56 z nich v rukavicích a
 ponožkách, na obleku, který si skládáš z dílů, jako je rukáv, nohavice, trup nebo čelenka.
 
 Vlastní signály svalů a pohyb těla jdou do počítače v batohu, Radxa ROCK 5T s vlastním NPU nebo

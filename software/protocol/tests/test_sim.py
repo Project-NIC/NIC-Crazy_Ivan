@@ -24,9 +24,9 @@ class TestSimulator(unittest.TestCase):
         self.assertEqual([u.slot for u in suit.of(1) if u.line == 3], [1, 2, 3, 4])
         self.assertEqual((suit.unit("glove L").slot, suit.unit("sock R").slot), (4, 4))
         self.assertEqual([u.number for u in suit.of(2)][-2:], [0x81, 0x82])
-        self.assertEqual(sum(u.imus for u in suit.units if u.line < 8), 42 + 40 + 16)
+        self.assertEqual(sum(u.imus for u in suit.units if u.line < 8), 44 + 40 + 16)
         self.assertEqual(sum(u.imus for u in Suit.standard(16, gloves=False, socks=False).units
-                             if u.line < 8), 42)
+                             if u.line < 8), 44)
         self.assertEqual(sum(u.place for u in suit.of(1)), 16 * 58)          # the places of data
         self.assertEqual(sum(u.place for u in suit.of(2)), 3 * 58 + 2 * 34)   # the neck's and Nataša's 34
 
@@ -55,7 +55,7 @@ class TestSimulator(unittest.TestCase):
         self.assertEqual((len(suit.p1[0]), len(suit.p2[0][0]), len(suit.p2[0][1])),
                          (1064, 192, 192))
         self.assertEqual((bata.cycles, bata.lost, bata.empty, bata.out_of_step), (960, 0, 0, 0))
-        self.assertEqual(bata.steps, 60 * 98)                          # every IMU, every step
+        self.assertEqual(bata.steps, 60 * 100)                          # every IMU, every step
         self.assertEqual(len(bata.diagnostics), 22)                    # every unit's came
         out = summarize(btp.Frame.unpack(f) for f in bata.frames_out)
         self.assertEqual(out["packets"][btp.P_SNAPSHOT], 60)           # 960 / 16
@@ -70,7 +70,7 @@ class TestSimulator(unittest.TestCase):
         self.assertGreater(bata.empty, 0)
         self.assertLessEqual(bata.empty, suit.stats["bad"])            # no repeat for data
         self.assertEqual((bata.lost, bata.out_of_step), (0, 0))
-        self.assertLess(bata.steps, 25 * 98)
+        self.assertLess(bata.steps, 25 * 100)
 
     def test_buttons_make_events(self):
         def press(i, suit):

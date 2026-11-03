@@ -68,4 +68,4 @@ made.
   motor shows in their EMG, which Baťa can mark as he knows when it runs, tried on a sample,
 - the glasses' temple measured, and the gap the headband leaves above the ear and behind it,
 - the buttons over the mastoids' electrodes and the forehead's IMUs beside Míša, laid out on the
-  headband with the physiotherapist (see [Bogatyr](../bogatyr/CONSTRUCTION.md#open-questions)).
+  headband on a head (see [Bogatyr](../bogatyr/CONSTRUCTION.md#open-questions)).

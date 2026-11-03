@@ -251,7 +251,7 @@ whole with their connectors mated and stay on the harness (see
   chips through the N inputs it is joined to on the strip; on the neck's the sixteen, the bias,
   the ground and the +5 V, 19, the rest empty (see [electrodes](CONSTRUCTION.md#electrodes) and
   [The strip's ground layer](#the-strips-ground-layer)). On the first arm, while the layout
-  changes with the physiotherapist, the strip goes into a **Hirose FH12**, a lever connector for
+  changes on a body, the strip goes into a **Hirose FH12**, a lever connector for
   flexible circuits, 0.5 mm, gold, 2 mm high, ~20 matings (Hirose's FH12 catalogue, 2017). In a
   series it is **soldered to the board** through plated holes at 1.27 mm in two staggered rows,
   ~23 × 3.5 mm for 36 ways against the FH12-36S's 22.1 × 5.6 mm, with a plain iron, and potted

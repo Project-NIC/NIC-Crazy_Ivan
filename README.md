@@ -6,7 +6,7 @@
 
 **English** · [Čeština](README.cs.md) · [Русский](README.ru.md)
 
-**A neural suit:** up to 582 electrodes and 98 inertial units, 56 of them in the gloves and the
+**A neural suit:** up to 582 electrodes and 100 inertial units, 56 of them in the gloves and the
 socks, on a suit you put together from pieces like a sleeve, a trouser leg, the torso or a
 headband.
 

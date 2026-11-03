@@ -9,11 +9,12 @@ const data = await (await fetch(q.get('data') || 'suit.json')).json();
 const r = new THREE.WebGLRenderer({antialias: true, preserveDrawingBuffer: true});
 r.setSize(W, H); r.setClearColor(0xffffff); document.body.appendChild(r.domElement);
 if (q.get('legend')) { const d = document.createElement('div'); d.id = 'lg';
+  const n = l => data.electrodes.filter(e => e.layer === l).length;
   d.innerHTML = '<b>NIC-Crazy_Ivan</b> — Bogatyr on an average body, an estimate:'
-    + '<span style="background:#c62828"></span>P<span style="background:#1565c0"></span>N (256)'
-    + '<i style="display:inline-block;width:34px;border-top:3px solid #222;margin:0 8px 0 26px;vertical-align:4px"></i>a channel (128)'
-    + '<span style="background:#2e7d32"></span>reference (16)<span style="background:#f9a825"></span>bias (16)'
-    + '<span style="background:#7b1fa2;border-radius:2px"></span>IMU (48)';
+    + '<span style="background:#c62828"></span>P<span style="background:#1565c0"></span>N (' + n('emg') + ')'
+    + '<i style="display:inline-block;width:34px;border-top:3px solid #222;margin:0 8px 0 26px;vertical-align:4px"></i>a channel (' + data.chords.length + ')'
+    + '<span style="background:#2e7d32"></span>reference (' + n('ref') + ')<span style="background:#f9a825"></span>bias (' + n('bias') + ')'
+    + '<span style="background:#7b1fa2;border-radius:2px"></span>IMU (' + n('imu') + ' drawn)';
   document.body.appendChild(d); }
 const scene = new THREE.Scene();
 const g = new THREE.BufferGeometry();
@@ -28,8 +29,9 @@ for (const e of data.electrodes) {
   if (!show.includes(e.layer) || !shown(e.module)) continue;
   const c = e.layer === 'emg' ? col[e.pole] : col[e.layer];
   const rad = e.layer === 'emg' ? 0.07 : 0.085;
+  const isz = ['hand', 'foot'].includes(q.get('view')) ? 0.1 : 0.2;     // the IMU boards, ~1 cm
   const m = e.layer === 'imu'
-    ? new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.06, 0.2), new THREE.MeshLambertMaterial({color: c}))
+    ? new THREE.Mesh(new THREE.BoxGeometry(isz, 0.04, isz), new THREE.MeshLambertMaterial({color: c}))
     : new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, 0.05, 20), new THREE.MeshLambertMaterial({color: c}));
   const n = new THREE.Vector3(...e.n), p = new THREE.Vector3(...e.p).addScaledVector(n, 0.02);
   m.position.copy(p); m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), n);

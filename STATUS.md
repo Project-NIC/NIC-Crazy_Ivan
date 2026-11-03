@@ -2,11 +2,11 @@
 
 # Status
 
-**Beta 0.6, 31 Oct 2026:** every module on the ADS1298, the IMU the LSM6DSV16X held to the suit's
-clock by a reference, the strips polyimide shielded on both faces, the units potted on the harness
-with connectors for assembly only, Mamka's converters at 1 MHz, Mrazík the cooling block, two bias
-drivers caught by software; 280 channels at 1,920 SPS and 98 IMUs, still all on paper, nothing
-built.
+**Beta 0.6, 31 Oct 2026, updated 3 Nov 2026:** every module on the ADS1298, the IMU the
+LSM6DSV16X held to the suit's clock by a reference, the strips polyimide shielded on both faces,
+the units potted on the harness with connectors for assembly only, Mamka's converters at 1 MHz,
+Mrazík the cooling block, two bias drivers caught by software, every channel laid out on the body;
+280 channels at 1,920 SPS and 100 IMUs, still all on paper, nothing built.
 
 ↑ [NIC-Crazy_Ivan](README.md)
 
@@ -75,7 +75,7 @@ part has been bought. What is here is of four kinds, and each page says which:
 - **the glove, Vešč, one board on the back of the hand:** the hand's ADS1298, 16 electrodes on 8
   channels, Staršaja and four Bratiški, one a finger, 20 IMU places, the finger strips passive;
   **the sock, Nosok,** the same board for the foot on the calf above the ankle, up to eight IMUs:
-  98 IMUs on a suit with two gloves and two socks, 42 of them on the modules
+  100 IMUs on a suit with two gloves and two socks, 44 of them on the modules
   ([Rubaška](rubaska/HARDWARE.md#the-glove)),
 - the purpose and the requirements written down: first a controller, second rehabilitation,
   the assistants beside them, how we know it works, and what it must do in ranges
@@ -106,11 +106,11 @@ part has been bought. What is here is of four kinds, and each page says which:
 - three SPIs to Baťa: processor 1's at 37.5 MHz, processor 2's two at 11.1 MHz behind the ROCK's
   translators, the frames as they came in places by the unit's kind, 58 or 34 B; four wires between
   the processors, her own registers, the BMS a chip of processor 2 ([Mamka](mamka/SOFTWARE.md)),
-- **Bogatyr,** the layout on the body: the first eight channels of every module, every muscle with
-  its pair, the second eight of the body's modules still to lay out; 42 IMUs on the body, four in a
-  square on the head, more where the skin slides; a proposal from several studies, to be gone
-  through with a physiotherapist, drawn on an average body as a first draft
-  ([Bogatyr](bogatyr/README.md)),
+- **Bogatyr,** the layout on the body: every channel laid out by the main muscle groups, 280 on
+  twenty units, every muscle with its pair, no two electrodes nearer than 1.5 cm (1 cm on the hand
+  and the foot); 44 IMUs on the body, four in a square on the head, four down the neck, more where
+  the skin slides; a proposal from several studies, an estimate drawn on an average body, the first
+  recordings to check it ([Bogatyr](bogatyr/README.md)),
 - **the Bratiški without SWD:** chips of their Staršaja, not units, each on a full-duplex link of
   4 MBd on the board, his step of 52 B once a step; an empty STM32H503 boots ST's bootloader on
   the same pins, so Staršaja programs them herself, a shared BOOT0 line for recovery; the glove
@@ -167,12 +167,12 @@ Each page ends with its open questions. The largest:
 - datasheets not read: the BMS's manuals,
 - the clock trees and the DMA tables of the six processor designs, written on paper, checked on
   the first board,
-- the layout on the body, gone through with a physiotherapist and tried on a body: the body's
-  modules' second eight channels, the two ways of measuring compared on the head and the neck
-  ([Bogatyr](bogatyr/CONSTRUCTION.md#open-questions)); first the hand: its eight channels and its
-  IMUs on one inner layer under the board, and how many channels the thumb wants, asked before any
-  glove is made; the foot's eight channels and the sock's places on the foot; the steel discs
-  against Ag/AgCl, titanium and conductive silicone; the polyimide strips, washed and worn,
+- the layout on the body, every place checked by the first recordings, the first arm first: the
+  second eights' crossings against straight pairs, the two ways of measuring compared on the head
+  and the neck ([Bogatyr](bogatyr/CONSTRUCTION.md#open-questions)); first the hand: its eight
+  channels and its IMUs on one inner layer under the board, and how many of them the thumb wants,
+  asked before any glove is made; the sock's places on the foot beyond the four drawn; the steel
+  discs against Ag/AgCl, titanium and conductive silicone; the polyimide strips, washed and worn,
 - the four-layer strip's own artifact and its ground layer on ground and driven, on the first arm;
   the powered-down bias output's leakage, the LP2985's noise with the inputs shorted inside, the
   IMUs' reference on INT2 and its 1 kΩ, on the first module; the glove on two Bratiški of eight

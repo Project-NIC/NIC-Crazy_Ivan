@@ -2,7 +2,7 @@
 
 # Rubaška
 
-**The suit itself:** the pieces with their sensing modules, up to 582 electrodes and 98 IMUs, 56
+**The suit itself:** the pieces with their sensing modules, up to 582 electrodes and 100 IMUs, 56
 of them in the two gloves and the two socks.
 
 ↑ [NIC-Crazy_Ivan](../README.md)
@@ -53,7 +53,7 @@ under [software](SOFTWARE.md); the electrodes, the fabric and the harness under
 | against the reference, on a head's or a neck's strip so wired, 8 a chip | — | 16 | 8 | — | 24 |
 | the bias electrode, and the reference on the head and the neck | 1 | 2 | 2 | 1 | 22 |
 | electrodes in all | 33 | 34 | 18 | 17 | **582** |
-| IMUs | up to 4 | 4 | 2 | 20 places on the glove, 8 to start on the sock | 64 places on the modules, 42 fitted; 56 on the gloves and the socks, **98** |
+| IMUs | up to 4 | 4 | 4 | 20 places on the glove, 8 on the sock, 4 to start | 64 places on the modules, 44 fitted; 56 on the gloves and the socks, **100** |
 
 The ADS1298 sample at **1,920 SPS**, 3,840 SPS a setting to try (see
 [software](SOFTWARE.md#the-ads129xs-settings)). The IMUs sample at 1,920 Hz and give one step per
