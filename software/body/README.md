@@ -6,9 +6,9 @@ the pictures in [`bogatyr/`](../../bogatyr/README.md#on-an-average-body): all 28
 16 modules, the two gloves and the two socks, 560 electrodes (P red, N blue) and the channels as
 lines from a P to its N, the two references on the head and the neck (green), the 20 bias
 electrodes (yellow) and the IMUs (violet): 44 on the modules, the gloves' 20 places each and the
-socks' four to start; from the front, the back and the side, and the hand, the foot and the neck
-with the upper back up close. The modules' boards are not drawn, their places on the trunk not
-being set.
+socks' four to start; from the front, the back and the side, and the head, the hand, the foot
+and the neck with the upper back up close. The modules' boards are not drawn, their places on
+the trunk not being set.
 
 | file | what is in it |
 |---|---|
@@ -26,6 +26,7 @@ python3 layout.py base.obj layout.json
 npm i three@0.169.0 playwright-core@1.56.1
 python3 -m http.server 8765 --bind 127.0.0.1 &   # serves view.html and the JSON
 mkdir -p out && node shot.mjs "sheet:2100:1500::layout.json:legend=1" \
+  "head:1000:1000::layout.json:only=head" \
   "hand:1000:1000::layout.json:only=forearm l,hand l" \
   "foot:1000:1000::layout.json:only=calf l,foot l" \
   "neck:1000:1000::layout.json:only=neck and upper back,shoulder l,shoulder r"

@@ -51,9 +51,9 @@ yellow, the IMUs violet. The landmarks are estimates on that body, not measured 
 [software/body](../software/body/README.md)); the modules are not drawn, their places on the
 trunk not being set. Up close, each with its own modules alone:
 
-| the hand and the forearm | the foot and the calf | the neck, the upper back and the shoulders |
-|---|---|---|
-| ![the left forearm's module and the glove](hand.png) | ![the left calf's module and the sock](foot.png) | ![the neck's module and the shoulders'](neck.png) |
+| the head | the hand and the forearm | the foot and the calf | the neck, the upper back and the shoulders |
+|---|---|---|---|
+| ![the head's module, from the left and the front](head.png) | ![the left forearm's module and the glove](hand.png) | ![the left calf's module and the sock](foot.png) | ![the neck's module and the shoulders'](neck.png) |
 
 The glove is drawn with its 20 IMU places, the sock with its four to start (see
 [construction](CONSTRUCTION.md#the-imus)).
@@ -62,7 +62,7 @@ The glove is drawn with its 20 IMU places, the sock with its four to start (see
 |---|---|
 | [CONSTRUCTION.md](CONSTRUCTION.md) | the electrodes' rules; the modules one by one, every muscle with its P and N, the reference and the bias; the IMUs' rules and places; the glove's |
 | [WHY.md](WHY.md) | what was left out, and why; the layouts before this one |
-| `body.png`, `hand.png`, `foot.png`, `neck.png` | the layout on an average body, an estimate, drawn by [software/body](../software/body/README.md) |
+| `body.png`, `head.png`, `hand.png`, `foot.png`, `neck.png` | the layout on an average body, an estimate, drawn by [software/body](../software/body/README.md) |
 
 What the electrodes, the strips and the harness are made of is under
 [Rubaška](../rubaska/CONSTRUCTION.md); the modules and the glove under

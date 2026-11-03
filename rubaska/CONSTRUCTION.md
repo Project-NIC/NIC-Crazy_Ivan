@@ -23,7 +23,8 @@ drive](HARDWARE.md#right-leg-drive)).
 - **The head and the neck are joined like a turtleneck,** two pieces of the suit: the headband
   above, the neck's unit below, fabric between them over the back of the head and behind the ears.
   The face, the chin and the throat stay free. The fabric holds the band and the neck's unit in
-  place without a strap; hair cut short, ~3 mm, helps the electrodes above the ears, to be tried.
+  place without a strap; no electrode in the hair, the strip above the ears on an edge shaved at
+  most, as under a bowl cut (see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-electrodes-rules)).
 - **The glove is tight,** elastic in the middle, its seams sitting in the spaces between the
   fingers so that it hardly moves.
 
@@ -299,7 +300,8 @@ since each version is a circuit made and thrown away.
   joints widened, stiffened and potted; the tails in the lever connectors on the first glove;
   the board on the back of the hand in a grip and a fall; the hand's electrodes under the board
   and at the thumb's edge as the thumb turns to the palm,
-- the headband's electrodes above the ears, in the hair; the layout itself is under
+- the headband's electrodes above the ears on a shaved edge, and beside the eye under the
+  glasses' arms; the layout itself is under
   [Bogatyr](../bogatyr/CONSTRUCTION.md#open-questions).
 
 ## Ideas for later

@@ -38,6 +38,12 @@ thing waits in reserve, it says so.
 
 ## The layouts before this one
 
+- **The head's second eight in the hair** (3 Nov 2026): the temporalis' middle and back high
+  above the ear, the occipitalis at the back half's sides, their N higher still. It broke what
+  was agreed for the head, nothing in the hair, at most the edges shaved; the occipitalis, thin
+  and ending in the galea (Gray's), tells a controller little besides. The frown and the eye's
+  closing took their places, the temporalis' middle moved down above the ear.
+
 - **The second eight left open** (to 3 Nov 2026): every module had its first eight, the forearm
   and the calf five, the hand and the foot three, the rest to be laid out with someone who knows
   the body. None was to be had, and every channel was laid out by the main muscle groups instead,

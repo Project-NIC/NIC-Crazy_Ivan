@@ -1,5 +1,5 @@
 """Bogatyr's layout on MakeHuman's base mesh (CC0): every module's eight P and eight N, its
-reference and its bias, and the 48 IMUs, each put where bogatyr/CONSTRUCTION.md says, by the
+reference and its bias, and the IMUs, each put where bogatyr/CONSTRUCTION.md says, by the
 bones' landmarks of an average body. The landmarks are estimates on this mesh, not measured.
 Usage: layout.py base.obj layout.json"""
 import json, sys
@@ -204,23 +204,25 @@ def mid(a, b):
 # measuring differentially; the hand's and the foot's eight on the glove's and the sock's chip.
 
 def head_module():
+    """Nothing in the hair: the forehead below its hairline, the temples and a strip above the
+    ears no higher than a shaved edge, ~4 cm above the ear (estimates on this mesh)."""
     m = 'head'
-    brow = J('l-eye')[1] + 0.3
+    eye = J('l-eye')[1]; brow = eye + 0.3
     for sx in (1, -1):
-        channel(m, head(brow, sx, 14), head(brow + 0.3, sx, 14))          # frontalis, mid brow
-        channel(m, head(brow, sx, 30), head(brow + 0.3, sx, 30))          # its outer third
-        channel(m, head(brow - 0.15, sx, 62), head(brow + 0.15, sx, 62))  # temporalis, front
-        channel(m, head(brow + 0.15, sx, 92), head(brow + 0.15, sx, 115))  # above the ear
+        channel(m, head(brow, sx, 20), head(brow + 0.3, sx, 20))          # frontalis, mid brow
+        channel(m, head(brow, sx, 34), head(brow + 0.3, sx, 34))          # its outer third
+        channel(m, head(eye + 0.2, sx, 64), head(eye + 0.45, sx, 64))     # temporalis, front
+        channel(m, head(eye + 0.45, sx, 92), head(eye + 0.45, sx, 115))   # above the ear
     for sx in (1, -1):
-        channel(m, head(brow + 0.45, sx, 80), head(brow + 0.75, sx, 80))  # temporalis, middle
-        channel(m, head(brow + 0.45, sx, 105), head(brow + 0.55, sx, 125))  # temporalis, back
-        channel(m, head(brow - 0.1, sx, 158), head(brow + 0.2, sx, 158))  # occipitalis, the side
-        channel(m, head(brow + 0.1, sx, 46), head(brow + 0.45, sx, 44))   # frontalis, outer edge
-    put(*head(J('l-eye')[1] - 0.45, 1, 118), 'ref', m)                      # the mastoids
-    put(*head(J('l-eye')[1] - 0.45, -1, 118), 'bias', m)
+        channel(m, head(eye + 0.3, sx, 78), head(eye + 0.3, sx, 104))     # temporalis, middle, low
+        channel(m, head(eye + 0.2, sx, 7), head(eye + 0.4, sx, 7))        # corrugator, up
+        channel(m, head(eye, sx, 30), head(eye + 0.05, sx, 44))           # orbicularis oculi, across
+        channel(m, head(brow, sx, 47), head(brow + 0.25, sx, 47))         # frontalis, outer edge
+    put(*head(eye - 0.45, 1, 118), 'ref', m)                                # the mastoids
+    put(*head(eye - 0.45, -1, 118), 'bias', m)
     for sx in (1, -1):
-        imu(m, head(J('l-eye')[1] + 0.75, sx, 22))             # the forehead, beside Míša
-        imu(m, head(J('l-eye')[1] + 0.55, sx, 140))            # the back half, above the ear
+        imu(m, head(eye + 0.75, sx, 22))                       # the forehead, beside Míša
+        imu(m, head(eye + 0.55, sx, 140))                      # the back half, above the ear
 
 
 def neck_module():

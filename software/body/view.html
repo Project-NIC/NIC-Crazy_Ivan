@@ -53,9 +53,9 @@ scene.add(new THREE.AmbientLight(0xffffff, 1.1));
 const key = new THREE.DirectionalLight(0xffffff, 1.6);
 const view = q.get('view') || 'front';
 const T = {front:[0,0,40], back:[0,0,-40], left:[40,0,0], right:[-40,0,0],
-           hand:[18,12,9], foot:[16,10,24], neck:[10,4,-40], iso:[28,18,32], isoback:[-28,18,-32]}[view] || [0,0,40];
-const target = {hand:[4.3,2.3,1.9], foot:[2.25,-7.8,0.6], neck:[0.4,5.2,-0.3]}[view] || [0,0,0];
-const span = {hand:2.8, foot:2.6, neck:4.2}[view] || 18.5;
+           hand:[18,12,9], foot:[16,10,24], neck:[10,4,-40], head:[28,6,30], iso:[28,18,32], isoback:[-28,18,-32]}[view] || [0,0,40];
+const target = {hand:[4.3,2.3,1.9], foot:[2.25,-7.8,0.6], neck:[0.4,5.2,-0.3], head:[0.2,7.6,0.5]}[view] || [0,0,0];
+const span = {hand:2.8, foot:2.6, neck:4.2, head:2.6}[view] || 18.5;
 const cam = new THREE.OrthographicCamera(-span*W/H/2, span*W/H/2, span/2, -span/2, 0.1, 200);
 cam.position.set(target[0]+T[0], target[1]+T[1], target[2]+T[2]); cam.lookAt(...target);
 key.position.copy(cam.position).add(new THREE.Vector3(10, 20, 0)); scene.add(key);

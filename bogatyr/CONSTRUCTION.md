@@ -79,6 +79,11 @@ estimates unless a source is named. What the electrodes and the strips are made 
 - **Mains does not grow with the pair's length** in the model of Merletti & Cerone (J Electromyogr
   Kinesiol 54, 2020): it follows the contacts' mismatch, and the right-leg drive lowers it 5–10
   times. Short strips still help: a shielded trace adds capacitance (an inference).
+- **Nothing in the hair:** the head's electrodes lie on the forehead below its hairline, on the
+  temples, and on a strip above the ears no higher than an edge that can be shaved, as under a
+  bowl cut, ~4 cm above the ear; the crown and the back of the head carry no electrodes, only the
+  IMUs and Nataša. Where the hair begins differs from head to head: the places here are an average
+  forehead's, an estimate.
 - **Nothing where the body is pressed:** the palm, which a grip presses, the sole, stood on, and
   the seat, sat on, stay bare, the electrodes there wandering in the signal. What else was left
   out, and why, is under [WHY](WHY.md).
@@ -92,22 +97,24 @@ estimates unless a source is named. What the electrodes and the strips are made 
 | | P | N |
 |---|---|---|
 | 1, 5 | frontalis, over the brow's middle, left and right | along, 3 cm higher on the forehead |
-| 2, 6 | frontalis, above the brow's outer third | along, 3 cm higher (4 cm out would land by N3) |
-| 3, 7 | temporalis' anterior part, at the temple (Castroflorio et al. 2005) | along, 3 cm up |
-| 4, 8 | temporalis above the ear | along, 3 cm towards the back of the head |
-| 9, 13 | temporalis, middle part, above the ear's front, at the headband's upper edge (estimate) | along, 4 cm up |
-| 10, 14 | temporalis, posterior part, above and behind the ear, its fibres nearly level (Gray's) | along, 2–3 cm back |
-| 11, 15 | occipitalis, at the back half's sides, in the hair, the contact to be tried | along, 3 cm up |
-| 12, 16 | frontalis, its outer edge at the temple's border | along, 3–4 cm up |
+| 2, 6 | frontalis, above the brow's outer third | along, 3 cm higher |
+| 3, 7 | temporalis' anterior part, at the temple (Castroflorio et al. 2005) | along, 2.5 cm up |
+| 4, 8 | temporalis above the ear, at the shaved edge | along, 2.5–3 cm towards the back of the head |
+| 9, 13 | temporalis, middle part, low above the ear's front, ~2 cm over the ear | across, 3–4 cm back, level, above the ear |
+| 10, 14 | corrugator, at the brow's medial end, which it draws down and in, frowning (Gray's) | along its fibres' start, 2 cm up |
+| 11, 15 | orbicularis oculi, its orbital part, under the will, beside the eye's outer corner; the whole muscle shuts the lids firmly (Gray's) | across, 3–3.5 cm back on the temple, over which it spreads (Gray's) |
+| 12, 16 | frontalis, its outer edge at the temple's border | along, 2.5 cm up |
 
 Reference over the left mastoid, bias over the right, the bone behind the ears, low, behind the
-earlobe, with Nataša's buttons above them (see [Nataša](../natasa/CONSTRUCTION.md#on-the-head)). All
-four pairs run along: across, they would land on the neighbours' places. The headband's back half
-carries no electrodes yet: it lies in the hair, over the occipitalis at the sides and only the galea
-between them, and it carries Nataša's board (see [Nataša](../natasa/CONSTRUCTION.md#on-the-head));
-the electrodes above the ears sit at its front half's edge, their contact to be tried. The head's
-second chip takes the temporalis' middle and back, the frontalis' outer edge and the back half's
-sides, the occipitalis; all along, as the first eight.
+earlobe, with Nataša's buttons above them (see [Nataša](../natasa/CONSTRUCTION.md#on-the-head)).
+The first eight run along; the second take the temporalis' middle low above the ear, the frown
+and the eye's closing, the frontalis' outer edge. Together they see the brows raised and drawn
+together, the eyes shut or narrowed and the jaw clenched; the temporalis arises from the whole
+temporal fossa (Gray's), so its low part above the ear is still the muscle. The pairs beside the
+eye's outer corner are expected to carry the eyes' movement to the sides too, the
+electro-oculogram, an inference to check on a recording. The headband's back half lies in the
+hair and carries no electrodes, only Nataša's board and two IMUs (see
+[Nataša](../natasa/CONSTRUCTION.md#on-the-head)).
 
 ### Neck and upper back, 1
 
@@ -427,7 +434,10 @@ start drawn on the average body, the first layout a proposal.
 - every place above checked on a body by the first recordings, the first arm first, before a strip
   is drawn in a series;
 - **the second eight's crossings** against straight pairs, and the hand's dorsal interossei under
-  the tendons, by the recordings;
+  the tendons, by the recordings. On the first arm one module's strip of its own is wired against
+  a reference near it, as the head's can be, so that each of its 16 electrodes is a channel; the
+  pairs, along, across and crossed, 2 or 4 cm, are then formed in software from one recording and
+  compared by what the model learns from each (an inference; HD-EMG grids are recorded so);
 - **the sock's places on the foot** beyond the four drawn, the heel, the midfoot, the forefoot and
   the hallux being Staršaja's own, with the hand's layout;
 - the left serratus' pair and its ECG;
@@ -437,8 +447,9 @@ start drawn on the average body, the first layout a proposal.
   ring beside its bias and IMUs; the thumb's metacarpal IMU beside the first dorsal interosseous'
   and the abductor pollicis brevis' electrodes; the back of the hand, its three pairs between the
   glove's board, its IMU and the metacarpals' spares; the glove's board over the hand's strip; the
-  headband's: the forehead's IMUs beside Míša's housing and the frontalis' pairs, the mastoids
-  under Nataša's buttons;
+  headband's: the forehead's IMUs and the corrugator's pairs beside Míša's housing, the eye's
+  pairs under the glasses' arms, the band reaching the eye's corner at the temples, the strip
+  above the ears and how far it is shaved, the mastoids under Nataša's buttons;
 - whether an N should sit further than 8 cm anywhere: no source gives a limit;
 - the hand, asked before any glove is made, since each version of it is a flexible circuit made
   and thrown away: its electrodes' strip under the board and the finger strips on one inner
