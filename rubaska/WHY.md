@@ -30,16 +30,15 @@ thing waits in reserve, it says so.
   measure against the reference by MISC1, and its noise. That noise does not count against the
   contacts: 0.46 against the ADS1298's 0.8 µVrms at 2 kSPS and a gain of 12 (SBAS499C and
   SBAS459K, table 3), both under the contacts' ~1 µVrms, and it cost two chips, two boards and
-  two firmwares, $59 against $20 a chip at JLCPCB. Every module carries the ADS1298; a strip that
-  measures against a reference joins the N inputs to its electrode itself (see
-  [hardware](HARDWARE.md#right-leg-drive)).
+  two firmwares, $59 against $20 a chip at JLCPCB. Every module carries the ADS1298.
 - **One ADS1299 on the head** (to 29 Oct 2026), 16 electrodes. The owner: 32 fit on the head; the
   module takes a second chip in the second chip's place, and line 5 keeps three slots free should
   the head ever split into two units, one a side.
 - **Against the reference on the body** (to 29 Oct 2026), a reference electrode and SRB1 on
   every module. The ADS1298 has no SRB1, so the body measures differentially, the owner's layout
-  from the start, and the reference stays on the head's and the neck's strips, wired; which way
-  serves the model better is tried there.
+  from the start, and the reference stayed on the head's and the neck's strips, wired, until
+  3 Nov 2026, when it went from them too: every channel differential (the owner; see
+  [Bogatyr](../bogatyr/WHY.md#the-layouts-tried)).
 - **A daisy chain of the two chips** (29 Oct 2026), DOUT into DAISY_IN, one read of 432 bits.
   The devices "cannot be programmed when sharing a common DIN" (SBAS499C, 10.1.4.2), and the two
   differ in their settings, the first's bias amplifier on and the second's off; the cascade
@@ -160,7 +159,8 @@ thing waits in reserve, it says so.
   (SBAS499C, 9.3.2.4.2); TI gives it for debugging. The differential channels do not
   need a zero: a difference does not change when a constant is added to every potential.
 - **A jumper for the reference electrode.** The suit is washed and its boards potted, so nobody
-  will move a jumper; a strip that measures against the reference is wired so.
+  will move a jumper; a strip measuring against the reference was to be wired so, until the
+  reference went on 3 Nov 2026.
 - **The BIASINV wire between the ADS1299s** that the datasheet's figure 39 draws. A
   high-impedance node on a metre of cable would pick up the mains; one module's channels sense
   the body's common voltage well enough, since the body is one conductor.
@@ -242,7 +242,7 @@ thing waits in reserve, it says so.
 
 ## The electrodes and the suit
 
-- **Ag/AgCl or titanium electrodes, for now.** Sintered Ag/AgCl comes to ~$4,000–9,000 for 582
+- **Ag/AgCl or titanium electrodes, for now.** Sintered Ag/AgCl comes to ~$4,000–9,000 for 580
   of them, and titanium discs cost $10 and more apiece at retail (the prices in
   [Construction](CONSTRUCTION.md#electrodes)). Stainless steel has more low-frequency noise and
   drift, which EMG bears; the four, with conductive silicone, are compared on a sample, and
@@ -308,12 +308,11 @@ thing waits in reserve, it says so.
   at the sides of the fingers. PTFE of 28 AWG fits the 9175-700 IDC and does not; it stays the
   fallback to the finger strips.
 - **A switch on the reference electrode.** It was there in case the ADS1299's own switching,
-  SRB1 by MISC1, behaved otherwise than its register table says. The ADS1298 has no SRB1; a strip
-  that measures against the reference joins the N inputs to its electrode itself (see
-  [hardware](HARDWARE.md#right-leg-drive)). The bias lost its switch too, on 29 Oct 2026 (see
+  SRB1 by MISC1, behaved otherwise than its register table says. The ADS1298 has no SRB1, and
+  the reference itself went on 3 Nov 2026. The bias lost its switch too, on 29 Oct 2026 (see
   [The sensing module](#the-sensing-module)).
 - **Glued and suction electrodes.** They hold through a grip, but a glued one must be torn off
   with the suit, and suction, as the owner tried, left bruises that took a month to fade, and
   skin that conducts unlike the rest.
 - **A coaxial lead per electrode,** as professional EMG has it. It is made to order and does not
-  live long under constant bending; one strip per band, with the reference on it, does.
+  live long under constant bending; one strip per band does.

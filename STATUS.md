@@ -5,8 +5,9 @@
 **Beta 0.6, 31 Oct 2026, updated 3 Nov 2026:** every module on the ADS1298, the IMU the
 LSM6DSV16X held to the suit's clock by a reference, the strips polyimide shielded on both faces,
 the units potted on the harness with connectors for assembly only, Mamka's converters at 1 MHz,
-Mrazík the cooling block, two bias drivers caught by software, every channel laid out on the body;
-280 channels at 1,920 SPS and 100 IMUs, still all on paper, nothing built.
+Mrazík the cooling block, two bias drivers caught by software; the electrodes' places on the
+body asked of professionals; 280 channels at 1,920 SPS and 100 IMUs, still all on paper, nothing
+built.
 
 ↑ [NIC-Crazy_Ivan](README.md)
 
@@ -30,8 +31,8 @@ part has been bought. What is here is of four kinds, and each page says which:
 - **the suit's IMU, the LSM6DSV16X,** held to the suit's clock by a reference on INT2, 24 or 15 Hz
   from the suit clock, its 1.6 kHz setting at 1,920 Hz; two a bus by their addresses; the IMU board
   with what ST asks and 1 kΩ on INT2 ([Rubaška](rubaska/HARDWARE.md#the-imu)),
-- **the ADS1298 on every module,** the head and the neck too: one chip, one board, one firmware; a
-  reference electrode wired on its strip where a strip wants one
+- **the ADS1298 on every module,** the head and the neck too: one chip, one board, one firmware;
+  every channel differential, no reference electrode
   ([Rubaška](rubaska/HARDWARE.md#sensing-module)),
 - **the modules' analog supply on the LP2985,** and an RC at every input where a cable arrives
   ([Rubaška](rubaska/HARDWARE.md#power)),
@@ -63,7 +64,7 @@ part has been bought. What is here is of four kinds, and each page says which:
   guided displacement with a force trace ([Rubaška](rubaska/CONSTRUCTION.md#open-questions)),
 - every board's parts gone through for price, JLCPCB's basic parts first,
 - **two ADS1298 a module** in cascade on one SPI, 16 channels on 32 electrodes, the neck's one chip;
-  with the gloves' and the socks' 280 channels, 582 electrodes; the bias electrode straight on the
+  with the gloves' and the socks' 280 channels, 580 electrodes; the bias electrode straight on the
   first chip's RLDOUT, no switch ([Rubaška](rubaska/HARDWARE.md#sensing-module)),
 - **1,920 SPS the rate,** the professionals', 3,840 the setting to try; the step 16 samples,
   120 Hz; one frame of data a unit, 58 B for a module of two chips, 0x24, and for the glove and the
@@ -106,11 +107,11 @@ part has been bought. What is here is of four kinds, and each page says which:
 - three SPIs to Baťa: processor 1's at 37.5 MHz, processor 2's two at 11.1 MHz behind the ROCK's
   translators, the frames as they came in places by the unit's kind, 58 or 34 B; four wires between
   the processors, her own registers, the BMS a chip of processor 2 ([Mamka](mamka/SOFTWARE.md)),
-- **Bogatyr,** the layout on the body: every channel laid out by the main muscle groups, 280 on
-  twenty units, every muscle with its pair, no two electrodes nearer than 1.5 cm (1 cm on the hand
-  and the foot); 44 IMUs on the body, four in a square on the head, four down the neck, more where
-  the skin slides; a proposal from several studies, an estimate drawn on an average body, the first
-  recordings to check it ([Bogatyr](bogatyr/README.md)),
+- **Bogatyr,** the layout on the body: 280 channels on twenty units, every channel differential;
+  the rules any layout keeps (near the heart short, across the spine only diagonally, nothing in
+  the hair, nothing where the body is pressed); **the electrodes' places not laid out,** asked of
+  professionals; 44 IMUs on the body, four in a square on the head, four down the neck, more where
+  the skin slides ([Bogatyr](bogatyr/README.md)),
 - **the Bratiški without SWD:** chips of their Staršaja, not units, each on a full-duplex link of
   4 MBd on the board, his step of 52 B once a step; an empty STM32H503 boots ST's bootloader on
   the same pins, so Staršaja programs them herself, a shared BOOT0 line for recovery; the glove
@@ -167,11 +168,11 @@ Each page ends with its open questions. The largest:
 - datasheets not read: the BMS's manuals,
 - the clock trees and the DMA tables of the six processor designs, written on paper, checked on
   the first board,
-- the layout on the body, every place checked by the first recordings, the first arm first: the
-  second eights' crossings against straight pairs, the two ways of measuring compared on the head
-  and the neck ([Bogatyr](bogatyr/CONSTRUCTION.md#open-questions)); first the hand: its eight
-  channels and its IMUs on one inner layer under the board, and how many of them the thumb wants,
-  asked before any glove is made; the sock's places on the foot beyond the four drawn; the steel
+- the electrodes' places on the body, asked of professionals, then checked by the first
+  recordings, the first arm first; the bands' sizes
+  ([Bogatyr](bogatyr/CONSTRUCTION.md#open-questions)); first the hand: its eight channels and its
+  IMUs on one inner layer under the board, and how many of them the thumb wants, asked before any
+  glove is made; the sock's IMU places on the foot beyond the first four; the steel
   discs against Ag/AgCl, titanium and conductive silicone; the polyimide strips, washed and worn,
 - the four-layer strip's own artifact and its ground layer on ground and driven, on the first arm;
   the powered-down bias output's leakage, the LP2985's noise with the inputs shorted inside, the

@@ -6,7 +6,7 @@
 
 **English** · [Čeština](README.cs.md) · [Русский](README.ru.md)
 
-**A neural suit:** up to 582 electrodes and 100 inertial units, 56 of them in the gloves and the
+**A neural suit:** up to 580 electrodes and 100 inertial units, 56 of them in the gloves and the
 socks, on a suit you put together from pieces like a sleeve, a trouser leg, the torso or a
 headband.
 
@@ -59,13 +59,12 @@ sweat and light rain, not immersion. The weight and the price are to be seen.
 ## Tomography
 
 "Tomography", in quotes: not every electrode against every other, which no eight channels could
-give, but channels that each take a mix of muscles. A channel's two electrodes lie 4–8 cm apart
-where the muscle allows, on neighbouring muscles or along one, along the fibres and across them
-by turns, and across the spine only diagonally, so that the chords cross; farther apart they
-would gather more crosstalk and, on the trunk, more of the heart. Against a reference electrode,
-the second way on the same suit, every module's eight electrodes measure each against one point,
-and any pair of them is formed in software. On the hand and the foot each pair sits on a muscle
-of its own; the palm, the sole and the seat stay bare, as they are pressed on.
+give, but channels that each take a mix of muscles. A channel is a chord across a piece of the
+body, its two electrodes measured against each other, never against a reference. **Where exactly
+the electrodes go is not laid out yet:** we do not know how to do it well, and we are asking
+professionals for advice. Whatever the layout, near the heart the pairs stay short, across the
+spine they run only diagonally, the palm, the sole and the seat stay bare, as they are pressed on,
+and nothing goes into the hair.
 
 The reason is that you never put the suit on exactly the same way twice. So we don't follow an
 exact point on the body. We follow how signals resemble each other and how they evolve. Whether
@@ -76,7 +75,7 @@ it works we do not know; studies suggest it might (see [Bogatyr](bogatyr/README.
 | part | what it is |
 |---|---|
 | [**Rubaška**](rubaska/README.md) | the suit itself: the pieces with their sensing modules, the glove Vešč and the sock Nosok, the electrodes and the harness |
-| [**Bogatyr**](bogatyr/README.md) | the layout on the body: where every electrode and IMU sits, muscle by muscle, and why |
+| [**Bogatyr**](bogatyr/README.md) | the layout on the body: the rules, the counts and the IMUs; the electrodes' places wait for professionals' advice |
 | [**Nataša**](natasa/README.md) | the unit in the headband: headphones, two microphones, vibration and buttons |
 | [**Mamka**](mamka/README.md) | the base board: the clock for the whole suit, the sound bridge, the line drivers and the suit's power |
 | [**Baťa**](bata/README.md) | the computer in the backpack, a Radxa ROCK 5T, with Umnica, the Hailo-10H, or its own NPU alone |

@@ -6,7 +6,7 @@
 
 [English](README.md) · **Čeština** · [Русский](README.ru.md)
 
-**Neurální oblek:** až 582 elektrod a 100 inerciálních jednotek, 56 z nich v rukavicích a
+**Neurální oblek:** až 580 elektrod a 100 inerciálních jednotek, 56 z nich v rukavicích a
 ponožkách, na obleku, který si skládáš z dílů, jako je rukáv, nohavice, trup nebo čelenka.
 
 Vlastní signály svalů a pohyb těla jdou do počítače v batohu, Radxa ROCK 5T s vlastním NPU nebo
@@ -54,12 +54,11 @@ h, na jedno nabití v menších osazeních; pot a slabý déšť, ne ponoření.
 ## Tomografie
 
 „Tomografie“, v uvozovkách: ne každá elektroda proti každé, to osm kanálů nedá, ale kanály, z nichž
-každý bere směs svalů. Dvě elektrody kanálu leží 4–8 cm od sebe, kde to sval dovolí, na sousedních
-svalech nebo podél jednoho, střídavě podél vláken a napříč, a přes páteř jen šikmo, takže se tětivy
-kříží; dál od sebe by sbíraly víc přeslechů a na trupu víc srdce. Proti referenční elektrodě, druhým
-způsobem na tomtéž obleku, měří osm elektrod každého modulu každá proti jednomu bodu a libovolný
-jejich pár se složí v softwaru. Na ruce a na nártu má každý pár svůj sval; dlaň, chodidlo a sedací
-část zůstávají bez elektrod, protože se na ně tlačí.
+každý bere směs svalů. Kanál je tětiva přes kus těla, jeho dvě elektrody měřené proti sobě, nikdy
+proti referenci. **Kam přesně elektrody patří, zatím rozložené není:** nevíme, jak to udělat
+dobře, a ptáme se odborníků na radu. Ať bude rozložení jakékoli, u srdce zůstávají páry krátké, přes
+páteř vedou jen šikmo, dlaň, chodidlo a sedací část zůstávají bez elektrod, protože se na ně tlačí,
+a nic nejde do vlasů.
 
 Důvod je ten, že oblek si nikdy neoblékneš dvakrát úplně stejně. Nesledujeme tedy přesný bod na
 těle. Sledujeme, jak se signály navzájem podobají a jak se vyvíjejí. Jestli to funguje, nevíme;
@@ -70,7 +69,7 @@ studie naznačují, že by mohlo (viz [Bogatyr](bogatyr/README.md)).
 | část | co to je |
 |---|---|
 | [**Rubaška**](rubaska/README.md) | oblek sám: díly se snímacími moduly, rukavice Vešč a ponožka Nosok, elektrody a postroj |
-| [**Bogatyr**](bogatyr/README.md) | rozložení na těle: kde sedí každá elektroda a každá IMU, sval po svalu, a proč |
+| [**Bogatyr**](bogatyr/README.md) | rozložení na těle: pravidla, počty a IMU; místa elektrod čekají na radu odborníků |
 | [**Nataša**](natasa/README.md) | jednotka v čelence: sluchátka, dva mikrofony, vibrace a tlačítka |
 | [**Mamka**](mamka/README.md) | základní deska: hodiny pro celý oblek, zvukový most, budiče linek a napájení obleku |
 | [**Baťa**](bata/README.md) | počítač v batohu, Radxa ROCK 5T, s Umnicí, Hailo-10H, nebo jen s vlastním NPU |

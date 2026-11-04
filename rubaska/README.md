@@ -2,7 +2,7 @@
 
 # Rubaška
 
-**The suit itself:** the pieces with their sensing modules, up to 582 electrodes and 100 IMUs, 56
+**The suit itself:** the pieces with their sensing modules, up to 580 electrodes and 100 IMUs, 56
 of them in the two gloves and the two socks.
 
 ↑ [NIC-Crazy_Ivan](../README.md)
@@ -30,8 +30,8 @@ The sensing module is the suit's basic block; a suit has 8 to 16 of them. Togeth
 in its piece, as small as it can be: fewer and smaller parts, fewer pads, smaller connectors.
 Its IMUs sit along the bones, each on a small board of its own, joined to the module by I3C,
 two IMUs to a bus. No SPI runs over a cable anywhere. Every module carries the ADS1298: a module
-of the body two, 16 channels on 32 electrodes; the head's two, with a reference electrode on its
-strip; the neck's one; the same board fitted otherwise.
+of the body two, 16 channels on 32 electrodes; the head's two; the neck's one; the same board
+fitted otherwise, every channel differential.
 
 What the module is made of, pin by pin, is under [hardware](HARDWARE.md); what its firmware does
 under [software](SOFTWARE.md); the electrodes, the fabric and the harness under
@@ -50,9 +50,8 @@ under [software](SOFTWARE.md); the electrodes, the fabric and the harness under
 |---|---|---|---|---|---|
 | ADS1298 | two | two | one | one | 35 |
 | **measuring electrodes**, 16 a chip (8 differential channels) | **32** | **32** | **16** | **16** | **560** |
-| against the reference, on a head's or a neck's strip so wired, 8 a chip | — | 16 | 8 | — | 24 |
-| the bias electrode, and the reference on the head and the neck | 1 | 2 | 2 | 1 | 22 |
-| electrodes in all | 33 | 34 | 18 | 17 | **582** |
+| the bias electrode | 1 | 1 | 1 | 1 | 20 |
+| electrodes in all | 33 | 33 | 17 | 17 | **580** |
 | IMUs | up to 4 | 4 | 4 | 20 places on the glove, 8 on the sock, 4 to start | 64 places on the modules, 44 fitted; 56 on the gloves and the socks, **100** |
 
 The ADS1298 sample at **1,920 SPS**, 3,840 SPS a setting to try (see

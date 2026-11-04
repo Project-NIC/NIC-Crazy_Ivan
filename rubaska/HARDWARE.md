@@ -2,8 +2,8 @@
 
 # Rubaška: hardware
 
-**The sensing module's board,** the IMU and its board, the right-leg drive and the reference,
-the strip's ground layer, the power, and the glove's and the sock's boards.
+**The sensing module's board,** the IMU and its board, the right-leg drive, the strip's ground
+layer, the power, and the glove's and the sock's boards.
 
 ↑ [Rubaška](README.md) · [NIC-Crazy_Ivan](../README.md)
 
@@ -24,9 +24,8 @@ module by I3C, two IMUs to a bus. No SPI runs over a cable anywhere.
 one chip, one board and one firmware for all: a module of the body two, one on each side of the
 board, 16 channels on 32 electrodes; the head's two in the same places, 16 channels on 32
 electrodes; the neck's one in the first chip's place, 8 channels, the second chip's places
-empty. The ADS1298 has no SRB1 (SBAS459K, Pin Functions): a strip that measures against a
-reference joins the channels' N inputs to its reference electrode itself, and the head's and the
-neck's strips carry theirs so wired (see [Right-leg drive](#right-leg-drive)).
+empty. Every channel measures differentially, P against N; no strip carries a reference
+electrode (see [Right-leg drive](#right-leg-drive)).
 
 | part | package | role |
 |---|---|---|
@@ -228,11 +227,9 @@ resistor a lead and one capacitor a channel, nothing else fitted.
   isolated (see [Baťa](../bata/SOFTWARE.md#output-modes)) and the charger's output must float
   (see [Babuška](../babuska/HARDWARE.md#charging)). No inductance in the model; tried on the
   first arm with a carpet and a door handle while recording. The bias electrode has a 4.99 kΩ of
-  its own, and a reference wired on the strip reaches each N input through that input's (see
-  [Right-leg drive](#right-leg-drive)).
-- **The same filter on every input:** 4.99 kΩ and 220 pF C0G on all thirty-two, so a strip
-  wired to a reference on the head or the neck (see [Right-leg drive](#right-leg-drive)) sees the
-  same inputs as one that measures differentially. A module of two ADS1298 carries 33 resistors,
+  its own.
+- **The same filter on every input:** 4.99 kΩ and 220 pF C0G on all thirty-two. A module of two
+  ADS1298 carries 33 resistors,
   16 capacitors and 32 empty places on its inputs, under $0.20 of parts.
 
 **Connectors and size.** A connector here opens only at assembly and repair: the units are potted
@@ -247,8 +244,7 @@ whole with their connectors mated and stay on the harness (see
   tin, never against gold; 1.2 A a contact (Molex catalogue MX10, G-2 and G-4).
 - **The band's strip** has one footprint of **36 ways**: on a module of the body the 32
   electrodes, the bias electrode, the strip's ground layers, one node, and a +5 V for a strip
-  that carries followers, 35; on the head's the same 35, its reference electrode reaching the
-  chips through the N inputs it is joined to on the strip; on the neck's the sixteen, the bias,
+  that carries followers, 35; on the head's the same 35; on the neck's the sixteen, the bias,
   the ground and the +5 V, 19, the rest empty (see [electrodes](CONSTRUCTION.md#electrodes) and
   [The strip's ground layer](#the-strips-ground-layer)). On the first arm, while the layout
   changes on a body, the strip goes into a **Hirose FH12**, a lever connector for
@@ -452,24 +448,11 @@ channels (RLD_SENSP, RLD_SENSN) and drives the body inverted, towards (AVDD + AV
   over the air (see [Baťa](../bata/SOFTWARE.md#output-modes)). The suit may be worn while it
   charges, the charger's output floating (see [Babuška](../babuska/HARDWARE.md#charging)).
 
-**The reference electrode on the head and the neck.** The ADS1298 has no SRB1 and no switch for
-a reference (SBAS459K, Pin Functions), so a reference is the strip's wiring: a strip that
-measures against it joins the N inputs of its channels to the one electrode, each through that
-input's own 4.99 kΩ on the module, and the head's and the neck's strips keep their reference
-electrode so wired. The body measures differentially alone and carries none (see
-[why](WHY.md#the-sensing-module)).
-
-- **Differential:** each channel measures INnP − INnN, 8 channels of 16 electrodes a chip, as on
-  the body. EEG on the head stays an open trial, by bipolar crossed pairs, its filters per
-  channel on Baťa (see [Bogatyr](../bogatyr/CONSTRUCTION.md#open-questions)).
-- **Against the reference:** the strip joins a chip's N inputs to the reference electrode, and
-  IN1P to IN8P measure against it: 8 of a chip's electrodes, every one against one point.
-- The bias drive works in both: its lead does not go through the multiplexer.
-- Which way serves the model better, and on how many channels, is measured on the head and the
-  neck (see [Bogatyr](../bogatyr/CONSTRUCTION.md#open-questions)); the module is the same, only
-  the strip's wiring differs.
-- **Wiring for both:** the reference runs on the same strip, between the same ground layers, as
-  the band's electrodes, so that the loop between an electrode and the reference stays small.
+**Differential everywhere** (the owner, 3 Nov 2026): each channel measures INnP − INnN, 8
+channels of 16 electrodes a chip, on the head and the neck as on the body; no unit carries a
+reference electrode (see [why](WHY.md#the-sensing-module)). EEG on the head stays an open trial,
+by bipolar crossed pairs, its filters per channel on Baťa (see
+[Bogatyr](../bogatyr/CONSTRUCTION.md#open-questions)).
 
 ## The strip's ground layer
 
@@ -871,8 +854,6 @@ section 11, Power Supply Recommendations):
   arm in the order [The strip's ground layer](#the-strips-ground-layer) gives; the leads'
   capacitance to the two grounds and a pair's difference, measured; the four-layer strip against
   two layers with JLCPCB's shielding film on the skin's side,
-- a strip wired to the reference against one that measures differentially, compared on the head
-  and the neck,
 - the IMU board: the strip's tail in the lever connector on the first arm, and the strip soldered
   and potted in a series, bent and pulled,
 - the glove: Staršaja's pins above checked against DS14540's tables 14 and 15, the board's size and

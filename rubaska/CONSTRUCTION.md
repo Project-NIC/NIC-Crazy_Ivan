@@ -15,10 +15,9 @@ everything sits on the body is under [Bogatyr](../bogatyr/README.md).
 
 Where each electrode sits on the body, muscle by muscle, is under
 [Bogatyr](../bogatyr/CONSTRUCTION.md); here is what the electrodes and their strips are made of and
-how they ride the body. A module of the body has its 32 electrodes and a bias electrode, 33; the
-head's 32, a bias and a reference electrode, 34; the neck's 16, a bias and a reference, 18; 514 on a
-suit of 16, 582 with the gloves' and the socks' 17 each (see [Right-leg
-drive](HARDWARE.md#right-leg-drive)).
+how they ride the body. A module of the body or the head has its 32 electrodes and a bias
+electrode, 33; the neck's 16 and a bias, 17; 512 on a suit of 16, 580 with the gloves' and the
+socks' 17 each (see [Right-leg drive](HARDWARE.md#right-leg-drive)).
 
 - **The head and the neck are joined like a turtleneck,** two pieces of the suit: the headband
   above, the neck's unit below, fabric between them over the back of the head and behind the ears.
@@ -51,10 +50,9 @@ drive](HARDWARE.md#right-leg-drive)).
   charge by friction. Moisture also lets charge from friction decay faster.
 - **8 mm studs where there is room, 6 mm on the forearm and the hand,** each in a ring at least
   5 mm wide. The ring keeps even a small stud moist, but its contact and its noise still grow as
-  it shrinks (see [The noise](HARDWARE.md#the-noise)). On a limb's ring the P sit an eighth or a
-  fifth of the girth apart and the N 4 cm above or below (see
-  [Bogatyr](../bogatyr/CONSTRUCTION.md)), so the rings fit with room; the hand's pairs, 2 cm
-  apart, are the tightest and find their rings' width on the body.
+  it shrinks (see [The noise](HARDWARE.md#the-noise)). The rings' width is found on the body
+  with the electrodes' places (see [Bogatyr](../bogatyr/CONSTRUCTION.md)); the small muscles'
+  pairs, 2–3 cm apart, are the tightest.
 - 316L contains nickel; anyone allergic to nickel tries it on the skin first.
 - **Conductive silicone is the third candidate,** carbon-filled, ~5 Ω·cm: nothing in it
   corrodes and it is washed with the suit; its few ohms are nothing against the skin's tens of
@@ -87,9 +85,9 @@ field.
   datasheet's other way, not ours (SBAS459K, 10.1.2), so the mean of a raw channel is the
   offset, and a few minutes recorded on Baťa show its drift.
 
-**The price** of the electrodes, as listed in October 2026, for 582 of them:
+**The price** of the electrodes, as listed in October 2026, for 580 of them:
 
-| electrode | apiece | for 582 | where listed |
+| electrode | apiece | for 580 | where listed |
 |---|---|---|---|
 | 316L discs, ASTM F138, 6 and 8 mm, with their posts | $0.99 a disc, $0.39 from 100; a post about the same | ~$600 | Painful Pleasures (US) |
 | titanium discs, ASTM F136, mostly 2–5 mm | $10–14 at retail; $1–2 at Alibaba from 10 pieces | for samples | Pierced Owl, Urban Body Jewelry; Right Grand |

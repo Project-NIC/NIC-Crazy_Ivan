@@ -22,9 +22,9 @@ made.
 | zone | what sits there | why |
 |---|---|---|
 | the forehead, middle | Míša: the radar, the ultrasound, the IMU, and the forehead's motor in its housing | it looks ahead; its IMU gives the head's turn |
-| the forehead and the temples, round and under Míša | the 16 electrodes (see [Bogatyr](../bogatyr/CONSTRUCTION.md#head-1-the-headbands-front-half-nataša-on-the-back-half)) | the front half |
+| the forehead and the temples, round and under Míša | the 16 electrodes (see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-modules)) | the front half |
 | the temple, outside | a camera's snap mount (see [Baťa](../bata/HARDWARE.md#ďaďa-sem)) | near the eye, on the outside, pressing on no electrode |
-| right behind the ear, both sides | four buttons, a microphone, a side motor, above the head's reference and bias, which lie low on the mastoids behind the earlobes | the back half begins; the ear guides the hand to the buttons |
+| right behind the ear, both sides | four buttons, a microphone, a side motor, above the head's bias, which lies low on the right mastoid behind the earlobe | the back half begins; the ear guides the hand to the buttons |
 | the back of the head | the board, the nape's motor, the nape's ultrasonic sensor on a board of its own, plugged into Míša's | the back half, no electrodes |
 | down behind the neck | the glasses' cable from the left temple, the cameras' cables, the cable to the backpack | one way out, into the turtleneck |
 

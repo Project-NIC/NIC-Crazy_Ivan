@@ -58,10 +58,9 @@ by the ID register, and one table of values serves every chip, the bias's bits a
   common mode of the first chip's RLDINV, PA2 high; 0 on ground, the TLV9001S shut down by PA2
   low (see [hardware](HARDWARE.md#the-strips-ground-layer)). After a reset PA2 is low, the layers
   on ground until the register is applied.
-- **A reference on the head and the neck** is the strip's wiring, not a register: the ADS1298
-  has no SRB1, and a strip that measures against the reference joins its channels' N inputs to
-  the electrode itself (see [hardware](HARDWARE.md#right-leg-drive)). The registers are the same
-  on every module, the bias's bits aside.
+- **Every channel differential,** on the head and the neck as on the body (see
+  [hardware](HARDWARE.md#right-leg-drive)); the registers are the same on every module, the
+  bias's bits aside.
 
 **The ADS1298's registers,** from SBAS459K section 9.6 (table 16 and the registers after it),
 with the suit's values. Once the suit is tuned these are expected to stay as they are; the way to
@@ -383,9 +382,6 @@ ES0621 Rev 3; the STM32H523 exists only as revision A.
 ## Open questions
 
 - the lead-off current, 6 or 24 nA, and the comparator threshold, by testing,
-- on a strip wired to the reference on the head or the neck: the lead-off currents of the N
-  inputs joined at one electrode, and whether RLD_SENSN = 0x00 or the full sum holds the body
-  better,
 - 1,920 against 3,840 SPS on recordings,
 - the ADS1298's register table on the first board, chip by chip, the two chips' first DRDYs
   together,
