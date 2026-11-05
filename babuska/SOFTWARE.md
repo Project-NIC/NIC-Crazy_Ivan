@@ -28,19 +28,18 @@ plus the field's byte offset (JK BMS RS485 Modbus general protocol V1.0 and V1.1
 | shutdown | 0x1028 VolSysPwrOff | 2,000 mV | under the 2.5 V backstop, at EVE's lowest end (2.0 V at 0 °C and below); the default (2.8 V for Li-ion) would block the 2.5 V under-voltage |
 | SOC 100% · 0% | 0x1018 · 0x101C | set with the top at 80%, from the measurement on a sample | JK counts the charge and sets it to 100% when a cell passes the first, to 0% when one falls under the second, so the count re-anchors at every charge (JK's Inverter BMS documentation; to confirm on the B1A8S10P); on LiFePO4's flat curve the two voltages lie close together |
 | charge current, limit | 0x102C CurBatCOC | 6,000 mA | over the charger's 5 A |
-| discharge current, limit | 0x1038 CurBatDcOC | 5,000 mA; 10,000 mA in the 10 A variant | at the nominal 12.8 V the suit takes ~0.9–1.3 A in the small fitting, ~1.1–2.0 A in the normal one, ~3.4 A at 43 W in the brutal one, ~4.7 A at 60 W with two computers, ~6 A near the 10 V end (see [power variants](HARDWARE.md#power-variants)) |
+| discharge current, limit | 0x1038 CurBatDcOC | 5,000 mA; 10,000 mA in the 10 A variant | at the nominal 12.8 V the suit takes ~1.3–1.6 A in the small fitting, ~1.5–2.3 A in the normal one, ~3.7 A at 47 W in the brutal one, ~5.0 A at 64 W with two computers, ~6.4 A near the 10 V end (see [power variants](HARDWARE.md#power-variants)) |
 | charging, low temperature | 0x105C TMPBatCUT | 0.0 °C | EVE's sheet allows charging from 0 °C, at most 0.25 C up to 5 °C, which the charger's 5 A is |
 | charging, high temperature | 0x104C TMPBatCOT | 40.0 °C | a margin under the 55 °C of EVE's sheet |
 | discharging, high temperature | 0x1054 TMPBatDcOT | 50.0 °C | a margin under the 60 °C of EVE's sheet |
 | balancing | 0x1014, 0x1084, 0x1048 | JK's defaults | |
 
-- **The charger gives 5 A,** 0.25 C for the 20 Ah pack (see
-  [hardware](HARDWARE.md#charging)). 20 to 80% is 12 Ah: ~2.4 h at 5 A with the suit off; a charge
-  to 100% would be 16 Ah, ~3.2 h, and the constant-voltage tail (the top is open, see
-  [hardware](HARDWARE.md#the-battery)). Worn while it charges, the suit takes ~1–1.8 A of the 5 A
-  in the small and normal fittings, and 20 to 80% then takes ~3–3.8 h. EVE's standard charge is
-  constant current at 0.5 C to 3.65 V, then constant voltage down to 0.05 C (RD-C40-S01-LF, 2.1);
-  ours stops at 80%, how is open.
+- **The charger gives 5 A,** 0.25 C for the 20 Ah pack (see [hardware](HARDWARE.md#charging)). 20
+  to 80% is 12 Ah: ~2.4 h at 5 A with the suit off; a charge to 100% would be 16 Ah, ~3.2 h, and the
+  constant-voltage tail (the top is open, see [hardware](HARDWARE.md#the-battery)); the suit is off
+  while it charges (see [hardware](HARDWARE.md#charging)). EVE's standard charge is constant current
+  at 0.5 C to 3.65 V, then constant voltage down to 0.05 C (RD-C40-S01-LF, 2.1); ours stops at 80%,
+  how is open.
 - The recoveries (over- and under-voltage 0x1010 and 0x1008, the temperatures 0x1050,
   0x1058 and 0x1060) sit a little inside their thresholds.
 - **The order of writing.** JK refuses a write that breaks over-voltage > its recovery >

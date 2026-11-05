@@ -36,6 +36,12 @@ thing waits in reserve, it says so.
   more switching loss at light load.
 - **Smaller cells, 26700 in 4S3P.** The same energy as 32140 in 4S1P with three times the cells,
   the welds and the balancing; the 32140 won among the sodium cells.
+- **The suit worn while it charges** (to 5 Nov 2026), the charger's output floating and the
+  right-leg drive holding the common voltage against its noise. Floating is not isolated: a bought
+  charger's filter capacitors pass mains current into the suit's ground, and the limits for a
+  device on the skin are tighter than for one in the hand. A charger made for that, or the suit
+  switched off by its charging connector, would answer it; neither is worth it while the suit is
+  a beta, so it is taken off to charge (see [hardware](HARDWARE.md#charging)).
 - **Charging the pack to 100% and down to 0%.** Between 20 and 80% the cells live longer, and the
   suit still gets 154 Wh; the BMS's 0–100% is remapped onto that window. On LiFePO4's flat curve
   the top at 80% cannot be the charger's voltage, so a full charge comes back only should the BMS

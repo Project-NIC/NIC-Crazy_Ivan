@@ -33,7 +33,7 @@ Baťa is a **Radxa ROCK 5T**, with Mamka on his header (see
   not the Industrial V2.01, which lacks SPI3_M0 on the header (see
   [Mamka](../mamka/WHY.md)); other boards were weighed for their header's SPIs and none had the
   rest too (see [WHY](WHY.md)).
-- **Three ways to fit him:** *small*, no Hailo and no Terem, a small model on the RK3588's own
+- **Three ways to fit him:** *small*, no Hailo and no Terem, the model on the RK3588's own
   NPU, for a suit of a headband and a few modules; *normal*, one Hailo and the big cores held
   lower; *brutal*, both Hailos and every core. The budget is under
   [Babuška](../babuska/HARDWARE.md#the-battery); how large a model the NPU takes is to be tried.
@@ -125,10 +125,11 @@ him only over Ethernet.
   and a small program on Borovičok turns them into a keyboard and a mouse through Linux's `uinput`.
   Inside the backpack there is no USB between them and no isolator: both run from Babuška.
 - **Recordings,** when made, go over the same cable to Borovičok's SSD, so Baťa needs none; all
-  the EMG in BDF, ~1.5 MB/s, is far inside what a PCIe 3.0 ×2 slot carries.
-- **Baťa then needs little memory,** since the data are ~3.7 MB/s and the model sits in Umnica's
-  own 8 GB; in the small fitting it sits in the ROCK's own memory, so whether 2 GB leaves room
-  for it and for learning is to be tried.
+  the EMG in BDF, ~1.6 MB/s, is far inside what a PCIe 3.0 ×2 slot carries.
+- **Baťa then needs little memory,** since the data are ~2.8 MB/s from the SPIs and ~3.6 MB/s of the
+  model's windows (32 × 928 values 120 times a second, INT8), and the model sits in Umnica's own 8
+  GB; in the small fitting it sits in the ROCK's own memory, so whether the smallest, 4 GB (Radxa's
+  product brief), leaves room for it and for learning is to be tried.
 - **Power:** Borovičok's eFuse sits on Mamka beside Baťa's (see
   [Mamka](../mamka/HARDWARE.md#the-computers-supply)), so Mamka
   switches both computers, and the backpack takes the 10 A power variant (see

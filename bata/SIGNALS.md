@@ -33,12 +33,10 @@ over 24 bits).
   the chips' CMRR, −105 dB at least on the ADS1298 (SBAS459K), leave little, and what is left is
   estimated as a slowly varying sinusoid at 50 Hz and its first harmonics, tracked from quiet
   stretches, and subtracted. Whether it is needed at all the first recordings will show.
-- **The lead-off's tone** at fDR / 4, 480 Hz at 1,920 SPS (960 Hz at 3,840, above the band): the
-  chips' AC lead-off, its 6 nA through each contact (see
-  [Rubaška](../rubaska/SOFTWARE.md#an-electrode-coming-off)), locked to the samples, four a
-  period; its amplitude and phase estimated channel by channel over each 32 cycles and the tone
-  subtracted, its amplitude the contact's own measure. Whether what is left near 480 Hz harms the
-  envelopes the first recordings show.
+- **No lead-off tone** under the recording: the chips' AC lead-off, ~0.25 µA an input, runs only
+  as a check in the service mode and when Baťa asks between two recordings (see
+  [Rubaška](../rubaska/SOFTWARE.md#an-electrode-coming-off)); the samples of a check's 32
+  cycles are not recorded.
 - **The radar's pattern** on the head's electrodes, aligned to each radar frame by the stamped
   arrival of a sphere made with the radar (its code 2 or 3), 10 frames a second, is averaged over
   hundreds of frames and subtracted (see [Míša](../misa/HARDWARE.md#radar-and-the-emg)).
@@ -67,17 +65,19 @@ EMG and kept as a measurement of its own.
   which rise and fall with every breath, and from the trunk IMUs, which tilt a little with it.
   The two agree or the breath is marked unsure.
 - **Vitals,** the packet of type 6, 8 B once a second: the heart rate (u8, beats a minute), its
-  variability (u8, the RMS of successive differences in ms, RMSSD), the breathing rate (u8,
-  breaths a minute, 0 unsure), the skin temperature from the trunk modules' processors (i8, °C),
-  the ECG's quality 0–15 and the breath's source (u8), 3 B zeros.
+  variability (u8, the RMS of successive differences in ms, RMSSD), the breathing rate (u8, breaths
+  a minute, 0 unsure), the module temperature from the trunk modules' processors, their dies, not
+  the skin (i8, °C), the ECG's quality 0–15 and the breath's source (u8), 3 B zeros.
 
 ## The electrodes' quality
 
-- **Off:** the electrodes on the skin come in the diagnostics, every 32 cycles, from the lead-off
-  tone's amplitude each unit measures, the P inputs and the N inputs by turns; an electrode that
-  has come off masks
-  its channel for the model (the channel's envelope is set to a value the model learns as
-  "absent") and raises an event.
+- **Off:** the pairs on the skin come in the diagnostics as the last lead-off check left them,
+  at putting-on and whenever Baťa asks one between two recordings (see
+  [Rubaška](../rubaska/SOFTWARE.md#an-electrode-coming-off)). While the suit runs an electrode
+  that comes off shows in its channel: the input floats, the channel runs to a rail or carries
+  the mains at full swing, so a channel with a sample at the rails or with 50 Hz over a threshold
+  found on the first recordings is marked absent by Baťa, for its envelope (set to a value the
+  model learns as "absent") and an event.
 - **Quality 0–15** in the meta packet of the electrodes: from the channel's noise floor in the
   quietest stretches of the last seconds against the chip's own noise at this rate, 0.8 µVrms on
   the ADS1298 at a gain of 12 (SBAS459K, its noise table), and from how

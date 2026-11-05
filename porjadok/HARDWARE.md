@@ -30,7 +30,7 @@ processor at its datasheet maximum and the line driver sending:
 
 | rail | one module, average | one module, peak | 16 modules |
 |---|---|---|---|
-| 4 V | ~69 mA | ~135 mA | ~1.10 A, ~4.4 W |
+| 4 V | ~68 mA | ~133 mA | ~1.09 A, ~4.4 W |
 | 6 V | ~7 mA, the neck's ~4 | the same | ~0.11 A, ~0.65 W |
 
 - **An ADS1298 takes 3.1 mA on the analog rail and 0.5 mA on the digital** (SBAS459K, Electrical
@@ -59,7 +59,8 @@ Eight lines leave Mamka, **a line a piece of the suit,** at most four units a li
 comes apart in its pieces with no connector along it: each piece's cable goes straight to the
 backpack, an arm's over its shoulder and down the arm, the units chained along it. Fully populated,
 that is 35 ADS1298, two on every module but the neck's, which has one, and one on each glove and
-sock, 280 channels; 64 IMU places in the modules, two gloves of 24 IMUs and two socks of 8.
+sock, 280 channels; 64 IMU places in the modules, two gloves of 24 IMUs and two socks of 8 to start,
+of 24 places.
 
 | line | processor | the piece | slots 1–4 |
 |---|---|---|---|
@@ -85,8 +86,8 @@ A line has three pairs: two for data and one for the clock. The cable has 16 wir
   line. The master talks to all of them at once.
 - The TX of every unit on the line is wired to the master's RX. The units take turns on this
   pair, each in its own time slot.
-- A unit transmits on its second UART and reads its own transmission back through that UART's
-  RX (echo).
+- A unit transmits on one UART and reads its own transmission back on a receiver of its own
+  (echo).
 
 **Line speed**
 
@@ -165,8 +166,9 @@ carries the line at 20 Mbaud with an open eye, and a band's strip laid alongside
 module, shows nothing of it in the data. Should the second fail, a braided sleeve over the
 cable, grounded at Mamka, is its shield.
 
-**The drop** on a metre at ~0.38 A on the 4 V rail, a line's current as first counted, is ~25 mV
-on the two +4 V wires and ~8 mV on the six grounds, ~33 mV, at ~0.13 Ω/m: 26 AWG's 0.141 mm² of
+**The drop** on a metre at ~0.45 A on the 4 V rail, the most a body line draws (an arm's three
+modules and the glove), is ~29 mV on the two +4 V wires and ~10 mV on the six grounds, ~39 mV, at
+~0.13 Ω/m: 26 AWG's 0.141 mm² of
 copper with a little for the tin and the lay, an estimate, 3M's sheet giving no resistance. At
 most it is taken as ~151 Ω/km, UL 1571's 239 Ω/km for 28 AWG of 7 × 0.127 mm (LTK's sheet)
 scaled by the cross-section, so the six grounds come to ~0.025 Ω/m: a unit a metre out sits
@@ -181,8 +183,8 @@ it two.
 The TPS7A2033 holds its ±1.5% from an input of 3.6 V up and falls out of regulation below
 ~3.44 V: its dropout is at most 140 mV at 300 mA, over −40 to 125 °C (SBVS338H, 5.5). From
 Mamka's converter to a module's LDO, at ~0.54 A, all of it at the end of a metre, every part at
-its worst; the table keeps the 0.54 A first counted, more than any line now draws (~0.45 A, an
-arm's three modules and the glove), so the margin is a little larger than it shows:
+its worst, a margin over the ~0.45 A a body line draws at most (an arm's three modules and the
+glove); line 8 is counted on its own, below:
 
 | from Mamka to the LDO | resistance | drop |
 |---|---|---|
@@ -230,18 +232,20 @@ The units on a line receive the clock from one pair.
 
 Expected wiring: the first THVD1452 receives from the master on A/B and drives the return pair
 on Y/Z, its driver switched by DE from the UART. The second THVD1452 receives the return pair on
-A/B and so gives the echo. The THVD1450 receives the clock. **The glove's Staršaja and Míša** take
-two packages instead: one THVD1452 for the return pair and a quad receiver, the AM26LV32E, for
-the pair from the master, the echo and the clock (3.3 V, 32 Mbps, VQFN-16 3.5 × 4 mm; 8 mA
-typical, 17 mA at most, SLLS849E).
+A/B and so gives the echo. The THVD1450 receives the clock. **The glove's Staršaja and Míša**
+carry the same three (the owner, 5 Nov 2026): one set of drivers for every unit of the suit. The
+return pair is terminated and idle between the slots, and the THVD145x receivers are fail-safe
+on an idle bus (SLLSEY3E: open, short and idle), so the echo reads a clean high between the
+frames; a receiver fail-safe on an open input alone would read noise there (see
+[Rubaška](../rubaska/WHY.md#the-sensing-module)).
 
 Every pair is terminated at both ends with 120 Ω, checked on the cable: at Mamka, and at
 the last unit by a solder jumper that every unit has, closed on the last one. A driver then
 sees the two in parallel, ~60 Ω, close to the 54 Ω the datasheets test with (see
 [Mamka](../mamka/HARDWARE.md#lines)).
 
-All the drivers run from 3 to 5.5 V at up to 50 Mbit/s, the AM26LV32E at 3.3 V; on a unit they
-run from 3.3 V (see [power](#power)). We considered M-LVDS too, but stayed with classic
+All the drivers run from 3 to 5.5 V at up to 50 Mbit/s; on a unit they run from 3.3 V (see
+[power](#power)). We considered M-LVDS too, but stayed with classic
 RS-422/485 because of what the drivers and the parts around them consume.
 
 RS-485 also carries the sound from Baťa across the suit to
@@ -267,7 +271,7 @@ one impedance table and one order.
 
 Beside them the flexible circuits, no boards but drawn the same way, all polyimide from JLCPCB:
 the bands' strips, on the torso and the limbs alike, of four layers, a ground on both faces and
-the leads inside, and the finger strips, bare flex soldered to the IMU boards (see
+the leads inside, and the glove's zone strips, bare flex soldered to the IMU boards (see
 [Rubaška](../rubaska/CONSTRUCTION.md#electrodes)).
 
 The ADS1298's own example layout is drawn for a minimum of two layers, with inner layers for

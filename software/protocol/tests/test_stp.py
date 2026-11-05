@@ -53,9 +53,9 @@ class TestCommands(unittest.TestCase):
     def test_writes_and_results(self):
         one = stp.write(0x11, stp.CHIP_UNIT, stp.REG_BIAS, 1, number=4)
         self.assertEqual(len(one), 8)
-        many = stp.write_many(0, stp.CHIP_ADS, 0x01, bytes(23), number=5)   # 01h-17h in one frame
+        many = stp.write_many(0, stp.CHIP_ADS, 0x01, bytes(25), number=5)   # 01h-19h in one frame
         r = stp.Registers.unpack(many)
-        self.assertEqual((r.kind, r.chip, r.reg, len(r.values)), (0x06, 1, 1, 23))
+        self.assertEqual((r.kind, r.chip, r.reg, len(r.values)), (0x06, 1, 1, 25))
         ans = stp.result(stp.Frame.unpack(many), stp.NO_CHIP, unit=0x11)
         self.assertEqual(stp.Frame.unpack(ans), stp.Frame(0x11, 0x86, 5, bytes([2, 0, 0])))
         with self.assertRaises(ValueError):

@@ -115,8 +115,8 @@ Babuška's pantry and decides what goes in and out.
 - In its family (B1A8S20P / B2A8S20P) cell voltages are measured from 1 to 5 V, and over- and
   under-voltage protection is adjustable from 1.2 to 4.35 V, which covers LiFePO4's 2.5–3.65 V;
   the settings are below.
-- 100 A is far more than the suit's ~1.1–2.0 A in the *normal* fitting at the nominal 12.8 V
-  (~3.4 A at most with one ROCK 5T, ~4.7 A with two computers, see
+- 100 A is far more than the suit's ~1.5–2.3 A in the *normal* fitting at the nominal 12.8 V
+  (~3.7 A at most with one ROCK 5T, ~5.0 A with two computers, see
   [Power variants](#power-variants)); it is the smallest of the family with these figures
   confirmed.
 - It talks over RS485 (or CAN). Mamka reads it on RS485 with JK's RS485 Modbus protocol (see
@@ -148,10 +148,14 @@ No USB-C: the connector is small and fragile. The backpack has one sturdy chargi
 bought charger for 4S LiFePO4 plugs into it from outside, through the BMS; the charger is not part
 of the backpack. Its usual end is 14.6 V, 3.65 V a cell, EVE's end of charge; 5 A is 0.25 C for
 the 20 Ah pack, inside EVE's standard 0.5 C and inside its 0.25 C even at 0–5 °C. Whether the
-charger or the BMS stops at 80% is the question above. The suit may be worn while it charges;
-the charger's noise may then show in the data, and the right-leg drive holds the common voltage
-against it (see [Rubaška](../rubaska/HARDWARE.md#right-leg-drive)). The charger's output must
-float against earth: an earthed one would empty a charged wearer through the electrodes (see
+charger or the BMS stops at 80% is the question above. **The suit is taken off to charge** (the
+owner, 5 Nov 2026): a bought charger stands between the mains and the electrodes with its own
+insulation and its filter capacitors, which may pass up to ~0.25 mA of mains current into the
+suit's ground (the touch current a Class II supply is allowed, from secondary sources), through
+the bias electrode into a wearer who touches earth; the wearable limit is 100 µA (IEC 60601-1,
+type BF, normal condition, the standard not read). Only a charger made for a worn device would
+change that, and none is planned. The charger's output must float against earth: an earthed one
+would empty a charged wearer through the electrodes (see
 [Rubaška](../rubaska/HARDWARE.md#sensing-module), *Inputs and their protection*).
 
 
@@ -164,7 +168,7 @@ limit is one of its settings.
 |---|---|---|
 | for | one computer, Baťa: the ROCK 5T in any fitting | two computers, Baťa and Borovičok beside him (see [Baťa](../bata/README.md)) |
 | the BMS's discharge limit, 0x1038 | 5,000 mA | 10,000 mA |
-| the most the suit takes | ~43 W: ~3.4 A at 12.8 V, ~4.3 A at the 10 V end; the ROCK 5T in its brutal fitting | ~60 W: ~4.7 A at 12.8 V, ~6 A at the 10 V end, past 5 A; both computers at full load |
+| the most the suit takes | ~43 W: ~3.4 A at 12.8 V, ~4.3 A at the 10 V end; the ROCK 5T in its brutal fitting | ~64 W: ~5.0 A at 12.8 V, ~6.4 A at the 10 V end, past 5 A; both computers at full load |
 | each cell of the 4S1P pack | 5 A at most, 0.25 C | 10 A at most, 0.5 C, EVE's standard discharge |
 | the fuse, the wires and the connector from the pack through the BMS to Mamka | rated for 5 A; the wire 2.5 mm² in both, more than the electrician's 1.5 mm² for wire not specially chosen and held | rated for 10 A |
 | the parts | a 5 × 20 mm fast-acting ceramic sand-filled fuse in the pack, before the BMS (Littelfuse 216 series or the like: IEC 60127-2 sheet 1, 1,500 A of breaking capacity at 250 V AC by Littelfuse's product page), its value the lowest that survives the measured start currents; 2.5 mm² flexible PVC wire, CYA (H07V-K); an Amass XT60 pair at the pack | the same, the fuse sized for both computers' starts |

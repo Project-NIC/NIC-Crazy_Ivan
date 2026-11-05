@@ -26,7 +26,11 @@ is unzipped.
   fins. A home printer prints an insert; a whole backpack would take a large one.
 - **A connector for each piece of the suit,** eight in the shell, one a line: the arms with
   their shoulders, the legs, the head's module, the chest, the back, and the headband (see
-  [Porjadok](../porjadok/HARDWARE.md#links-between-boards)), so a piece comes off by itself. A
+  [Porjadok](../porjadok/HARDWARE.md#links-between-boards)), so a piece comes off by itself; the
+  head takes two, line 5's and line 8's, and the turtleneck sewn to the headband (see
+  [Rubaška](../rubaska/CONSTRUCTION.md#harness-and-washing)) carries the neck's module on line 7
+  with the back, so line 7's cable has a branch connector at the neck's foot, the Weipu SP21 of
+  the branches, and the headband with the turtleneck comes off as one piece on three plugs. A
   line's 16 wires (see [Porjadok](../porjadok/HARDWARE.md#cable-and-connectors-in-the-suit)) take
   10 contacts: the six of the three pairs and four for the supply, 4 V, 6 V and two grounds, the
   doubled wires sharing a contact, which a contact carries easily at the line's fraction of an
@@ -81,7 +85,7 @@ Worked out from the parts' own figures; with the ROCK 5T it is still open:
 |---|---|
 | the ROCK 5T | ~4–17 W |
 | Hailo-10H, none, one or two | 0–16.5 W, 8.25 W each at most (Hailo's datasheet) |
-| Mamka's own 3.3 V: the two processors and the line drivers, ~0.72–0.77 A | ~2.4–2.5 W |
+| Mamka's own 3.3 V: the two processors and the line drivers, ~0.72–0.77 A | ~2.6–3.0 W from the battery, through her converter |
 | the fan, the BMS, the eFuses | under 1 W |
 | the converters (Mamka's LMR43610s, Terem's two LMR60440) | ~1–3 W, an estimate from their efficiency, to check in their datasheets |
 | **total** | **~8–40 W** |
@@ -100,10 +104,16 @@ Worked out from the parts' own figures; with the ROCK 5T it is still open:
   battery and the electronics, and blows up the channel; the air leaves at the top under the
   overhang, away from the back and the neck. It passes the fins of both of Mrazík's faces, along
   the flow. Warm air rises the same way, so the battery at the bottom stays cool.
-- **A small fan does:** 2.4 l/s (~5 CFM) is the fan's figure in free air, and 15 W in it warm the
-  air by ~5 K. The mesh, the fins and the outlet take part of the flow (Noctua gives a static
-  pressure of only ~1.95 mm H₂O, ~19 Pa), so the air warms more, an estimate of ~7–10 K. The channel
-  is to be drawn for Mrazík's size once the block is drawn. The SoC and the Hailos give their heat
+- **A small fan does for the small and the normal fitting:** 2.4 l/s (~5 CFM) is the fan's figure
+  in free air, and 15 W in it warm the air by ~5 K. The mesh, the fins and the outlet take part of
+  the flow (Noctua gives a static pressure of only ~1.95 mm H₂O, ~19 Pa), so the air warms more, an
+  estimate of ~7–10 K. **The brutal fitting is another matter:** its ~40 W warm the same air by
+  ~13 K free and ~20–27 K with the losses, Borovičok's block beside it ~57 W by ~19–38 K, before
+  the fins' own resistance, which is set when Mrazík is drawn, so on a 35 °C day the fins would
+  stand at 55–70 °C and the SoC's boss above them. So the fins and the fan are sized for 40 W
+  when the block is drawn, a second fan or a larger one if the channel asks, and until measured
+  the brutal fitting runs only under an air temperature the measurement sets. The channel is to
+  be drawn for Mrazík's size once the block is drawn. The SoC and the Hailos give their heat
   to Mrazík's walls and the fins to the channel's air, with no fan of the Hailos' own; a
   measurement is to confirm it.
 - **Fan control:** a 4-pin PWM fan, the Noctua NF-A4x10 5V PWM: 40 × 40 × 10 mm, 0.07 A, up to

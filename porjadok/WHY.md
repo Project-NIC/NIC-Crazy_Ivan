@@ -137,7 +137,7 @@ What was tried for the frames and the modes and left:
   every frame (the owner).
 - **3,840 SPS as the suit's rate** (to 29 Oct 2026), a band to ~1 kHz for fast movements and the
   twitches of a nervous system that does not work as it should. With two chips a module it doubled
-  the data, the lines at 46 % and processor 1's SPI at 84 %, for a band above the ~500 Hz that
+  the data, the lines at 45 % and processor 1's SPI at 87 %, for a band above the ~500 Hz that
   surface EMG uses (SENIAM's 10–500 Hz; Delsys at 1,926 SPS, Meta at 2,000, OT at 2,048): 1,920 is
   the rate and 3,840 the setting to try, a twitch of a few milliseconds seen at either.
 - **The IMUs' step of 60 Hz at 1,920 SPS** (to 29 Oct 2026), thirty-two samples kept at the lower

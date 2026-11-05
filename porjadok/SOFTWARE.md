@@ -161,12 +161,13 @@ zero is looked into only when found.
 | 31 | the last reset's cause (see [Watchdogs](#watchdogs)) |
 | 32–33 | CRC-16 |
 
-- **The electrodes:** from the chips' AC lead-off, its tone at fDR / 4 (SBAS459K, 9.3.1.7.4.2; see
-  [Rubaška](../rubaska/SOFTWARE.md#an-electrode-coming-off)): the unit sums each channel's 32
-  samples against the tone's pattern, and an amplitude over the threshold marks the electrode
-  off; the P inputs are excited in one period and the N inputs in the next, so bytes 12–13 and
-  14–15 each carry the bits of the last period that measured them, renewed every 64 cycles, 1 on
-  the skin, the second chip's in the high byte.
+- **The electrodes:** from the chips' AC lead-off check, its tone at fDR / 4 (SBAS459K,
+  9.3.1.7.4.2; see [Rubaška](../rubaska/SOFTWARE.md#an-electrode-coming-off)), run only in the
+  service mode and when Baťa asks, every P and N input together for one period of 32 cycles: the
+  unit sums each channel's samples against the tone's pattern, and an amplitude over the threshold
+  or a channel at a rail marks the pair off; bytes 12–13 and 14–15 carry the same bits, a pair's
+  in both, as the last check left them, 1 on the skin, the second chip's in the high byte; all
+  ones before the first check.
   **The bias electrode** is the first chip's RLD_STAT, CONFIG3 bit 0 (9.6.1.4), 1 for off, turned
   over the same way. A unit with no ADS1298 sends ones, a module with one chip ones for the
   second's eight.
@@ -176,8 +177,9 @@ zero is looked into only when found.
   complement, 256 LSB/°C and 0 at 25 °C, typical, so °C = value / 256 + 25, the offset within
   ±15 °C (DS13510 Rev 4, table 6 and its note 3; 9.29).
 - **The lowest 3.3 V** is measured by the processor's own ADC against its VREFINT, no part added.
-- **More than six IMUs** go by turns, which six told by the frame's number: the glove's 24 in
-  four diagnostics, ~67 ms, a sock's 8 in two. A temperature once a minute would do.
+- **More than six IMUs** go by turns, which six told by the frame's number: the diagnostics of
+  cycle c carry the IMUs from 6 × ((c div 32) mod ⌈n / 6⌉) on, the glove's 24 in four
+  diagnostics, ~67 ms, a sock's 8 in two. A temperature once a minute would do.
 
 ### How a unit builds the frame
 
@@ -288,6 +290,7 @@ with the command's number back. One register is written in 8 B, more in 34 B.
 | 0x20 | data | 34 | up | see [A unit's data](#a-units-data) |
 | 0x21 | diagnostics | 34 | up | see [The diagnostics](#the-diagnostics) |
 | 0x24 | data, a module of two chips | 58 | up | see [A unit's data](#a-units-data) |
+| 0x25 | data, the glove and the sock | 58 | up | see [A unit's data](#a-units-data) |
 | 0x22 | the sound for the headphones, 1 ms | 198 | down | see [Nataša](../natasa/SOFTWARE.md#sound-across-the-suit) |
 | 0x23 | the microphones, 1 ms | 198 | up | the same |
 | 0x30 | a block of firmware | 519 | down | see [Updating firmware](#updating-firmware) |
@@ -316,7 +319,7 @@ with the command's number back. One register is written in 8 B, more in 34 B.
   nothing from the slots up; between two reads the unit sends SDATAC, WREG and RDATAC again.
   Conversions go on and START stays high. The bytes of a multi-byte command must be 4 CLK periods
   apart (~2.0 µs), so writing one register takes an estimated ~16 µs.
-- **Kept free for what comes later:** the kinds 0x07–0x0F, 0x17–0x1F, 0x25–0x2F and 0x31–0x7F,
+- **Kept free for what comes later:** the kinds 0x07–0x0F, 0x17–0x1F, 0x26–0x2F and 0x31–0x7F,
   the chips 0x07–0x0E. A new sensor takes a chip's number and a map of registers and needs no
   kind of its own; its slow data are read, its steady data come in the free part of its unit's
   slot.
@@ -428,8 +431,8 @@ answer, a question of 8 B and its answer of 34 B in ~22 µs.
 - **A unit reset while the suit runs,** or one plugged in, forgets its number and joins at the
   next bring-up: it takes the clock, stays silent with no number, and Mamka sees its slot empty.
 - **Each processor brings up her own lines,** processor 1 lines 1–4 and processor 2 lines 5–8,
-  once their chain of converters shows its last PGOOD: processor 2 switches both chains and
-  reads both, processor 1 reads the limbs' PGOOD on a wire of its own (see
+  once their converters show their PGOOD: processor 2 switches every line's converter and reads
+  every PGOOD, processor 1 reads "the limbs powered" on a wire of its own (see
   [Mamka](../mamka/SOFTWARE.md#the-wires-between-the-processors)).
 - **Again:** Baťa asks processor 2 for the lines' power off and on (her power command 3); the
   PGOODs fall and rise, and each processor brings up her lines again by herself.
@@ -793,9 +796,9 @@ else does, so that a listener knows the suit is still there.
 | 1 | snapshot | the joints' 127 B and the contacts' 4 B | its place in the cycle |
 | 2 | meta | one of the eight meta packets below | which of the eight, 1–8 |
 | 3 | ECG | the ECG separated from the EMG, **1 B a sample** a channel: the first sample's number (2 B), the count (1 B), the channels (1 B), then the bytes, channel by channel; 480 SPS by default (see [Baťa](../bata/SIGNALS.md#the-ecg-and-the-breath)) | the decimation, 1–32 |
-| 4 | sphere | Míša's sphere, 112 B | |
+| 4 | sphere | Míša's sphere, 112 B; beside a snapshot it fits only the 512 class (136 + 116 B against the 248 of 256) | |
 | 5 | event | 8 B: a running count of events (1 B), what (1 B: a button, a BMS alarm, an electrode off, start, stop, a sound Soňa heard, *halted* by [Storož](../bata/SOFTWARE.md#storož) with his reason in *which*), which (1 B), 5 B by kind; the event's time is the frame's sample | |
-| 6 | vitals | 8 B once a second: the heart rate (bpm), its variability (RMSSD, ms), the breathing rate, the skin temperature (°C), the ECG's quality and the breath's source, 3 B zeros (see [Baťa](../bata/SIGNALS.md#the-ecg-and-the-breath)) | |
+| 6 | vitals | 8 B once a second: the heart rate (bpm), its variability (RMSSD, ms), the breathing rate, the module temperature (°C, the trunk modules' processors, not the skin), the ECG's quality and the breath's source, 3 B zeros (see [Baťa](../bata/SIGNALS.md#the-ecg-and-the-breath)) | |
 | 7–255 | reserved | | |
 
 **The meta packets,** one in each frame beyond the snapshots, so at 128 frames a second the set
@@ -804,12 +807,12 @@ none. The meta packets 3, 4, 5 and 7 want the class of 512 B.
 
 | `sub` | packet | data | B |
 |---|---|---|---|
-| 1 | the suit, the run and the map | the suit's serial (8 B), the run's number (u32) and its start (u32, Unix time), Baťa's software version (u16), Mamka's two processors' firmware (2 × u16), the snapshot rate's code (u8), the numbers of joint values, contacts and ECG channels in use (3 × u8), the units in the map (u8, up to 22: 20 on lines 1–7, Nataša, Míša), then 6 B a unit: its number, the kind (1 EMG, 2 IMU, 3 Nataša, 4 Míša), the place on the body (from the place list), the IMUs (how many), the firmware's version (u16); then the units present (u32, a bit a unit in the map's order) | ~163 |
+| 1 | the suit, the run and the map | the suit's serial (8 B), the run's number (u32) and its start (u32, Unix time), Baťa's software version (u16), Mamka's two processors' firmware (2 × u16), the snapshot rate's code (u8), the numbers of joint values, contacts and ECG channels in use (3 × u8), the units in the map (u8, up to 22: 20 on lines 1–7, Nataša, Míša), then 6 B a unit: its number, the kind (1 a module, 2 the glove and the sock, 3 Nataša, 4 Míša), the place on the body (from the place list), the IMUs (how many), the firmware's version (u16); then the units present (u32, a bit a unit in the map's order) | ~163 |
 | 2 | the bones | the wearer's height (u16, mm) and mass (u16, 0.1 kg), then the lengths in mm (u16 each): the neck, the torso from the shoulders to the hips, the shoulder width, the pelvis width, and left then right the upper arm, the forearm, the hand, the thigh, the shin and the foot | 36 |
 | 3 | the joint table, values 0–63 | 4 B a value: the joint (u8, from the joint list), the axis (u8: 1 flexion, 2 abduction, 3 rotation, 4 swing forward, 5 swing out, 6 twist), the range's low and high ends (2 × i8, in 2°); the value's place in the snapshot is its index | 256 |
 | 4 | the joint table, values 64–126, and the contacts | 63 values as above, then the 32 contact areas (u8 each, from the area list) | 284 |
 | 5 | the electrodes | the EMG units' channels in the map's order, 8 a chip, 16 a module of two, the glove's and the sock's 8, 280 × 1 B, zeros beyond the last: bit 0 P off, bit 1 N off (from the diagnostics), bit 2 the channel is on, bit 3 reserved (0), bits 4–7 the signal's quality 0–15 as Baťa rates it; then the unit driving the bias as its place in the map (u8), the bias electrodes found connected at start (u32, a bit a unit, from the diagnostics) and the driving unit's bias electrode now (u8, 1 off) | 286 |
-| 6 | temperatures and the battery | the units' processors in the map's order (22 × i16), the IMUs in the map's order, unit by unit, as many as meta 1 says (i8, °C, 0x7F none), up to 129: the modules' 64 places, the gloves' 48, the socks' 16 and Míša's; Mamka's two processors and Baťa's CPU (3 × i16); the battery as the BMS gives it (23 B, see [Mamka](../mamka/SOFTWARE.md#mamkas-own-registers)); the power's bits (u16) and the fan (u16, rpm) | ~210 |
+| 6 | temperatures and the battery | the units' processors in the map's order (22 × i16), the IMUs in the map's order, unit by unit, as many as meta 1 says (i8, °C, 0x7F none), up to 161: the modules' 64 places, the gloves' 48, the socks' 48 and Míša's; Mamka's two processors and Baťa's CPU (3 × i16); the battery as the BMS gives it (23 B, see [Mamka](../mamka/SOFTWARE.md#mamkas-own-registers)); the power's bits (u16) and the fan (u16, rpm) | 238 |
 | 7 | the muscles' fatigue | the muscle group of each of the 280 channels in the map's order (u8 each, 0 none), then the fatigue of groups 1–64 (u8 each, 0 fresh to 255) | 344 |
 | 8 | time and place | the UTC label: the suit's sample (u32) at which a UTC second began and that second (u32, Unix time), 0 while no PPS has come; the position (2 × i32, 10⁻⁷ °), the height (i16, m), the fix's quality (u8), the satellites (u8), 4 B zeros | 24 |
 
@@ -820,7 +823,7 @@ stream.
 **Subscribe.** A client that wants the native stream sends Baťa *subscribe* on his port, 8 B, and
 repeats it every second; Baťa stops sending five seconds after the last one. He answers with the
 same 8 B, saying what he sends: the class raised, when need be, to hold the largest packet asked
-for, the snapshot wanting 256 and the meta packets 3, 4, 5 and 7 512.
+for, the snapshot wanting 256, the sphere and the meta packets 3, 4, 5 and 7 512.
 
 | B | *subscribe*, and Baťa's answer |
 |---|---|
@@ -969,7 +972,10 @@ processor's table is on its page ([the module and the glove](../rubaska/SOFTWARE
 - **At 0 and 1 a handler only starts a transfer or sets a register;** the work runs lower or in
   the main loop.
 - **A received frame is one interrupt,** the USART's idle line once the frame has ended; the DMA
-  puts the bytes into memory by itself and takes no interrupt. A sending channel that ends a
+  puts the bytes into memory by itself and takes no interrupt. So **a sender leaves at least one
+  character of idle between two frames,** 0.51 µs at 19.66 MBd, on every pair and on line 8
+  too, where the sound's packets come a thousand times a second: two frames back to back would
+  arrive as one of the wrong length and be dropped. A sending channel that ends a
   block takes one; the sound's circular channels take theirs at each half, to hand it on.
 - **During *get ready*** every interrupt is masked (PRIMASK) and the start is polled, as above.
 - **The masters keep no cycle of their own** on lines 1–7: the units keep it from DRDY, and Mamka

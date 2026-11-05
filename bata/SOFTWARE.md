@@ -48,11 +48,11 @@ on the output.
   RK3588's PCIe controllers are not marked `dma-coherent` (`rk3588-base.dtsi`, `rk3588-extra.dtsi`,
   where PCIe goes through the SMMU), so devices on PCIe never see the CPU caches and read and write
   RAM directly.
-- The RAM costs nothing here: both processors' transfers, 1,328 B a cycle, ~2.5 MB/s, ~21 cache
+- The RAM costs nothing here: both processors' transfers, 1,448 B a cycle, ~2.8 MB/s, ~23 cache
   lines.
-- One copy: the SPI's DMA fills spidev's kernel buffer, and spidev copies it into the buffer mapped
-  for the Hailo. Without a driver of our own there is no way round that copy, and 1,328 B a cycle
-  cost next to nothing.
+- One copy: the SPI's DMA fills spidev's kernel buffer, and spidev copies it to the reader; the
+  Hailo gets only the windows of values the CPU builds from it (see [signals](SIGNALS.md)). Without
+  a driver of our own there is no way round that copy, and 1,448 B a cycle cost next to nothing.
 
 ## The kernel
 
@@ -67,10 +67,13 @@ driver. Both are small and both are kept in `software/`.
   to the ROCK; and the two converters of
   [Terem](../terem/HARDWARE.md#the-converters) as regulators: `regulator-fixed`,
   `enable-active-high`, `gpios` on header pin 16 (GPIO3_A4) for A and pin 32 (GPIO3_C2) for B,
-  `startup-delay-us = <7000>` for the LMR60440's 6 ms soft start (t_SS, SNAS877),
-  `vin-supply = <&vcc3v3_pcie30>`, and `vpcie3v3-supply` of `pcie3x4` set to A and of `pcie3x2`
-  to B. The *normal* profile sets one port `status = "disabled"`. And the USB-C's DisplayPort,
-  which the ROCK 5T's mainline device tree leaves off though the board is wired for it (see
+  `startup-delay-us = <7000>` for the LMR60440's 6 ms soft start (t_SS, SNAS877), no
+  `vin-supply` (Terem's converters run from the battery; naming the ROCK's `vcc3v3_pcie30` would
+  make the kernel raise GPIO1_A4 and run the ROCK's own converter idle whenever a Hailo is
+  powered, so that rail stays unused and the core disables it), and `vpcie3v3-supply` of
+  `pcie3x4` set to A and of `pcie3x2` to B. The *normal* profile sets one port
+  `status = "disabled"`. And the USB-C's DisplayPort, which the ROCK 5T's mainline device tree
+  leaves off though the board is wired for it (see
   [hardware](HARDWARE.md#which-computer)): the FUSB302B on I2C4 with its interrupt, the
   connector with DisplayPort's alternate mode and the PHY's DisplayPort side, after the RK3588
   boards whose device trees have it already; as a source it offers 5 V at 1.5 A, over the
@@ -98,12 +101,18 @@ fault instead of a recovery branch for each; our Tron, the program that fights f
 
 - **The services** of the suit, the SPI reader, the model, the output, the recorder and the
   assistants, are systemd units wanted by one target, `suit.target`. Storož is a unit of his
-  own, started before them, `Restart=always`, and not part of that target.
+  own, started before them, `Restart=always`, and not part of that target; he, `sshd` and the
+  network carry `IgnoreOnIsolate=yes`, and both targets `AllowIsolate=yes`, since an isolate
+  stops every unit the new target does not pull in and a unit stopped on purpose is not
+  restarted by its `Restart=` (systemd.unit(5), systemd.service(5)): without it `storoz resume`
+  would stop the watchman and the SSH session that said it.
 - **Baťa always starts halted:** the default target is `storoz.target`, and Storož looks for the
   mark a clean shutdown leaves, a file written as the system goes down. Found, he removes it and
   isolates `suit.target`; missing, he stays halted with the reason 10, an unclean start: the
   watchdog, a kernel panic or the power lost. The watchdog's driver tells no boot status
-  (`dw_wdt.c`), so the mark is what tells the three from a clean start.
+  (`dw_wdt.c`), so the mark is what tells the three from a clean start. Started again while the
+  suit runs, after a crash of his own or his `WatchdogSec`, he finds `suit.target` active and
+  carries on; the mark decides only when neither target is up.
 - **Watchdogs:** the RK3588's own, `watchdog@feaf0000` (`rockchip,rk3588-wdt`, `snps,dw-wdt`,
   enabled in mainline's `rk3588-base.dtsi`), driven by systemd, `RuntimeWatchdogSec=30s`: systemd
   pings it at least every half of it, so a hung kernel or a hung systemd reboots the board, the
@@ -119,10 +128,14 @@ fault instead of a recovery branch for each; our Tron, the program that fights f
   itself (a unit that failed twice in a minute).
 - **Fatal:** an Umnica gone or her converter tripped (after the one `bind` retry of
   [the kernel](#the-kernel)), the SPIs' stream silent, Mamka silent, a temperature over its
-  limit, a BMS alarm, the disk full while recording, a service that keeps dying, and a halt by
-  hand. **Not fatal,** handled where it happens and logged: a damaged frame (a gap),
-  a unit gone from a line (the data go on with a hole), the glove missing, a sensor off, a lost
-  UDP frame.
+  limit, a BMS alarm of the protective kind (a cell under or over its voltage, over temperature,
+  a short, over-current on discharge), the disk full while recording, a service that keeps
+  dying, and a halt by hand. **Not fatal,** handled where it happens and logged: a damaged frame
+  (a gap), a unit gone from a line (the data go on with a hole), the glove missing, a sensor
+  off, a lost UDP frame; a low state of charge, which halts nobody in the street: a warning on
+  the headband at a first threshold and the power's command 1, the suit shut down in order, at
+  a second, both set on Baťa, Mamka's own threshold on the pack's voltage behind them (see
+  [Mamka](../mamka/SOFTWARE.md#mamkas-own-registers)).
 - **What he does:** `systemctl isolate storoz.target`, a target that conflicts with `suit.target`
   and keeps the network, `sshd`, Storož and nothing else, so the services fall and the terminal
   stays. Then, once a second until told otherwise: an event packet (type 5, *halted*, the reason in
@@ -133,7 +146,8 @@ fault instead of a recovery branch for each; our Tron, the program that fights f
   comes over SSH or from Borovičok, reads the journal, clears the cause and says `storoz resume`,
   which isolates `suit.target` again and writes the command 5.
 - **Reasons** (1 B): 1 an Umnica gone, 2 an Umnica's converter (PGOOD low), 3 the SPIs' stream
-  silent, 4 Mamka silent, 5 over temperature, 6 a BMS alarm, 7 the disk full, 8 a service that
+  silent, 4 Mamka silent, 5 over temperature, 6 a protective BMS alarm, 7 the disk full, 8 a
+  service that
   keeps dying, 9 by hand, 10 an unclean start.
 
 ## Cores on the ROCK 5T

@@ -73,15 +73,15 @@ change.
 | 0x01 | CONFIG1 | **0xC4**; **0xC3** to try | HR = 1, the high-resolution mode; DAISY_EN = 1, multiple readback, the chips in cascade; CLK_EN = 0; DR = 100, fMOD / 256 at fMOD = fCLK / 4: 491,520 / 256 = **1,920 SPS**, or DR = 011, fMOD / 128, **3,840 SPS** (9.6.1.2) |
 | 0x02 | CONFIG2 | **0x00** | the test signal off, bits 7:6 and 3 written 0 as asked (9.6.1.3) |
 | 0x03 | CONFIG3 | **0xE8**, the driving module's first chip **0xEE**, **0xEA** for the bias check at start | PD_REFBUF = 1, the internal reference buffer on; bit 6 = 1 as required; VREF_4V = 1, the reference 4 V from AVDD 5 V; RLDREF_INT = 1, the mid-supply made inside; PD_RLD = 1 only on the chip that drives the body; RLD_LOFF_SENS = 1 on it, and on each module's first chip in turn for the check at start (9.6.1.4) |
-| 0x04 | LOFF | **0x01**; **0x03** for the bias check at start | FLEAD_OFF 01, the AC lead-off at fDR / 4, 480 Hz at 1,920 SPS (960 Hz at 3,840); the current source, 6 nA; the threshold bits 95 / 5 % for the bias's comparator; FLEAD_OFF 11, DC, only for the check at start; 00 is not allowed with any LOFF_SENS bit on (9.6.1.5) |
+| 0x04 | LOFF | **0x01**; **0x03** for the bias check at start | FLEAD_OFF 01, the AC lead-off at fDR / 4, 480 Hz at 1,920 SPS (960 Hz at 3,840), which excites only while a check runs (LOFF_SENSP and LOFF_SENSN); the threshold bits 95 / 5 % for the bias's comparator; FLEAD_OFF 11, DC, only for the check at start; 00 is not allowed with any LOFF_SENS bit on (9.6.1.5) |
 | 0x05–0x0C | CH1SET–CH8SET | **0x60** | on, gain 12 (110, the ADS1298's code; 0x50 would be gain 8), MUX 000 the electrode, on every chip; the bias has a lead of its own (9.6.1.6) |
 | 0x0D, 0x0E | RLD_SENSP, RLD_SENSN | **0xFF** on every module's first chip, **0x00** on the second | the sum of the first chip's sixteen inputs on RLDINV, for the bias drive on the driving module and for the strip's driver on every module (9.6.1.7) |
-| 0x0F, 0x10 | LOFF_SENSP, LOFF_SENSN | **0xFF** and **0x00**, then **0x00** and **0xFF** | the P inputs excited in one diagnostics period, the N inputs in the next, rewritten between two reads, so that the tone tells which side came off |
+| 0x0F, 0x10 | LOFF_SENSP, LOFF_SENSN | **0x00**; **0xFF** both while a check runs | no excitation while the suit is active; for a check, in the service mode or when Baťa asks, every P and N input together for one diagnostics period, as the datasheet pairs them, the P pulled up and the N pulled down so that the currents cancel in the body (see [An electrode coming off](#an-electrode-coming-off)) |
 | 0x11 | LOFF_FLIP | **0x00** | the current's polarity as the datasheet has it |
-| 0x12, 0x13 | LOFF_STATP, LOFF_STATN | read only | the comparators' bits, for a DC lead-off; with the AC lead-off the tone tells, and they are not used |
+| 0x12, 0x13 | LOFF_STATP, LOFF_STATN | read only | the comparators' bits, for a DC lead-off; in the AC check the tone tells, and they are not used |
 | 0x14 | GPIO | **0x0F**, the reset value | GPIO1–4 as inputs; on the board they are tied to DGND |
 | 0x15 | PACE | **0x00** | no pace detection |
-| 0x16 | RESP | **0x00** | no respiration circuit, the ADS1298R's |
+| 0x16 | RESP | **0x20** | no respiration circuit, the ADS1298R's; bit 5 reserved, always written 1 (SBAS459K, table 32) |
 | 0x17 | CONFIG4 | **0x02** | continuous conversion; PD_LOFF_COMP = 1 means the lead-off comparators **enabled**, despite the bit's name (9.6.1.11); they stay on for the bias electrode's RLD_STAT |
 | 0x18, 0x19 | WCT1, WCT2 | **0x00** | the Wilson central terminal's amplifiers off |
 
@@ -91,7 +91,7 @@ The 25 registers 0x01 to 0x19 go in one frame of 34 B.
 Trigno 1,926, Meta's band 2,000, OT's 2,048, and the band SENIAM recommends is 10–500 Hz: the
 filter's −3 dB lies at ~503 Hz on the suit's clock (SBAS459K, Electrical Characteristics, 0.262
 fDR). 3,840 is the setting to try, CONFIG1 0xC3: the band to ~1 kHz, for twitches a trained eye
-might want to see whole, at twice the data and processor 1's SPI at 84 % with two chips a module
+might want to see whole, at twice the data and processor 1's SPI at 87 % with two chips a module
 (see [Porjadok](../porjadok/SOFTWARE.md#into-baťa)); the step then counts 32 samples instead of
 16. The rate is set only before the first start, since the cycle, the step and the first DRDY's
 place after START all follow it (SBAS459K, 9.4.1.1.1, table 12; see
@@ -121,26 +121,39 @@ WAKEUP (see [Porjadok](../porjadok/SOFTWARE.md#bring-up)).
 
 ## An electrode coming off
 
-The ADS1298 itself reports an electrode that has come off. It will rarely happen, but since
-the chip can do it, we use it (SBAS459K, 9.3.1.7.4), **by its AC lead-off,** so that no DC flows
-through the studs:
+The ADS1298 itself can tell an electrode that has come off (SBAS459K, 9.3.1.7.4), and we use it
+**by its AC lead-off, as a check on demand, never while the suit is active:**
 
-- The ADS excites the inputs with its 6 nA current alternating at fDR / 4, 480 Hz at 1,920 SPS
-  (9.3.1.7.4.2; LOFF FLEAD_OFF 01): the P inputs in one diagnostics period, the N inputs in the
-  next, LOFF_SENSP and LOFF_SENSN rewritten between two reads. The datasheet's text names pull-up
-  and pull-down resistors for the AC excitation; which source it switches is read on the first
-  module.
-- While the electrode holds, the alternating current through the contact makes a small tone in
-  its channel, ~6 nA × the contact, ~0.5 mV through 89 kΩ; when it comes off, the input's
-  500 MΩ (Electrical Characteristics) takes the tone to the end of the range.
-- The unit sums each channel's 32 samples of the period against the tone's pattern, four samples
-  a period, locked to the samples, and an amplitude over the threshold, found by testing, marks
-  the electrode off; one bit an electrode, renewed every 64 cycles, goes in the diagnostics, 1
-  for an electrode on the skin; see [Porjadok](../porjadok/SOFTWARE.md#the-diagnostics). What it
-  means is Baťa's to judge, and Baťa takes the tone out of the signal (see
-  [Baťa](../bata/SIGNALS.md#the-emg-channel)).
+- **What the excitation is.** The chip's AC lead-off switches each excited input between AVDD and
+  AVSS at fDR / 4, 480 Hz at 1,920 SPS, through ~10 MΩ (figure 39: 3.3 MΩ and 12 pF a side;
+  "pullup resistor lead-off detection, 10 MΩ", Electrical Characteristics; 9.3.1.7.4.2, "pullup
+  and pulldown resistors at the input with a fixed frequency"): ~±0.25 µA an input, our reading
+  of the figure, read on the first module. That is not a small tone: ~0.25 µA × (the contact +
+  4.99 kΩ) a side, ~27 mV pp across a pair at a 50 kΩ contact, half the ±333 mV at a gain of 12,
+  ~3.5 mV pp at the 2 kΩ measured on a sweaty hand; a dry contact runs the channel to the rails,
+  which tells the same. So it does not run under the recording.
+- **The check:** LOFF_SENSP = LOFF_SENSN = 0xFF for one diagnostics period of 32 cycles, every P
+  and N input together, the P pulled up and the N pulled down as the datasheet pairs them, so
+  that the currents cancel in the body and nothing returns through the bias lead; the P inputs
+  alone, 280 of them, would send ~70 µA through the one bias electrode, ~7 V across its 100 kΩ,
+  past the amplifier's 75 µA of drive (Electrical Characteristics, the RLD amplifier at full
+  swing). The unit sums each channel's 32 samples of the period against the tone's pattern, four
+  samples a period, locked to the samples; an amplitude over the threshold, found by testing,
+  or a channel at a rail marks the pair off, and its amplitude below is the contact's own
+  measure, the pair's two contacts summed. Then LOFF_SENSP = LOFF_SENSN = 0x00 again. The bits go
+  in the diagnostics, 1 for a pair on the skin, both bytes the same, and stay as the last check
+  left them (see [Porjadok](../porjadok/SOFTWARE.md#the-diagnostics)); which side came off the
+  DC comparators cannot say either without DC, so the pair is the unit.
+- **When:** in the service mode at putting-on, repeated every few seconds until every pair is on,
+  the map's page showing it (see [Baťa](../bata/SOFTWARE.md#the-map)); in the
+  contact tests; and when Baťa asks between two recordings. While the suit is active an
+  electrode that comes off shows in its channel itself: the input floats, the channel runs to a
+  rail or carries the mains at full swing, and Baťa marks it absent from the channel (see
+  [Baťa](../bata/SIGNALS.md#the-electrodes-quality)).
 
-No DC current flows through the electrode and the skin, so the studs are not polarised by it:
+While the suit runs no lead-off current flows through the electrode and the skin, neither DC nor
+the tone, only each input's bias current of ±1 nA at most (SBAS459K, Electrical Characteristics),
+so the studs are not polarised by it:
 under current pulses of ±5 nA, stainless steel and platinum polarised at once, off the figure's
 scale, where sintered Ag/AgCl held (Tallgren, Vanhatalo, Kaila and Voipio, *Evaluation of
 commercially available electrodes and gels for recording of slow EEG potentials*, Clin
@@ -335,9 +348,10 @@ ES0621 Rev 3; the STM32H523 exists only as revision A.
 
 ## Open questions
 
-- the lead-off tone's threshold, whether 6 nA is enough against the EMG at 480 Hz, and how well
-  Baťa takes the tone out, on the first recordings; the steel's offset beside Ag/AgCl's with a
-  DC lead-off current and without it, on the first arm,
+- the lead-off check: what the AC excitation switches, resistors from the rails as figure 39
+  draws it or the current sources, and its current, measured on the first module; the tone's
+  threshold and what a poor contact looks like against an open one; the steel's offset beside
+  Ag/AgCl's with a DC lead-off current and without it, on the first arm,
 - 1,920 against 3,840 SPS on recordings,
 - the ADS1298's register table on the first board, chip by chip, the two chips' first DRDYs
   together,

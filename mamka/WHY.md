@@ -29,8 +29,8 @@ Each entry says what it was and why it went, so that nobody digs it up without k
   only the data pins and the grounds, and pin 1's 3.3 V as the signal "Baťa is up".
 - **Header pin 22 for "data ready".** It is a 1.8 V ADC input on the ROCK 5T; pin 36 is a plain
   GPIO.
-- **An STM32H523 for processor 1.** Its 272 KB would spare ~192 KB for the ring, ~0.08 s of
-  cycles for Baťa; the STM32H562's 640 KB give a ring of 512 KB, ~0.22 s. For processor 2 the
+- **An STM32H523 for processor 1.** Its 272 KB would spare ~192 KB for the ring, ~0.10 s of
+  cycles for Baťa; the STM32H562's 640 KB give a ring of 512 KB, ~0.26 s. For processor 2 the
   STM32H523 might still do (no SAI, so the sound through an SPI in I2S mode); both are the
   STM32H562VG or the STM32H563VG, one footprint and one firmware base.
 - **The LQFP64** (to 24 Oct 2026). Processor 2 needs 48 I/Os of its 49, and it lacks PB9 and

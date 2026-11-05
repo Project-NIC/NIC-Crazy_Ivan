@@ -178,7 +178,7 @@ class Bata:
         if which == 5:
             channels = bytearray()
             for u in units:
-                if u.kind == stp.KIND_EMG:
+                if u.kind in (stp.KIND_EMG, stp.KIND_END):
                     d = self.diagnostics.get(u.number)
                     p, n = (d.p_on, d.n_on) if d else (0xFFFF, 0xFFFF)
                     channels += bytes(0x04 | (~p >> i & 1) | (~n >> i & 1) << 1

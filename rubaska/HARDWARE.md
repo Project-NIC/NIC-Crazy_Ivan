@@ -84,7 +84,7 @@ right the line's, the top the IMUs'.
 | 8, 9 | VSSA, VDDA | | |
 | 10 | PA0 | ADS1298 RESET, both chips | GPIO |
 | 11 | PA1 | free | |
-| 12 | PA2 | the strip's ground layer's driver, TLV9001S SHDN, with a pull-down | GPIO |
+| 12 | PA2 | the strip's ground layer's driver, TLV9001S SHDN, with a pull-down of 4.7 kΩ (see [The strip's ground layer](#the-strips-ground-layer)) | GPIO |
 | 13 | PA3 | free | |
 | 14 | PA4 | the first ADS1298's CS: SPI1_NSS | AF5 |
 | 15 | PA5 | ADS1298 SCLK: SPI1_SCK, both chips | AF5 |
@@ -118,8 +118,8 @@ right the line's, the top the IMUs'.
 | 47, 48 | VSS, VDD | | |
 | pad | the exposed pad | to ground (section 6.5, note 3) | |
 
-- SWO can only go on PB3, which is also I3C2's SCL; its other SCL is PA8, which REF takes,
-  so I3C2 takes PB5 and PB4.
+- SWO can only go on PB3, which is also I3C2's SCL; its other SCLs are PA8, which REF takes, and
+  PB5, so I3C2 takes PB5 and PB4.
 - TIM3 gives the chips both their CLK and their START, so START keeps a fixed place against
   the CLK edges (see [Porjadok](../porjadok/SOFTWARE.md#starting-a-measurement)).
 - The line transmits on USART1, its DE driven by the USART itself, and reads itself back on
@@ -138,9 +138,12 @@ right the line's, the top the IMUs'.
   current to source, so not for the LED (table 13, note 2).
 - Each VCAP takes 2.2 µF with an ESR under 100 mΩ (table 21).
 - Ten I/Os stay free: PC13–PC15, PH1, PA1, PA3, PB8 and PB13–PB15. PA15 is JTDI after reset, an
-  alternate function with its pull-up on (RM0481 Rev 5, GPIOx_MODER reset values), which holds
-  the second chip deselected until the firmware takes the pin, as a select should be; PA2 comes
-  up analog, and its pull-down holds the TLV9001S shut down, the strip's ground layer on ground.
+  alternate function with its pull-up on (RM0481 Rev 5, GPIOx_MODER reset values), which holds the
+  second chip deselected until the firmware takes the pin, as a select should be, rising with the
+  chip's own 3.3 V, not before it (our reading of 11.1); PA2 comes up analog, and its pull-down
+  of 4.7 kΩ holds the TLV9001S shut down against the pull-up the chip has inside on SHDN
+  (SBOS833R, 8.5, its value not given; a low under 0.2 V above V−, 7.5), the strip's ground layer
+  on ground; the pull-up's current is read on a sample and the resistor lowered if it must.
 - The chips' PWDN and CLKSEL pins are not driven: they are tied through resistors of 10 kΩ or
   more, as the datasheets ask for their mode pins, PWDN high and CLKSEL low for the external
   clock.
@@ -205,17 +208,17 @@ resistor a lead and one capacitor a channel, nothing else fitted.
   corner of a moist contact down into the band, and electrodes with different contacts would
   then turn the common-mode voltage into a difference.
 - The datasheet asks for C0G in the input filter's capacitors (SBAS459K, 12.1), and the same
-  vibration argument as for VCAP1 makes the bias loop's 1.5 nF C0G too. The capacitor is across
+  vibration argument as for VCAP1 makes the bias loop's 47 nF C0G too. The capacitor is across
   the pair, not to ground, so that no mismatch of two capacitors to ground turns the common mode
   into a difference, which "causes common-mode rejection degradation" (10.1.3).
-- **Empty places** for a 10 pF C0G from every input to ground, TI's common-mode capacitors
-  against radio, "10 or 20 times smaller than the differential capacitor" (SBAS499C, 10.2.2),
-  fitted only if the arm shows a phone or the glasses in the signal; the strip's shielded leads
-  do that job first.
-- The resistor's thermal noise, 0.41 µVrms a pair over the band, lies inside the contacts' (see
-  [The noise](#the-noise)); the lead-off current alternates (see
-  [software](SOFTWARE.md#an-electrode-coming-off)), so it leaves no DC across it, the input's 1 nA
-  5 µV (SBAS459K, Electrical Characteristics, 0–70 °C).
+- **Empty places** for a 10 pF C0G from every input to ground, TI's common-mode capacitors against
+  radio, "10 or 20 times smaller than the differential capacitor" (the ADS1299's sheet, SBAS499C,
+  10.2.2), fitted only if the arm shows a phone or the glasses in the signal; the strip's shielded
+  leads do that job first.
+- The resistors' thermal noise, 0.29 µVrms a pair over the band (√(4kTRB), 9.98 kΩ, 310 K), lies
+  inside the contacts' (see [The noise](#the-noise)); no lead-off current runs while the suit is
+  active (see [software](SOFTWARE.md#an-electrode-coming-off)), so nothing but the input's 1 nA
+  lies across it, 5 µV (SBAS459K, Electrical Characteristics, 0–70 °C).
 - **Protection** rests on the right-leg drive and the resistors, with no TVS and no clamp. The
   drive is the only wire that joins the body to the suit at low impedance, so it drains static
   from the body and holds it at mid-supply; the resistors limit the current into the chips' own
@@ -228,11 +231,11 @@ resistor a lead and one capacitor a channel, nothing else fitted.
   through the inputs, 91 mA each for 32 ns, 3 nC, under a sixtieth of the HBM test: the USB is
   isolated (see [Baťa](../bata/SOFTWARE.md#output-modes)) and the charger's output must float
   (see [Babuška](../babuska/HARDWARE.md#charging)). No inductance in the model; tried on the
-  first arm with a carpet and a door handle while recording. The bias electrode has a 4.99 kΩ of
-  its own.
+  first arm with a carpet and a door handle while recording. The bias electrode has 100 kΩ of
+  its own (see [Right-leg drive](#right-leg-drive)).
 - **The same filter on every input:** 4.99 kΩ and 220 pF C0G on all thirty-two. A module of two
-  ADS1298 carries 33 resistors,
-  16 capacitors and 32 empty places on its inputs, under $0.20 of parts.
+  ADS1298 carries 32 resistors and the bias lead's 100 kΩ, 16 capacitors and 32 empty places on
+  its inputs, under $0.20 of parts.
 
 **Connectors and size.** A connector here opens only at assembly and repair: the units are potted
 whole with their connectors mated and stay on the harness (see
@@ -287,8 +290,8 @@ taken as 50 kΩ (the working figure, to be measured):
   | 6 mm | 0.56× | ~89 kΩ | 1.26 µVrms | ~1.3× | 3.9 kHz |
 
   Every one passes the band to 500 Hz, and the DC the inputs' currents leave stays negligible
-  (1 nA × 89 kΩ = 89 µV; the lead-off's 6 nA alternates, a tone of ~0.5 mV at fDR / 4 through
-  89 kΩ, which Baťa takes out).
+  (1 nA × 89 kΩ = 89 µV; the lead-off's excitation runs only in a check, never under the
+  recording).
 - **Measured on a sample, with no instrument:** the same channel on the body and with its inputs
   shorted inside the chip (MUX 001 in CHnSET, SBAS459K, 9.3.1.3.1) parts the skin's noise from
   the electronics'.
@@ -331,11 +334,12 @@ noise on paper, but we found no external clock input on it.
 
 [Mamka](../mamka/README.md) describes the clocks for both the ADS1298 and the IMUs.
 
-REF comes in on pin 9, INT2, through the IMU board's 1 kΩ (see [the IMU board](#the-imu-board)).
-The chip takes it once it is set in the ODR-triggered mode, in the order AN5763 gives: both
-sensors powered down, the samples a period, the mode, the edge, then REF started, then the rate
-(3.3; see [software](SOFTWARE.md#the-imus-settings)). INT1 stays open: a sample ready is told on
-the bus, by an in-band interrupt (DS13510, INT1_CTRL, 9.11).
+REF comes in on pin 9, INT2, through the IMU board's 1 kΩ (see [the IMU board](#the-imu-board)). The
+chip takes it once it is set in the ODR-triggered mode, in the order AN5763 gives: both sensors
+powered down, the samples a period, the mode, the edge, then REF started, then the rate (3.3; see
+[software](SOFTWARE.md#the-imus-settings)). INT1 stays open: on a module a sample ready is told on
+the bus, by an in-band interrupt (DS13510, INT1_CTRL, 9.11); the glove and the sock read theirs on
+Staršaja's schedule from REF, with none (see [the glove](#the-glove)).
 
 ### The IMU board
 
@@ -385,16 +389,16 @@ stays within the chips' input range, and it drains static from the body (SBAS459
 channels (RLD_SENSP, RLD_SENSN) and drives the body inverted, towards (AVDD + AVSS) / 2 = 2.5 V.
 
 - **A lead of its own, with nothing in it but a resistor.** Every module has a bias electrode on
-  a lead of its own: the first chip's RLDOUT, tied to its RLDIN, goes through 4.99 kΩ to it,
+  a lead of its own: the first chip's RLDOUT, tied to its RLDIN, goes through 100 kΩ to it,
   not through the chip's multiplexer and through no switch. A second ADS1298's amplifier stays
   powered down, its RLDOUT and RLDINV open (see [Sensing module](#sensing-module)).
-- **Every module can be the one, and the others are its spares.** The suit has 16 bias
-  electrodes, one on every module near its band, best over bone with little muscle under it
-  (see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-electrodes-rules)). Normally one module drives,
-  PD_RLD on; the others have the amplifier powered down with PD_RLD, as the datasheet asks of
-  all but one where there are several devices (9.3.1.7.6), and their electrodes hang on the
-  powered-down outputs. Should a bias electrode come off, Baťa moves the drive to another module,
-  by one register bit; never two drive at once (see [why](WHY.md#the-sensing-module)).
+- **Every module can be the one, and the others are its spares.** The suit has 20 bias electrodes,
+  one on every module near its band and one on each glove and sock, best over bone with little
+  muscle under it (see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-electrodes-rules)). Normally one
+  module drives, PD_RLD on; the others have the amplifier powered down with PD_RLD, as the datasheet
+  asks of all but one where there are several devices (9.3.1.7.6), and their electrodes hang on the
+  powered-down outputs. Should a bias electrode come off, Baťa moves the drive to another module, by
+  one register bit; never two drive at once (see [why](WHY.md#the-sensing-module)).
 - **A powered-down output leaves its electrode alone,** which is all the switch was there for
   (see [why](WHY.md#the-sensing-module)): the datasheet's own bias lead-off check works with the
   amplifier powered down, a current source or a pull-up on the RLD pin pulling the electrode's
@@ -403,43 +407,62 @@ channels (RLD_SENSP, RLD_SENSN) and drives the body inverted, towards (AVDD + AV
   confirms it with that very check, RLD_STAT through a 50 kΩ resistor.
 - **All channels measure** on every module, the driving one too, so every input of every chip is
   an electrode: 496 in a suit of 16 modules.
-- **The loop:** 1 MΩ ∥ 1.5 nF between RLDINV and RLDOUT, the datasheet's values (figure 43,
-  "typical values"), 0603 parts changed with a soldering iron. Each selected input reaches
-  RLDINV through 220 kΩ (figure 43), so the common-mode gain is Rf · N / 220 kΩ, our reading:
-  with the driving chip's sixteen inputs summed (RLD_SENSP = RLD_SENSN = 0xFF), ~73; the
-  capacitor puts the pole at 1 / (2π · 1 MΩ · 1.5 nF) ≈ 106 Hz, so the mains meets nearly the
-  whole gain. The body node has a pole of its own through the bias electrode's ~55 kΩ: with the
-  strips' ground layers driven at the common mode, the default, the strips and their leads drop
-  out of it and the chips' own 20 pF an input stay (SBAS459K, Electrical Characteristics), ~11
-  nF for the suit's 560, ~260 Hz; with the layers on ground every input's lead joins them, 560 ×
-  (20 + ~86) pF ≈ 59 nF before the strips' own capacitance to the skin, the pole under ~50 Hz,
-  beside the loop's (computed, the leads an estimate; see
-  [The strip's ground layer](#the-strips-ground-layer)). Tuned on a sample, module by module;
-  TI's forum warns the amplifier off large capacitive loads (E2E, *bias shield drive*, as the
+- **The loop:** 1 MΩ ∥ 47 nF between RLDINV and RLDOUT, the resistor the datasheet's (figure 43,
+  "typical values"), the capacitor ours, C0G, changed with a soldering iron. Each selected input
+  reaches RLDINV through 220 kΩ (figure 43; the electrical table says "internal 200-kΩ", the
+  figure's value taken), so the common-mode gain is Rf · N / 220 kΩ, our reading: with the driving
+  chip's sixteen inputs summed (RLD_SENSP = RLD_SENSN = 0xFF), ~73 at DC; the capacitor puts the
+  pole at 1 / (2π · 1 MΩ · 47 nF) ≈ 3.4 Hz, so the loop holds the body at mid-supply with a gain of
+  only ~5 at 50 Hz. The body node has a pole of its own through the lead's 100 kΩ and the bias
+  electrode's contact: with the strips' ground layers driven at the common mode, the default, the
+  strips and their leads drop out of it and the chips' own 20 pF an input stay (SBAS459K, Electrical
+  Characteristics), ~11 nF for the suit's 560, ~140 Hz at a 2 kΩ contact (a lead read on a sweaty
+  hand, 5 Nov 2026, the way not recorded; 50 kΩ stays the working figure for the inputs until
+  measured) and ~95 Hz at the datasheet's 51 kΩ; with the layers on ground every input's lead joins
+  them, 560 × (20 + ~86) pF ≈ 59 nF before the strips' own capacitance to the skin, the pole at
+  ~20–25 Hz. The two poles set the phase margin: ~35–40° with the layers driven, ~20° on ground, on
+  the same model with 4.99 kΩ and the datasheet's 1.5 nF, as before, ~15° in every case but the
+  moist one's 30°, the loop's pole at 106 Hz then meeting the body's (computed, the leads an
+  estimate; see [The strip's ground layer](#the-strips-ground-layer)). The capacitor is tuned on a
+  sample, module by module, between 22 nF (a gain of ~10 at 50 Hz, less margin) and 100 nF (~2,
+  more); TI's forum warns the amplifier off large capacitive loads (E2E, *bias shield drive*, as the
   search summarised it).
-- **The 4.99 kΩ** is not for the drive's sake: the drive's currents are nanoamps to microamps,
-  which make microvolts across it, nothing against a contact of tens of kilohms. It parts the
-  amplifier's output from the capacitance of the lead and the body, against which an op-amp
-  tends to ring, and it takes static. The amplifier itself gives 490 µA into a short to ground
-  and 810 µA into one to the supply at a 5 V AVDD, and has 100 kHz of gain-bandwidth (SBAS459K,
-  Electrical Characteristics, the RLD amplifier). The datasheet leaves the loop's stability to
-  the system (9.3.1.7.6).
-- **Faults:** from outside the suit hardly any, see below. Inside, two drivers against each other
-  with one at its rail drive ~2.5 V through two contacts and 2 × 4.99 kΩ, tens of microamps; with
-  one driver no direct current flows, the inputs having 1 GΩ. Two drivers are a firmware fault, and
-  three things catch it: every module's PD_RLD read back with CONFIG3 once in 32 cycles, so Baťa
-  sees two set (see [Porjadok](../porjadok/SOFTWARE.md#the-diagnostics)); the driving module's
-  RLDOUT, tied to its RLDIN, measured into one channel (RLD_MEAS and MUX 010, SBAS459K 9.3.1.7.2,
-  figure 34) at the start and every 30 minutes, no oftener, since the channel leaves its electrode
-  and its filter settles meanwhile; and every channel's offset jumping at once. Baťa then turns the
-  drive off and Storož halts the suit with its reason (see [Baťa](../bata/SOFTWARE.md#storož)). The
-  series resistor stays 4.99 kΩ, never above 10 kΩ, the loop wanting it low: even the pack's 14.6 V
-  straight on an electrode through 10 kΩ gives ~1.46 mA.
+- **The 100 kΩ** is there for a fault's sake, the datasheet's own "patient protection resistor"
+  of figure 42; the drive's currents are nanoamps to a microamp (the inputs' bias currents, ±1
+  nA each at most, 560 of them), tens of millivolts across it at the worst, nothing against the
+  chips' common-mode range. The lead-off check excites every P and N input together, so its
+  currents cancel in the body and none returns through this lead; the P inputs alone would send
+  ~70 µA through it, ~7 V (see [software](SOFTWARE.md#an-electrode-coming-off)). It also parts
+  the amplifier's output from the capacitance of the lead and the body, against which an op-amp
+  tends to ring, and it takes static. The amplifier itself
+  gives 490 µA into a short to ground and 810 µA into one to the supply at a 5 V AVDD, and has
+  100 kHz of gain-bandwidth (SBAS459K, Electrical Characteristics, the RLD amplifier), its own
+  pole far above the loop's crossover. The datasheet leaves the loop's stability to the system
+  (9.3.1.7.6).
+- **Faults:** from outside the suit hardly any, see below. Inside, with one driver no direct
+  current flows whatever its amplifier does: an output stuck at a rail takes the body to that
+  rail, the inputs have 1 GΩ and their protection diodes open only ~0.6 V beyond the supply
+  (the inputs then past their absolute maximum of AVDD + 0.3 V, SBAS459K 7.1, at microamps).
+  Two drivers against each other do: their mid-supplies differ by the LDOs' tolerance, ~50 mV,
+  which the gain of ~73 turns into outputs stuck at opposite rails, 5 V across two leads and two
+  contacts, ~25 µA, under the 50 µA of direct current that IEC 60601-1 allows between two
+  patient connections under a single fault (10 µA normally; the standard's table as Wall
+  Industries' guide gives it, the standard itself not read); through 4.99 kΩ it would have been
+  ~0.36 mA. The cable's 6 V shorted onto the lead returns through the inputs' diodes with only
+  the ~0.4 V over the supply, a few microamps; nothing above 6 V reaches the suit, the pack's
+  14.6 V staying in the backpack. Two drivers are a firmware fault, and three things catch it:
+  every module's PD_RLD read back with CONFIG3 once in 32 cycles, so Baťa sees two set (see
+  [Porjadok](../porjadok/SOFTWARE.md#the-diagnostics)); the driving module's RLDOUT, tied to its
+  RLDIN, measured into one channel (RLD_MEAS and MUX 010, SBAS459K 9.3.1.7.2, figure 34) at the
+  start and every 30 minutes, no oftener, since the channel leaves its electrode and its filter
+  settles meanwhile; and every channel's offset jumping at once. Baťa then turns the drive off
+  and Storož halts the suit with its reason (see [Baťa](../bata/SOFTWARE.md#storož)).
 - **Checks at start:** the bias lead-off check (SBAS459K, 9.3.1.7.5, figure 42). With the
   amplifier off (PD_RLD = 0) and RLD_LOFF_SENS = 1, a current source and a comparator on the
   RLD pin tell whether the electrode is connected: RLD_STAT 0 connected, 1 not. TI's figure
   draws the contact as 51 kΩ ∥ 47 nF and a protection resistor of 100 kΩ (our reading of it);
-  our path is 4.99 kΩ, so the check works through the lead of its own as the datasheet draws it.
+  our path is the same 100 kΩ, so the check works through the lead of its own as the datasheet
+  draws it.
   Every module checks its own electrode before any drives, so every spare bias electrode is
   checked too, not only the one that will drive.
 - **While it runs:** with the amplifier on the current source does nothing, but the comparator
@@ -448,8 +471,8 @@ channels (RLD_SENSP, RLD_SENSN) and drives the body inverted, towards (AVDD + AV
   the driving module's RLD_STAT says so before the whole suit's channels saturate; the computer
   then moves the bias to another module.
 - **The suit and the outside world:** a computer joins the suit only through an isolator or
-  over the air (see [Baťa](../bata/SOFTWARE.md#output-modes)). The suit may be worn while it
-  charges, the charger's output floating (see [Babuška](../babuska/HARDWARE.md#charging)).
+  over the air (see [Baťa](../bata/SOFTWARE.md#output-modes)). The suit is not worn while it
+  charges: a bought charger is not an isolator (see [Babuška](../babuska/HARDWARE.md#charging)).
 
 **Differential everywhere** (the owner, 3 Nov 2026): each channel measures INnP − INnN, 8
 channels of 16 electrodes a chip, on the head and the neck as on the body; no unit carries a
@@ -473,9 +496,9 @@ be measured on the sample.
 
 | level | what it cures | what it leaves | what it costs |
 |---|---|---|---|
-| **(a)** the layers on ground, no parts | the room's fields, and the fabric's static and friction on both faces; the body's common mode turned into a difference by the unequal contacts, the potential divider (Metting van Rijn, Peper & Grimbergen 1990, eqn 3), ~14 µV pp at 10 mV pp of common mode before thin leads and the pairs side by side win part of it back | a bend of the lead moving charge off its 2.5 V against the layers, ~1 µV at 1 % of its capacitance in 100 ms; what the strip generates by itself | the strips' capacitance to the skin and the leads' in the bias loop, its pole under ~50 Hz (see [Right-leg drive](#right-leg-drive)) |
+| **(a)** the layers on ground, no parts | the room's fields, and the fabric's static and friction on both faces; the body's common mode turned into a difference by the unequal contacts, the potential divider (Metting van Rijn, Peper & Grimbergen 1990, eqn 3), ~14 µV pp at 10 mV pp of common mode before thin leads and the pairs side by side win part of it back | a bend of the lead moving charge off its 2.5 V against the layers, ~1 µV at 1 % of its capacitance in 100 ms; what the strip generates by itself | the strips' capacitance to the skin and the leads' in the bias loop, its pole at ~20–25 Hz and the margin ~20° (see [Right-leg drive](#right-leg-drive)) |
 | **(b)** the layers driven at the common mode, the default: a TLV9001S on the first chip's RLDINV, gain 0.99 | what friction and static make outside lands on the layers, nanoamps through the driver's ~3 kΩ, microvolts, alike on P and N; the divider ~3 µV pp; the bend twenty-five times down, only the electrode's ~0.1 V of offset left on the lead; the strips out of the bias loop | what the strip generates | one op-amp, two resistors and a pin; the loop's stability by the 1990 rules |
-| **(c)** a follower at every stud, its output on the lead | the divider to ~0.3 µV; the bend; what the strip generates, the current flowing into the follower's output | the skin under the electrode, which nothing on the strip cures | 32 op-amps a module of the body on the strip, potted with it; 1.9 mA (TLV9001) or 17 mA (TLV9061) a module; the noise 1.25 → 2.0 or 1.7 µVrms; **the lead-off currents end at the follower: the chips' impedance check is lost** |
+| **(c)** a follower at every stud, its output on the lead | the divider to ~0.3 µV; the bend; what the strip generates, the current flowing into the follower's output | the skin under the electrode, which nothing on the strip cures | 32 op-amps a module of the body on the strip, potted with it; 1.9 mA (TLV9001) or 17 mA (TLV9061) a module; the noise 1.25 → ~1.6 (TLV9001) or ~1.35 µVrms (TLV9061), two followers' 30 or 16 nV/√Hz over 10–500 Hz added in quadrature; **the lead-off currents end at the follower: the chips' impedance check is lost** |
 
 - **Won back on the strip:** the divider grows with the difference between a pair's two leads,
   so the leads are thin, 3 mil (JLCPCB's 3/3 mil on 12 µm copper), and P and N run side by side
@@ -503,14 +526,20 @@ be measured on the sample.
   the electrode's and the lead's, 2 × 50 kΩ × 86 pF ≈ 9 µs, a low-pass at ~18 kHz; the layers'
   capacitance is measured on the sample and the resistor chosen for it. A driver cut off above
   ~1 MHz leaves the bias loop's stability alone, one at 10–100 kHz adds phase to it, so the two
-  are tried side by side. SHDN on PA2 with its own pull-down, the layers on ground from reset
+  are tried side by side. SHDN on PA2 with its own pull-down of 4.7 kΩ against the chip's
+  internal pull-up (SBOS833R, 8.5), the layers on ground from reset
   until the firmware drives them: register 0x03 of chip 0x00, 1 by default, set by Baťa in the
   service mode, so the two levels are compared on the arm by a register (see
   [software](SOFTWARE.md#the-ads129xs-settings)).
 - **The followers** live on the strip alone: the first strip is drawn with a follower's place at
   every stud, bridged by a 0 Ω part, likely never fitted, and a +5 V trace from the connector's
-  +5 V way, fed through 10 Ω from the module's analog rail; a strip with the followers fitted is
-  the next version of a part that is made by versions anyway. TLV9061 (X2SON 0.8 × 0.8 mm,
+  +5 V way, fed through 10 Ω from the module's analog rail, **the trace laid only on a strip that
+  carries followers** and the way left unconnected on the passive strip: 5 V behind 10 Ω along a
+  wet strip at the skin would pass over the 50 µA of a single fault through a leak of under ~100
+  kΩ to a stud, so the passive strip has none, and on a follower strip the coverlay is the
+  barrier and the wet strip's leakage from the trace to a stud is measured before it meets a
+  wearer; a strip with the followers fitted is the next version of a part that is made by
+  versions anyway. TLV9061 (X2SON 0.8 × 0.8 mm,
   0.5 pA, 16 nV/√Hz, 538 µA, its sheet) or TLV9001 (the same package, 5 pA, 30 nV/√Hz, 60 µA,
   SBOS833R), both to 5.5 V, the body at 2.5 V with ±0.3 V of offset inside a rail-to-rail
   output; the module sees no difference but the lead-off check gone. The +5 V trace runs on the
@@ -520,7 +549,7 @@ be measured on the sample.
   strip's studs to one point, the strip bent, tapped and rubbed with the suit's fabric while
   recording, the driver on and off, which gives the strip's own artifact in microvolts with the
   skin out of it; then on the arm, still, moving, beside a mains cable, with the charger plugged
-  in, fleece over the band, the band's pressure, the impedance by AC lead-off, the driver on
+  in, fleece over the band, the band's pressure, the contact by the lead-off check, the driver on
   against off, 20 Hz against 10 Hz in software, one module's bias loop with the strips on and then
   three; last a strip with followers against the passive one on the same arm. **The rule:** the
   passive strip stays if its own artifact lies under the electronics' ~1.25 µVrms and on the arm
@@ -548,38 +577,37 @@ under [software](SOFTWARE.md#the-glove); where its electrodes and its IMUs sit o
 [Bogatyr](../bogatyr/CONSTRUCTION.md#the-gloves); its strips and its two layers, under
 [construction](CONSTRUCTION.md#the-glove).
 
-- **One board, two sides.** On one side the ADS1298 with its inputs, as a module's first chip
-  (see [Sensing module](#sensing-module)): the hand's **16 electrodes on 8 channels,** the bias
-  electrode from its RLDOUT through 4.99 kΩ, the strip's ground layers and their TLV9001S on
-  RLDINV (see [The strip's ground layer](#the-strips-ground-layer)), 4.99 kΩ a lead and 220 pF a
-  channel, and the hand's strip, 20 ways: the sixteen electrodes, the bias, the ground and the
-  +5 V, one spare, in a lever connector on the first glove and soldered in a series (see
-  [Sensing module](#sensing-module)). On the other side Staršaja, the line's drivers and their
-  Picoflex header, the IMUs' three switches and three buffers, the two LDOs and the five finger
-  strips' joints. The board sits over the bases of the second and third metacarpals, which hardly
-  move against the wrist (see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-gloves)); its size is seen
-  when it is drawn.
-- **Its Staršaja,** the elder, is the module's own part, the **STM32H523CCU6 in UFQFPN48,** so that
-  one processor serves the module and the glove, and she reads every IMU of the hand herself. Her 35
-  I/Os (DS14540 Rev 3, table 2) go round one way: the line keeps a module's one sender and two
-  receivers, the master on USART1's RX and the echo on the LPUART's, which receives at the line's
-  rate; her TIM2 makes the ADS1298's CLK and START and TIM5 counts the ticks; six plain GPIOs set
-  the switches; 29 I/Os in all, below. Beside her the line's drivers, a THVD1452 for the return pair
-  and the quad receiver AM26LV32E for the pair from the master, the echo and the clock (see
-  [Porjadok](../porjadok/HARDWARE.md#drivers-on-a-unit)), and her LDOs, a TPS7A2033 and an
-  LP2985-5.0 as on a module (see [power](#power)).
+- **One board, two sides.** On one side the ADS1298 with its inputs, as a module's first chip (see
+  [Sensing module](#sensing-module)): the hand's **16 electrodes on 8 channels,** the bias electrode
+  from its RLDOUT through 100 kΩ, the strip's ground layers and their TLV9001S on RLDINV (see [The
+  strip's ground layer](#the-strips-ground-layer)), 4.99 kΩ a lead and 220 pF a channel, and the
+  hand's strip, 20 ways: the sixteen electrodes, the bias, the ground and the +5 V, one spare, in a
+  lever connector on the first glove and soldered in a series (see [Sensing
+  module](#sensing-module)). On the other side Staršaja, the line's drivers and their Picoflex
+  header, the Bratiški, the IMUs' three switches and six gates with their pull-ups, the two LDOs and
+  the six zones' joints. The board sits over the bases of the second and third metacarpals, which
+  hardly move against the wrist (see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-gloves)); its size is
+  seen when it is drawn.
+- **Its Staršaja,** the elder, is the module's own part, the **STM32H523CCU6 in UFQFPN48,** so
+  that one processor serves the module and the glove, and she reads every IMU of the hand herself.
+  Her 35 I/Os (DS14540 Rev 3, table 2) go round one way: the line keeps a module's one sender and
+  two receivers, the master on USART1's RX and the echo on the LPUART's, which receives at the
+  line's rate; her TIM2 makes the ADS1298's CLK and START and TIM5 counts the ticks; six plain GPIOs
+  set the switches; 29 I/Os in all, below. Beside her the line's drivers, a module's three, two
+  THVD1452 and a THVD1450 (see [Porjadok](../porjadok/HARDWARE.md#drivers-on-a-unit)), and her LDOs,
+  a TPS7A2033 and an LP2985-5.0 as on a module (see [power](#power)).
 - **Her two I3Cs read every IMU of the hand,** I3C1 on PB6 and PB7, I3C2 on PB5 and PB4, as a
   module's, two IMUs on a path, 0x6A and 0x6B by SDO/SA0: each I3C's SDA is switched among **six
   branches** of two by **three TI TS3USB3031** side by side (SCDS348D; JLCPCB C2652459), never one
-  behind another. Each chip has a lane on I3C1's SDA and one on I3C2's, one SEL0 and SEL1 for
-  both, so the two buses move together. Its USB1 channel, SEL 00, where its internal 6 MΩ
-  pull-downs hold it from power-up (SCDS348D, 6.4), is left unconnected as its **park**; the
-  branches are on USB2 (01) and MHL (10). A chip not in use sits on its park, so every change is
-  a change of channel, 400 ns at most; the high-Z state (SEL 11), up to 100 µs back on (table
-  5.6), is never used. **24 places in six zones of four,** a zone a chip's lane on one I3C, its
-  two branches and an SCL of its own: a finger a zone, the thumb with the board's own, and the
-  sixth the carpal bones. Staršaja makes the IMUs' REF from the suit clock for the whole board, on
-  PA8 (TIM1_CH1), so they sample in step with the suit.
+  behind another. Each chip has a lane on I3C1's SDA and one on I3C2's, one SEL0 and SEL1 for both,
+  so the two buses move together. Its USB1 channel, SEL 00, where its internal 6 MΩ pull-downs hold
+  it from power-up (SCDS348D, the SEL pull-downs in its application section), is left unconnected as
+  its **park**; the branches are on USB2 (01) and MHL (10). A chip not in use sits on its park, so
+  every change is a change of channel, 400 ns at most; the high-Z state (SEL 11), up to 100 µs back
+  on (table 5.6), is never used. **24 places in six zones of four,** a zone a chip's lane on one
+  I3C, its two branches and an SCL of its own: a finger a zone, the thumb with the board's own, and
+  the sixth the carpal bones. Staršaja makes the IMUs' REF from the suit clock for the whole board,
+  on PA8 (TIM1_CH1), so they sample in step with the suit.
 - **SCL** goes to each zone through a plain gate of its own, always on, six SN74LVC1G34 in SOT-5
   (DRL, 1.6 × 1.6 mm; JLCPCB C2872902; ±24 mA at 3 V, tpd 4.7 ns at most into 50 pF, SCES519O, 5.3
   and 5.8), each beside its zone's connector, three on each I3C's SCL: a zone's SCL, four IMUs' pins
@@ -605,9 +633,10 @@ under [software](SOFTWARE.md#the-glove); where its electrodes and its IMUs sit o
   take ~70 mm² of the board with their courtyards, routing not counted, and ~2.6 mA on 3.3 V, ~2.5
   of it SCL's switching (estimates).
 - **24 IMUs in six zones:** each finger and the thumb a zone of two branches, A and B: a finger's A
-  its proximal and middle phalanges, its B the distal and a place to spare, four spares for the
-  palm's arch, the fourth and fifth metacarpals' heads, and a second on the thumb's metacarpal,
-  because its skin slides; the thumb's A its metacarpal and proximal phalanx, its B the distal and
+  its proximal and middle phalanges, its B the distal and a place to spare, four spares: the
+  third, fourth and fifth metacarpals' heads, where the palm's arch bends, on the middle, ring and
+  little fingers' B, and a second on the thumb's metacarpal, because its skin slides, on the index
+  finger's B; the thumb's A its metacarpal and proximal phalanx, its B the distal and
   the board's own, on the back of the hand; the sixth zone four over the carpal bones. Which are
   fitted, all 24, 12 or 8, the recordings decide, the unit's table telling Baťa (see
   [Bogatyr](../bogatyr/CONSTRUCTION.md#the-gloves)):
@@ -642,7 +671,7 @@ DS14540's tables 14 and 15 when she is drawn:
 | pin | name | use | AF |
 |---|---|---|---|
 | 1 | VBAT | to VDD | |
-| 2 | PC13 | the strip's ground layer's driver, TLV9001S SHDN, with a pull-down | GPIO |
+| 2 | PC13 | free | |
 | 3, 4 | PC14, PC15 | free | |
 | 5 | PH0-OSC_IN | the suit clock, 9.8304 MHz, into the HSE in bypass | |
 | 6 | PH1-OSC_OUT | free | |
@@ -651,7 +680,7 @@ DS14540's tables 14 and 15 when she is drawn:
 | 10 | PA0 | free | |
 | 11 | PA1 | ADS1298 CLK: TIM2_CH2 | AF1 |
 | 12 | PA2 | free | |
-| 13 | PA3 | free | |
+| 13 | PA3 | the strip's ground layer's driver, TLV9001S SHDN, with a pull-down of 4.7 kΩ, as the module's PA2 | GPIO |
 | 14 | PA4 | the ADS1298's CS: SPI1_NSS | AF5 |
 | 15 | PA5 | ADS1298 SCLK: SPI1_SCK | AF5 |
 | 16 | PA6 | ADS1298 DOUT: SPI1_MISO | AF5 |
@@ -691,13 +720,14 @@ DS14540's tables 14 and 15 when she is drawn:
   line's 19.66 MBd: ten kernel clocks a bit, of the 3 to 4,096 allowed (RM0481 Rev 5, 57.4.8), BRR
   2,560, and a tolerance of 3.90 % (table 640) for what is her own signal, and she listens before
   she talks on the echo's receiver as a module does. SWD and SWO stay. Twelve I/Os are free, PA0,
-  PA2, PA3, PA11, PB1, PB8, PB10, PB12, PB13, PC14, PC15 and PH1: six take the three switches'
+  PA2, PA11, PB1, PB8, PB10, PB12, PB13, PC13, PC14, PC15 and PH1: six take the three switches'
   SEL0 and SEL1, chosen when the board is drawn, and six stay free.
 - **PA15 as START** is JTDI after reset, pulled up (RM0481 Rev 5, GPIOx_MODER reset values), so
   START carries a pull-down of 10 kΩ, which holds it low from power-up to *start*, as the chip
-  wants it, until the firmware drives it; PC13 as SHDN sources nothing but its pull-down's few
-  microamps, which a pin of the backup domain allows (DS14540, table 13, note 2), and comes up
-  with the TLV9001S shut down, the strip's ground layer on ground.
+  wants it, until the firmware drives it; SHDN sits on PA3, not on a pin of the backup domain,
+  since its 4.7 kΩ pull-down must sink the TLV9001S's internal pull-up and PC13–PC15 may source
+  or sink little (DS14540, table 13, note 2), and comes up with the TLV9001S shut down, the
+  strip's ground layer on ground.
 - **LPUART1** takes PLL3 Q as the USARTs, 196.608 MHz (LPUART1SEL = 010, RCC_CCIPR3, 11.8.42), up
   to 200 MHz in VOS1 as theirs (DS14540 Rev 3, table 20), receive only, its FIFO of 8 B and its
   DMA the USARTs' (DS14540, table 9). **TIM2 and TIM5:** TIM2 makes the ADS1298's CLK on its CH2
@@ -714,8 +744,7 @@ side:
 | the ADS1298, digital side | 0.5 mA | SBAS459K, Power Supply |
 | the IMUs' switches and gates: three TS3USB3031, six SN74LVC1G34, SCL's switching | ~2.6 mA, an estimate | SCDS348D; SCES519O; our calculation |
 | 24 LSM6DSV16X | 24 × 0.65 mA, both sensors on in the high-performance mode, 15.6 mA | DS13510 Rev 4, table 4 |
-| the THVD1452 | ~2 mA | TI |
-| the AM26LV32E | 8 mA typical, 17 mA at most | SLLS849E |
+| the line's drivers, two THVD1452 and a THVD1450, their receivers on | ~3 × 2.4–3 mA, ~8 mA | SLLSEY3E, ICC |
 | status LED | ~2 mA | estimate |
 | the driver while it sends | ~37 mA, ~8 % of the time | estimate |
 | **the glove, 4 V** | **~0.087 A on average, ~0.16 A at worst** | |
@@ -759,13 +788,14 @@ A sensing module takes the suit's two rails, 4 V and 6 V (see
   at the worst corner (see [Porjadok](../porjadok/HARDWARE.md#end-to-end)).
 - **At the inputs,** where the cable arrives, an RC each, no polymer: a **22 µF 25 V X5R 1206**
   (Samsung CL31A226KAHNNNE, JLCPCB C12891, Basic) behind **0.5 Ω**, two 1 Ω 0603 side by side,
-  beside the 10 µF. It damps the cable: a module plugged into a live line peaks at ≤ 4.52 V on
-  4 V, under the TPS7A2033's 6.5 V (SBVS338H, 5.1), and at ≤ 6.94 V on 6 V, under the LP2985's
-  16 V (SLVS522S), computed for a line of 0.2–1.0 µH and 0.08–0.35 Ω (the 3M 3811 ~0.44 µH/m,
-  an estimate). An input holds ~26 µF, which each line's converter charges at start (see
-  [Mamka](../mamka/HARDWARE.md#converters)); the driver's ~37 mA for 20 µs takes ~28 mV from it.
-  The 6 V branch draws a steady ~8 mA, so its RC stores nothing worth speaking of: it damps the
-  cable and the π filter behind it. The glove and the sock take the same RC at their inputs.
+  beside the 10 µF. It damps the cable: a module plugged into a live line peaks at ≤ 4.52 V on 4 V,
+  under the TPS7A2033's 6.5 V (SBVS338H, 5.1), and at ≤ 6.94 V on 6 V, under the LP2985's 16 V
+  (SLVS522S), computed for a line of 0.2–1.0 µH and 0.08–0.35 Ω (the 3M 3811 ~0.44 µH/m, an
+  estimate). An input holds ~26 µF, which each line's converter charges at start (see
+  [Mamka](../mamka/HARDWARE.md#converters)); the driver's ~37 mA for ~30 µs, a frame of 58 B, takes
+  ~42 mV from it. The 6 V branch draws a steady ~7 mA, so its RC stores nothing worth speaking of:
+  it damps the cable and the π filter behind it. The glove and the sock take the same RC at their
+  inputs.
 
 **Budget of one module**
 
@@ -806,7 +836,7 @@ The LDOs only do the coarse separation; the filters do the rest:
 - **The processor branch** has the bead in series with its choke. The choke sits on the LDO
   side, the bead next to the processor. The processor is the main source of high-frequency
   noise. Above its self-resonance a choke stops filtering, while a bead is resistive from
-  about 100 MHz up and burns the noise off instead of storing it; at the converters' 2 MHz a
+  about 100 MHz up and burns the noise off instead of storing it; at the converters' 1 MHz a
   bead is a few ohms and filters nothing, which is why it only ever stands behind a choke.
   Against a small ceramic capacitor (~0.3 Ω at 100 MHz, an estimate) 300 Ω gives roughly
   60 dB. The bead also keeps that noise off the 3.3 V that feeds the ADS1298 and the RS-485.
@@ -830,7 +860,7 @@ section 11, Power Supply Recommendations):
 - Where a board is subject to vibration, the VCAP1 capacitor should be non-ferroelectric
   (tantalum, or C0G/NP0): X7R and X5R are piezoelectric and turn vibration into noise. A suit
   moves, so this applies here. The datasheet also asks for C0G in the input filter's
-  capacitors (section 12.1); the bias loop's 1.5 nF follows the same reasoning.
+  capacitors (section 12.1); the bias loop's 47 nF follows the same reasoning.
 - Power-up (11.1, table 38): all digital and analog inputs stay low until the supplies have
   settled. Only then does CLK start; after tPOR (2¹⁸ CLK periods, 133 ms at 1.96608 MHz, counted
   only once CLK is present) and with VCAP1 above 1.1 V the ADS gets a reset. The module starts
@@ -857,8 +887,10 @@ section 11, Power Supply Recommendations):
   shorted inside the chip (MUX 001) against SBAS459K's table 3 on the first module (see
   [why](WHY.md#the-sensing-module)),
 - the right-leg drive: the loop's stability and the summed channels, tuned on a sample, with the
-  strips' ground layers driven and on ground; the common-mode gain of ~73, our reading of figure
-  43; one driving module for the whole body, checked as the modules are added,
+  strips' ground layers driven and on ground, the capacitor between 22 and 100 nF, the lead's
+  100 kΩ fixed by the fault current; the common-mode gain of ~73, our reading of figure 43; the
+  body's common mode at 50 Hz measured, against the ~10 mV pp the levels are reckoned on; one
+  driving module for the whole body, checked as the modules are added,
 - the bias check's comparator threshold and current (LOFF), set on a sample,
 - a powered-down bias amplifier's output with an electrode on it, which the datasheet does not
   state: confirmed on the first module by the bias lead-off check through 50 kΩ, the switch

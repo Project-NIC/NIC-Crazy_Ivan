@@ -2,7 +2,7 @@
 
 # Status
 
-**Beta 0.6, 31 Oct 2026, updated 4 Nov 2026:** every module on the ADS1298, the IMU the
+**Beta 0.6, 31 Oct 2026, updated 5 Nov 2026:** every module on the ADS1298, the IMU the
 LSM6DSV16X held to the suit's clock by a reference, the strips polyimide shielded on both faces,
 the units potted on the harness with connectors for assembly only, Mamka's converters at 1 MHz,
 Mrazík the cooling block, two bias drivers caught by software; the electrodes' places on the
@@ -56,8 +56,8 @@ part has been bought. What is here is of four kinds, and each page says which:
   fins; its closure comes with the schematics ([Babuška](babuska/CONSTRUCTION.md#mrazík)),
 - **two bias drivers at once caught by software:** every module's PD_RLD read back in its
   diagnostics, the driving module's drive measured into a channel at the start and every 30 minutes,
-  every channel's offset watched; then the drive off and the suit halted; the series resistor 4.99
-  kΩ, never above 10 kΩ ([Rubaška](rubaska/HARDWARE.md#right-leg-drive)),
+  every channel's offset watched; then the drive off and the suit halted; 100 kΩ on the bias
+  lead, so that two drivers pass ~25 µA ([Rubaška](rubaska/HARDWARE.md#right-leg-drive)),
 - **Borovičok's fan** a two-wire 5 V fan on the ROCK 5T's own 1.25 mm connector, read from its
   schematic ([Baťa](bata/HARDWARE.md#borovičok)),
 - **the bench's order** for the strip and the contact: resistors alone, matched then mismatched,
@@ -75,11 +75,10 @@ part has been bought. What is here is of four kinds, and each page says which:
 - **the inputs:** one 4.99 kΩ a lead, one 220 pF C0G a channel, empty places for 10 pF, no TVS, a
   discharge computed ([Rubaška](rubaska/HARDWARE.md#sensing-module)),
 - **the glove, Vešč, one board on the back of the hand:** the hand's ADS1298, 16 electrodes on 8
-  channels, Staršaja alone with 20 of 24 IMU places, two IMUs a branch, each I3C's SDA switched
-  among its branches, the finger strips passive;
-  **the sock, Nosok,** the same board for the foot on the calf above the ankle, up to eight IMUs:
-  108 IMUs on a suit with two gloves and two socks, 44 of them on the modules
-  ([Rubaška](rubaska/HARDWARE.md#the-glove)),
+  channels, Staršaja alone with 24 IMUs in six zones, two IMUs a branch, each I3C's SDA switched
+  among its branches, the finger strips passive; **the sock, Nosok,** the same board for the foot on
+  the calf above the ankle, eight IMUs of 24 places to start: 108 IMUs on a suit with two gloves and
+  two socks, 44 of them on the modules ([Rubaška](rubaska/HARDWARE.md#the-glove)),
 - the purpose and the requirements written down: first a controller, second rehabilitation,
   the assistants beside them, how we know it works, and what it must do in ranges
   ([README](README.md#what-it-is-for)),
@@ -108,7 +107,9 @@ part has been bought. What is here is of four kinds, and each page says which:
   ([updating](porjadok/SOFTWARE.md#updating-firmware)),
 - three SPIs to Baťa: processor 1's at 37.5 MHz, processor 2's two at 11.1 MHz behind the ROCK's
   translators, the frames as they came in places by the unit's kind, 58 or 34 B; four wires between
-  the processors, her own registers, the BMS a chip of processor 2 ([Mamka](mamka/SOFTWARE.md)),
+  the processors, her own registers, the BMS a chip of processor 2 ([Mamka](mamka/SOFTWARE.md));
+  every line's converter on an EN and a PGOOD of its own, every EN through an RC that rides through
+  her reset ([Mamka](mamka/HARDWARE.md#budilnik)),
 - **Bogatyr,** the layout on the body: 280 channels on twenty units, every channel differential;
   the rules any layout keeps (near the heart short, across the spine only diagonally, nothing in
   the hair, nothing where the body is pressed); **the electrodes' places not laid out,** asked of

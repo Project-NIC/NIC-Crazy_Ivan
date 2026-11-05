@@ -32,11 +32,13 @@ already.
 
 1. **The request:** "find it", heard by Taťána's recognition, or a gesture of the gloves.
 2. **The marking:** the text in one still found and read (OCR) by PaddleOCR's **PP-OCRv5
-   mobile**, its detection and its recognition (the recognition ~16 MB, PaddleOCR's
-   documentation), on Baťa's processor: one picture at a request needs no NPU. For small
-   markings Pomoščnik takes the still at the camera's full resolution instead of the 640 × 480
-   stream. Should it be slow, the detection, all convolutions, goes to the RK3588's NPU through
-   Teflon.
+   mobile**, its detection and its recognition (the recognition ~16 MB, PaddleOCR's documentation),
+   on Baťa's processor: one picture at a request needs no NPU. For small markings Pomoščnik takes a
+   still at the camera's full resolution instead of the 640 × 480 stream, which the IC-U2BP4 gives
+   only as MJPEG (YUY2 at 1080p runs at 5 fps): a switch of the UVC format, the stream stopping for
+   it, and one JPEG decode, the one decode he does; a marking at arm's length is 2–4 pixels tall
+   even so, so the part is held close or a macro clip goes on the camera. Should it be slow, the
+   detection, all convolutions, goes to the RK3588's NPU through Teflon.
 3. **The search:** the number looked up on the internet, through a connection the backpack does
    not have of its own: a phone's hotspot, over USB or Wi-Fi.
 4. **The answer:** in the glasses, or read aloud.

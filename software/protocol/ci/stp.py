@@ -1,4 +1,4 @@
-"""CI-STP: the suit's four frames, their kinds and layouts, the units' registers, the places on the
+"""CI-STP: the suit's five frames, their kinds and layouts, the units' registers, the places on the
 SPIs to Baťa and the firmware's blocks (porjadok/SOFTWARE.md).
 
 Byte orders, as the pages give them:
@@ -116,7 +116,7 @@ def u16(v: int) -> bytes:
 
 def widen(near: int, low: int) -> int:
     """The full cycle count nearest `near` whose low 16 bits are `low`: the frames' numbers
-    wrap after 17 s, and Mamka and Baťa keep the whole count."""
+    wrap after 34 s, and Mamka and Baťa keep the whole count."""
     d = (low - near) & 0xFFFF
     return near + d - 0x10000 if d >= 0x8000 else near + d
 
@@ -451,7 +451,7 @@ def temp_c(out_temp: int) -> float:
 
 def which_imus(cycle: int, imus: int) -> range:
     """The six IMUs whose temperatures this diagnostics carries, by turns by the frame's number:
-    the glove's 22 in four diagnostics. Six from the first in turn is the code's choice."""
+    the glove's 24 in four diagnostics. Six from the first in turn is the code's choice."""
     turns = max(1, -(-imus // IMU_TEMPS))
     first = IMU_TEMPS * ((cycle // PERIOD) % turns)
     return range(first, min(first + IMU_TEMPS, imus))
@@ -530,7 +530,7 @@ class Diagnostics:
     def all_well(self) -> bool:
         """The scan for all ones: a zero is looked into only when found."""
         return ((self.alive & self.clean) == 0xFFFFFFFF and (self.p_on & self.n_on) == 0xFFFF
-                and (self.flags & 0x03) == 0x03)
+                and self.flags == 0xFF)
 
 
 def chip_bits(chips: int, ok: list[bool]) -> int:

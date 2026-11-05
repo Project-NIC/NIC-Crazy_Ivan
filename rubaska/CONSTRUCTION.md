@@ -49,12 +49,14 @@ socks' 17 each (see [Right-leg drive](HARDWARE.md#right-leg-drive)).
   (Goyal et al. 2022, PMC9656728), so ~5 MΩ under an 8 mm stud and ~10 MΩ under a 6 mm one, scaled
   by the area (an inference); in the same paper an ECG through bare 6 cm² electrodes could not be
   read in 7 of 10 people, and a swab of alcohol between electrode and skin, filling the air gaps and
-  wetting the skin, brought its SNR to 13–15 dB. Moist skin is another matter: a first try on the
+  wetting the skin, brought its SNR to 13–15 dB in the one subject the paper shows (its figure 9;
+  no group figure is given). Moist skin is another matter: a first try on the
   owner's hand, slightly sweaty, read a lead on the order of 2 kΩ (how it was read is not recorded).
   Tens of kilohms stay the working figure, on the safe side, until the bench measures it. The ring
   is of dissipative material, not plain plastic, which would charge by friction. Moisture also lets
   charge from friction decay faster.
-- **8 mm studs where there is room, 6 mm on the forearm and the hand,** each in a ring at least
+- **8 mm studs where there is room, 6 mm on the forearm, the hand and the foot,** each in a ring at
+  least
   5 mm wide. The ring keeps even a small stud moist, but its contact and its noise still grow as
   it shrinks (see [The noise](HARDWARE.md#the-noise)). The rings' width is found on the body
   with the electrodes' places (see [Bogatyr](../bogatyr/CONSTRUCTION.md)); the small muscles'
@@ -109,7 +111,6 @@ slow EEG). So no DC lead-off current runs through the studs (see
 | sintered Ag/AgCl cups, single use | $19.95 for 24 | ~$480 a set | Compumedics (Neuromedical Supplies) |
 | plated AgCl snap studs for ECG, 3.9 mm | $0.04–0.09 | ~$50 | Alibaba, Honsung: disposable grade, the plating wears |
 | conductive silicone, carbon-filled, ~5 Ω·cm | a sheet 500 × 500 × 1 mm $1.2–40; a moulded part $0.30–0.60 from 1,000 | ~$400 moulded | Alibaba; Milesun, Better Silicone (Xiamen); Wave Company's ElecSil (Korea) |
-| dry comb electrodes coated with Ag/AgCl, for the hair | $5–8 from 5–10 pieces; €125 for 10 | for the head's trials | Alibaba; Neurospec |
 
 The titanium discs take the same post as the steel ones. The sintered Ag/AgCl pieces are EEG
 discs, pellets and a snap, not studs: how they would sit in the strip is not known. A sintered
@@ -134,9 +135,12 @@ on the torso and on the limbs alike.
   0.4–1.0 cm more (Journal of Sports Science and Medicine 2008, 7, table 2), and the arm flexed
   against relaxed 33.4 → 35.3 cm in men and 29.3 → 29.8 cm in women (Frontiers in Nutrition
   2025, DOI 10.3389/fnut.2025.1534453, 139 players; flexed at the biceps' peak, so an upper
-  figure). On the limbs the gap lies over the ulna's edge on the forearm, over the tibia on the
-  calf, on the outer side of the upper arm and over the iliotibial tract on the thigh, so that
-  the inner side carries electrodes too; by anatomy, to be checked against the atlas. Where a
+  figure). On the limbs the gap lies beside the bone the IMU wants, never over it, since the
+  IMU's five-wire strip must not cross the one place made to stretch: beside the ulna's edge on
+  the forearm, over the flexors, beside the tibia on the calf, on the posterior midline, on the
+  outer side of the upper arm beside the deltoid's insertion and beside the iliotibial tract on
+  the thigh (see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-imus)), so that the inner side carries
+  electrodes too; by anatomy, to be checked against the atlas. Where a
   gap wants another place, the module moves, settled when the band is drawn. The module sits on
   the outer side, where nothing rubs it. The torso's areas, over the shoulder above all, which
   turns in three axes, take what their layout asks for.
@@ -249,12 +253,13 @@ its IMUs are laid out under [Bogatyr](../bogatyr/CONSTRUCTION.md#the-gloves).
   for the thumb, five, and a short one over the carpus, in the glove's inner layer. Each has six
   leads, its zone's SCL, the SDA of its branch A and of its branch B, REF, +3.3 V and ground, two
   IMUs a branch on Staršaja's switched I3C (see [hardware](HARDWARE.md#the-glove)); a finger's runs
-  along the side of the finger, never across its back, where the skin stretches least; up to ~10 cm
-  a finger, ~6 cm to its last phalanx. The IMU boards are small rigid islands soldered to it through
-  plated holes, as LED strips are joined, the joint widened, stiffened and potted (see [the IMU
-  board](HARDWARE.md#the-imu-board)); a repair is heat, lift, a new piece. The strip's tail goes
-  into a six-way lever connector on the board on the first glove and is soldered in a series. A
-  torn strip is replaced alone. Its shape and its life are left to a bending test.
+  along the side of the finger, never across its back, where the skin stretches least; from the
+  board to a fingertip ~15 cm straight and up to ~22 cm as a meander, the length the bus's timing is
+  computed with (estimates, to measure). The IMU boards are small rigid islands soldered to it
+  through plated holes, as LED strips are joined, the joint widened, stiffened and potted (see [the
+  IMU board](HARDWARE.md#the-imu-board)); a repair is heat, lift, a new piece. The strip's tail goes
+  into a six-way lever connector on the board on the first glove and is soldered in a series. A torn
+  strip is replaced alone. Its shape and its life are left to a bending test.
 - **A glove of two layers** with a hook-and-loop closure: the outer one comes off, and the inner
   one with the strips can be changed, its strips unplugged from the board on the first glove and
   unsoldered in a series.
@@ -268,15 +273,16 @@ its IMUs are laid out under [Bogatyr](../bogatyr/CONSTRUCTION.md#the-gloves).
 
 ## The sock
 
-Nosok, the glove's unit on the foot (see [hardware](HARDWARE.md#the-sock)), is made as the glove
-is: a sock of two layers with a hook-and-loop closure at the ankle, the inner one carrying the
-foot's strip of sixteen electrodes and one or two IMU strips, the outer one over it; the strips
-run along the foot's sides and over the instep, never under the sole, which is stood on. The board
-sits on the calf above the ankle in its enclosure, where the calf's module's strip crosses too,
-and the foot's strips come up to it across the ankle, in meanders, as the line's cable crosses the
-wrist. Where its electrodes and its IMUs sit is under
-[Bogatyr](../bogatyr/CONSTRUCTION.md#the-socks); it is drawn after the hand's layout is settled,
-since each version is a circuit made and thrown away.
+Nosok, the glove's unit on the foot (see [hardware](HARDWARE.md#the-sock)), is made as the glove is:
+a sock of two layers with a hook-and-loop closure at the ankle, the inner one carrying the foot's
+strip of sixteen electrodes and two IMU strips, a zone of four each, the outer one over it; the
+strips run along the foot's sides and over the instep, never under the sole, which is stood on. The
+board sits on the outer side of the calf a hand above the lateral malleolus in its enclosure, as a
+module sits, clear of the calf's lower IMU on the tibia's inner face, where the calf's module's
+strip crosses too, and the foot's strips come up to it across the ankle behind the lateral
+malleolus, in meanders, as the line's cable crosses the wrist. Where its electrodes and its IMUs sit
+is under [Bogatyr](../bogatyr/CONSTRUCTION.md#the-socks); it is drawn after the hand's layout is
+settled, since each version is a circuit made and thrown away.
 
 ## Open questions
 
@@ -306,7 +312,7 @@ since each version is a circuit made and thrown away.
 - the contact at putting-on and as it settles, with no gel and no alcohol: on skin washed with
   shower gel and dried, expected to fail, and on skin sweaty after a day's work, expected to hold;
   the steel, the conductive silicone lens and dry sintered Ag/AgCl side by side, with and without
-  the straps, followed by the lead-off's tone over the first 15 minutes (dry metal halved its
+  the straps, followed by the lead-off check over the first 15 minutes (dry metal halved its
   impedance in 5 minutes and settled in ~15, Kusche et al. 2018) and then measured on the bench as
   above; whether the tone can tell the wearer when the contact is ready,
 - the electrodes on a sample: 316L discs, titanium discs, sintered Ag/AgCl and conductive

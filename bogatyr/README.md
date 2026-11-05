@@ -27,7 +27,7 @@ says so.
   the glove's and the sock's own ADS1298, 580 in all.
 - **The rules** any layout keeps: on small muscles and near the heart short pairs, none across the
   sternum, across the spine only diagonally, nothing in the hair, nothing where the body is
-  pressed, no two electrodes closer than 1.5 cm (see
+  pressed, no two electrodes closer than 1.5 cm, 1 cm on the hand and the foot (see
   [construction](CONSTRUCTION.md#the-electrodes-rules)).
 - **The IMUs,** 44 on the body of 64 places, two or more on each segment of a limb, more where
   the skin slides most, four in a square on the head and four down the neck and the upper back;

@@ -66,7 +66,7 @@ microphones.
   packets are mended the same way the other round, Mamka asking. The sound comes 10 ms later;
   for the assistants' speech, reading and music that does not matter, and the vibration to the
   beat goes by the motors' own registers.
-- **The microphones** go only while Baťa wants them, a packet in her slot every ~3.8 cycles;
+- **The microphones** go only while Baťa wants them, a packet in her slot every ~1.9 cycles;
   Mamka holds a buffer of her own on her side and feeds the SAI from it, silence while none
   come, so Baťa's sound device runs on.
 
@@ -148,7 +148,7 @@ the strength and the brake are Nataša's, and she answers to a map of registers 
 | 0x04–0x07 | the right, the same |
 | 0x08–0x0B | the forehead, the same |
 | 0x0C–0x0F | the nape, the same |
-| 0x10–0x13 | the settings: the warning's distance (0.1 m, 0 off), its speed (0.2 m/s, 0 off), the press confirmation's pattern (0 off) and its strength |
+| 0x10–0x13 | the settings: the warning's distance (0.1 m, 0 off), its speed (0.2 m/s, 0 off), the press confirmation's pattern (0 off) and its strength; built in from reset as 1.0 m, 2.0 m/s, pattern 5 and a middle strength, so the warning works before Baťa has written anything, and Baťa may change them |
 | 0x20–0x5F | patterns 8–15, 8 B each: up to 8 steps, a step's length in 10 ms, on and off in turn from on, a 0 after the last |
 
 Nataša carries out a frame whole, so one frame sets all four motors, 16 of its 25 values. A
@@ -169,7 +169,8 @@ every write.
 - **The warning** is Nataša's own, from the sphere as it passes (see [Míša](#míša-beside-her)):
   when a field of the middle row in the three columns ahead is nearer than the set distance or
   coming faster than the set speed, she plays pattern 5 on the forehead until it passes and sets
-  bit 1 of her state, and processor 2 sends the event. It works with Baťa hung.
+  bit 1 of her state, and processor 2 sends the event. It works with Baťa hung, and with Baťa
+  halted at boot, the settings being built in (1.0 m, 2.0 m/s, pattern 5) until he writes them.
 - **A short press and a hold** on each button. What they do is set on the computer, so it can
   change; a first assignment:
 

@@ -17,7 +17,7 @@ thing waits in reserve, it says so.
 
 - **3,840 SPS as the suit's rate** (to 29 Oct 2026), a band to ~1 kHz for fast movements in
   sport and the twitches of a nervous system that does not work as it should. With two chips a
-  module it doubled the data, the lines at 46 % and processor 1's SPI at 84 %, for a band above
+  module it doubled the data, the lines at 45 % and processor 1's SPI at 87 %, for a band above
   the ~500 Hz surface EMG uses: SENIAM's 10–500 Hz, Delsys' Trigno at 1,926 SPS, Meta's band at
   2,000, OT Bioelettronica's at 2,048. 1,920 is the rate, its sinc filter's −3 dB at ~503 Hz and
   0.8 against 1.1 µVrms on the ADS1298; 3,840 stays a setting to try, a twitch of a few
@@ -105,6 +105,12 @@ thing waits in reserve, it says so.
   Bratiški then on USART2, USART3, UART4 and UART5, the echo kept, 33 of its 35 I/Os, so one
   processor serves the module and the glove (the owner's wish; see
   [hardware](HARDWARE.md#the-glove)).
+- **The AM26LV32E, a quad receiver, on the glove and on Míša** (to 5 Nov 2026), taking the pair
+  from the master, the echo and the clock in one package where a module has a THVD1452 and a
+  THVD1450 for them, a package and a dollar saved. Its fail-safe holds on an open input alone
+  (SLLS849E, since its revision D), so on the return pair, terminated and idle between the slots,
+  the echo would have read noise; and the owner wants one set of drivers on every unit. Two
+  THVD1452 and a THVD1450 everywhere (see [hardware](HARDWARE.md#the-glove)).
 - **The glove's line on one USART, no echo compared** (29 Oct 2026, for an hour), the fourth
   Bratiška on the LPUART instead. The owner: the line needs its two receivers. The echo went to
   the LPUART, which receives 19.66 MBd with room to spare, and nothing of a module's line was
@@ -127,7 +133,7 @@ thing waits in reserve, it says so.
   most and no current to source (DS14540, table 13, note 2).
 - **PB3 or PA8 for I3C2's SCL.** PB3 is the only pin with SWO, PA8 the only one with TIM1_CH1
   for the IMUs' clock, so I3C2 takes PB5 and PB4, which have no Fm+ drive; I3C carries 12 B per
-  IMU 1,920 times a second with ease, and as I2C at 400 kHz the IMUs run the chip's own 120 Hz.
+  IMU 960 times a second with ease, and as I2C at 400 kHz the IMUs run the chip's own 120 Hz.
 - **An LDO for every branch.** Earlier drafts had one; the π filters of the house rule do the job
   behind two LDOs, one for the 5 V analog side and one for the 3.3 V rest.
 - **The TPS7A47 for the analog side** (to 31 Oct 2026). Its ~4 µVrms bought nothing the chips
@@ -143,17 +149,37 @@ thing waits in reserve, it says so.
 - **The DC lead-off** (to 5 Nov 2026): 6 nA from every input all the time, the comparators'
   bits in the status word. Under a few nA of DC, stainless steel polarises at once (Tallgren et
   al., Clin Neurophysiol 116, 2005, fig. 2, a pointer on OpenBCI's forum), so the 316L studs would
-  drift; the AC lead-off at fDR / 4 leaves no DC through them, its tone taken out by Baťa. The
-  register was then written 0x00, FLEAD_OFF 00, which the datasheet forbids with lead-off on.
+  drift; the AC lead-off at fDR / 4 leaves no DC through them. The register was then written
+  0x00, FLEAD_OFF 00, which the datasheet forbids with lead-off on.
+- **The AC lead-off running under the recording, the P inputs and the N inputs by turns** (5
+  Nov 2026, for a day), its tone at 480 Hz taken out by Baťa and its amplitude the contact's
+  measure, reckoned at the 6 nA of the DC mode's current sources. The chip's AC excitation
+  switches the input between the rails through ~10 MΩ (SBAS459K, figure 39), ~±0.25 µA, forty
+  times that: ~27 mV pp across a pair at a 50 kΩ contact, half the range at a gain of 12, and
+  one side at a time sends 280 inputs' currents through the one bias electrode, ~70 µA, past the
+  drive's 75 µA. Now a check on demand with P and N together, nothing under the recording (see
+  [software](SOFTWARE.md#an-electrode-coming-off)).
 - **Microamp lead-off currents** (6 or 24 µA, the ADS1299's). Through a 50 kΩ contact they make
   0.3 or 1.2 V, most of the input range at a gain of 12 or far beyond it. The ADS1298's are 6 to
   24 nA.
 - **The bias through channel 8's multiplexer** (MUX = BIAS_DRN, IN8N the bias electrode, IN8P
   its spare). It kept the electrode connector at 16 positions, but cost the driving module two
   of its inputs and put the drive through the ADS1299. Reopened on 10 Oct 2026: the bias
-  electrode has a lead of its own through 4.99 kΩ, every input measures, and the connector grew
+  electrode has a lead of its own through a resistor, every input measures, and the connector grew
   to 20 positions, 36 since 29 Oct 2026; what changed is under
   [hardware](HARDWARE.md#right-leg-drive).
+- **4.99 kΩ on the bias lead, "never above 10 kΩ, the loop wanting it low"** (to 5 Nov 2026),
+  and the loop's 1.5 nF, the datasheet's typical value. A review found that only the resistor
+  stands between a fault and the skin: two drivers against each other through moist contacts
+  would pass ~0.36 mA of direct current, seven times what IEC 60601-1 allows under a single
+  fault, and only firmware would notice. Computed on the loop's own model, the small resistor
+  bought no stability either: the loop's pole at 106 Hz met the body's, 15° of phase margin in
+  most corners. Now 100 kΩ, the datasheet's protection resistor of figure 42, and 47 nF (see
+  [hardware](HARDWARE.md#right-leg-drive)).
+- **A current limiter of FETs on the bias lead** (5 Nov 2026, for an hour): back-to-back
+  depletion FETs or current-regulator diodes at ~50 µA. A limit so low needs a source resistor of
+  tens of kilohms, so the pair is no more transparent to the loop than a resistor, and it adds a
+  knee; the resistor alone does the same at a cent.
 - **The TMUX1101 on the bias electrode's lead** (10 to 29 Oct 2026). It parted a powered-down
   bias amplifier's output from the electrode, since nobody knew what that output does with an
   electrode on it. The datasheet's own bias lead-off check drives 6–24 nA through the pin with
@@ -289,8 +315,9 @@ thing waits in reserve, it says so.
   ([Software](SOFTWARE.md#the-ads129xs-settings)).
 - **316Ti steel.** Its titanium protects the steel at welding temperatures, not on the skin;
   316L, the steel of body jewellery, does.
-- **Dry electrodes.** A dry contact is ~1 MΩ, which the chips' input would bear but the input
-  filter would not: its corner falls to ~360 Hz, inside the band. A moist ring keeps the
+- **Dry electrodes.** Bare steel on dry skin is megohms, ~5 MΩ under an 8 mm stud by Goyal et al.'s
+  figure (see [construction](CONSTRUCTION.md#electrodes)), which the chips' input would bear but the
+  input filter would not: its corner falls to ~70 Hz, inside the band. A moist ring keeps the
   contact at tens of kilohms.
 - **A low-noise cable with a graphite layer** for the leads, as for piezo sensors. The band's
   strip has no cable: its layers are bonded and do not rub, and a moist contact makes the charge

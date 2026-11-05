@@ -76,7 +76,10 @@ source is named. What the electrodes and the strips are made of is under
   IMUs and Nataša. Where the hair begins differs from head to head: the places here are an average
   forehead's, an estimate.
 - **Nothing where the body is pressed:** the palm, which a grip presses, the sole, stood on, and
-  the seat, sat on, stay bare, the electrodes there wandering in the signal. What else was left
+  the seat, sat on, stay bare, the electrodes there wandering in the signal; and the backpack's
+  straps, its belt and its back panel press too, so neither an electrode nor an IMU sits under
+  their path, the straps padded past the shoulders' units (see
+  [Rubaška](../rubaska/CONSTRUCTION.md#open-questions)). What else was left
   out, and why, is under [WHY](WHY.md).
 
 ## The modules
@@ -171,11 +174,11 @@ output; see [Porjadok](../porjadok/SOFTWARE.md#output).
 | module | IMUs | places |
 |---|---|---|
 | head (headband) | 4 | a square on the skull, one rigid bone: the forehead's two over the frontal bone, left and right of Míša's housing above the frontalis' pairs, the middle being his, with his own IMU; the back half's two above the ears' level beside Nataša's board, left and right. Four on one bone are redundancy: their mean halves the noise, and a band that slips shows as the four disagreeing |
-| neck and upper back | 4 | C2's spinous process, the first felt below the skull; C5; T2, between the shoulder blades' tops; T6, below them; the neck and the upper back bend at every level (an estimate) |
-| shoulder, each | 3 | the acromion's flat top: the scapula followed from it, with an error under 10°, between 30° and 120° of the arm's elevation (Karduna et al., J Biomech Eng 2001; the figures from a later review, PMC4019455); the scapula's spine, its outer part; the clavicle's middle, near the skin |
+| neck and upper back | 4 | C2's spinous process, the first felt below the skull; C5; T2, between the shoulder blades' tops; T6, between their lower halves (the blade's lower angle lies at T7, Gray 1918); the neck and the upper back bend at every level (an estimate). C5, T2 and T6 lie under the backpack's back panel, so the panel is suspended off the spine or carries a channel there (see [Babuška](../babuska/CONSTRUCTION.md#the-backpack)) |
+| shoulder, each | 3 | the acromion's flat top, 2–3 cm off the backpack strap's path, which runs over the acromion and the clavicle: the scapula followed from it, with an error under 10°, between 30° and 120° of the arm's elevation (Karduna et al., J Biomech Eng 2001; the figures from a later review, PMC4019455); the scapula's spine, its outer part; the clavicle's middle, near the skin |
 | chest and abdomen | 1 | the sternum's body, its middle |
 | lower back | 3 | the thoracolumbar junction, T12–L1; L3's spinous process, for the lumbar curve; the sacrum's top, S1, the pelvis' sensor |
-| hip, each | 1 | the iliac crest's tubercle, in front on its outer lip, a second look at the pelvis' tilt |
+| hip, each | 1 | the iliac crest's tubercle, in front on its outer lip, a second look at the pelvis' tilt; the backpack's hip belt, if one is worn, runs over the crest, so the belt is padded clear of it or the IMU sits a finger's breadth below the crest |
 | upper arm, each | 4 | the outer side at the deltoid's insertion; the lowest on the lateral supracondylar ridge, just above the lateral epicondyle; above the medial epicondyle, in front of the ulnar nerve's groove; the back above the olecranon |
 | forearm, each | 2 | the ulna's border 3–4 cm below the olecranon; the radius' back ~2 cm above the wrist, on the radius alone, which turns with the hand while the ulna does not; the hand's are the glove's (below) |
 | thigh, each | 4 | 5 cm below the greater trochanter's tip on the outer side; 4–5 cm above the lateral and the medial epicondyle; the front above the patella (estimate) |
@@ -196,9 +199,10 @@ of four, two to a branch on Staršaja's two switched I3Cs (see
 (above). **The IMUs,** 24, a zone a finger and the sixth over the carpal bones: on each finger its
 three phalanges, the proximal and the middle on its branch A, the distal on its branch B with a
 place to spare; the thumb's metacarpal and proximal phalanx on its A, its distal and the board's
-own, on the back of the hand over the carpus, on its B; the four spares for the palm's arch, the
-fourth and fifth metacarpals' heads, where the arch bends, and a second on the thumb's metacarpal,
-because its skin slides. Over bone, not between the bones, where the interosseous muscles bulge
+own, on the back of the hand over the carpus, on its B; the four spares: the third, fourth and fifth
+metacarpals' heads, where the palm's arch bends, on the middle, ring and little fingers' B, and a
+second on the thumb's metacarpal, because its skin slides, on the index finger's B, whose strip runs
+beside the thumb's base. Over bone, not between the bones, where the interosseous muscles bulge
 under the skin; the strips along the sides of the fingers. Which are fitted the recordings decide:
 all 24; 12, the thumb's three, the board's own and two a finger, the proximal and the distal; or 8,
 the thumb's three, the board's own and one a finger, the proximal, a mitt open at the fingers for a
@@ -209,13 +213,13 @@ sliding over them, the first glove shows.
 ### The socks
 
 Nosok's board sits on the calf above the ankle (see [Rubaška](../rubaska/HARDWARE.md#the-sock)); on
-the foot its ADS1298's sixteen electrodes, eight channels waiting with the rest, and up to eight
-IMUs, the segments of a multi-segment foot model, the Oxford Foot Model's hindfoot, forefoot and
-hallux (Stebbins et al., Gait & Posture 23, 2006): the heel over the calcaneus, the midfoot's inner
-side, the fourth metatarsal and the hallux's proximal phalanx, four to start, the other four for
-trials, the forefoot's outer side and the lesser toes among them, all on Staršaja's switched
-branches as the glove's; over bone, not on the sole, which is stood on, and clear of the foot's
-electrodes; the first places a proposal.
+the foot its ADS1298's sixteen electrodes, eight channels waiting with the rest, and eight IMUs to
+start, of the board's 24 places, the segments of a multi-segment foot model, the Oxford Foot Model's
+hindfoot, forefoot and hallux (Stebbins et al., Gait & Posture 23, 2006): the heel over the
+calcaneus, the midfoot's inner side, the fourth metatarsal and the hallux's proximal phalanx, four
+laid out, the other four for trials, the forefoot's outer side and the lesser toes among them, all
+in Staršaja's zones as the glove's; over bone, not on the sole, which is stood on, and clear of the
+foot's electrodes; the first places a proposal.
 
 ## Open questions
 

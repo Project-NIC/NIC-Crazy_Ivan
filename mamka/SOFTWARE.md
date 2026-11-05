@@ -85,13 +85,14 @@ her own SPI.
 | wire | from, to | what |
 |---|---|---|
 | START | processor 1's PB15 (TIM12_CH2, an output compare) to processor 2's PB15 (TIM12_CH2) | the moment of the first *start* |
-| the limbs' PGOOD | the limbs' last 4 V converter to processor 1's PC1 and processor 2's PE9 | the limbs' lines powered |
+| the limbs powered | a plain output of processor 2, high while lines 1–4's PGOOD are all high, to processor 1's PC1 | the limbs' lines powered |
 | the UART, TX and RX crossed | UART4 on PA0 and PA1 of each, 115,200 Bd, 8N1 | a frame of 34 B a second each way: her state |
 
-- **The limbs' power:** processor 2 switches both chains (see [Budilnik](HARDWARE.md#budilnik));
-  processor 1 brings up lines 1–4 when the limbs' PGOOD rises and marks their units gone when it
-  falls (see [Porjadok](../porjadok/SOFTWARE.md#bring-up)). Power command 3 needs no message:
-  the PGOOD falls and rises, and she brings up her lines again.
+- **The limbs' power:** processor 2 switches every line's converter (see
+  [Budilnik](HARDWARE.md#budilnik)); processor 1 brings up lines 1–4 when "the limbs powered"
+  rises and marks their units gone when it falls (see
+  [Porjadok](../porjadok/SOFTWARE.md#bring-up)). Power command 3 needs no message: the wire falls
+  and rises, and she brings up her lines again.
 - **The first *start*** for the whole system Baťa sends on every SPI, once every unit has
   answered *get ready*. Both processors' TIM12 count the suit clock (PSC = 19), and neither masks
   an interrupt:
@@ -123,13 +124,14 @@ comes by itself an answer to a read sent unasked, as Míša's sphere.
 |---|---|---|
 | 0x00–0x01 | the firmware's version | read |
 | 0x02 | the state: bit 0 the firmware on trial, 1 the last update failed, 2 Nataša present, 3 Míša present | read |
-| 0x03–0x04 | the power (u16): bits 0–1 the limbs' 4 V chain's first EN and last PGOOD, 2–3 the head's and the trunk's, 4–5 the 6 V's EN and PGOOD, 6–7 Baťa's eFuse's EN and PG, 8–9 Borovičok's | read |
+| 0x03–0x04 | the power (u16): bits 0–7 the eight lines' PGOOD, 8 the 6 V's, 9 Baťa's eFuse's PG, 10 Borovičok's; 11 the lines' EN (all, or none), 12 the 6 V's, 13 Baťa's eFuse's EN, 14 Borovičok's; 15 the limbs powered | read |
 | 0x05–0x06 | the fan, rpm | read |
 | 0x07–0x08 | her temperature, 0.1 °C | read |
 | 0x09 | the last reset's cause, as a unit's (see [Porjadok](../porjadok/SOFTWARE.md#watchdogs)) | read |
-| 0x10 | the power's command: 1 the suit shut down in order and then off (see [Budilnik](HARDWARE.md#budilnik)), 2 the computers' supply off once they have halted, 3 the lines' 4 V and the 6 V off and on again in the order of the start, every unit starting again in the service mode, and then the lines brought up, 5–8 by her and 1–4 by processor 1 as the limbs' PGOOD rises (see [the wires](#the-wires-between-the-processors) and [Porjadok](../porjadok/SOFTWARE.md#bring-up)), 4 Baťa halted by [Storož](../bata/SOFTWARE.md#storož): she plays a pattern on the headband, 5 Baťa running again | write |
+| 0x10 | the power's command: 1 the suit shut down in order and then off (see [Budilnik](HARDWARE.md#budilnik)), 2 the computers' supply off once they have halted, 3 the lines' 4 V and the 6 V off and on again in the order of the start, every unit starting again in the service mode, and then the lines brought up, 5–8 by her and 1–4 by processor 1 as "the limbs powered" rises (see [the wires](#the-wires-between-the-processors) and [Porjadok](../porjadok/SOFTWARE.md#bring-up)), 4 Baťa halted by [Storož](../bata/SOFTWARE.md#storož): she plays a pattern on the headband, 5 Baťa running again | write |
 | 0x11 | Storož's reason, 1–10 | write |
 | 0x12 | the fan's duty, % | write |
+| 0x13 | the pack's voltage, in 0.1 V, under which she shuts the computers down in order, as command 1; 0 never; the BMS cuts at 10 V below it | write |
 | 0x40… | her table, as for every unit | read |
 | 0x80… | the firmware, as for every unit | |
 | 0xC0–0xC5 | an event: what (u8), which (u8), the cycle's number (u32) | unasked |
@@ -143,13 +145,17 @@ comes by itself an answer to a read sent unasked, as Míša's sphere.
 | 4 a BMS alarm | the alarm's bit |
 | 5 Nataša's warning begun, 6 ended | 0 |
 | 7 the other processor silent on the UART for 3 s, either one's event | the silent one, 1 or 2 |
+| 8 processor 2 reset while the suit ran, the suit kept up (see [Budilnik](HARDWARE.md#budilnik)) | the reset's cause, as at 0x09 |
+| 9 a computer's eFuse tripped and was raised again once, 10 tripped again and left off | 1 Baťa, 2 Borovičok |
+| 11 a line's PGOOD fell while the suit ran | the line, 1–8 |
+| 12 the computers shut down for the pack's voltage, at the threshold in register 0x13 | 0 |
 
 - **The BMS is chip 0x04 of processor 2,** from register 0x00, read only: its live block as she
   last read it, once a second (see [the battery](#the-battery)): the cells (4 × u16, mV), the pack
   (u16, mV), the current (i16, mA), three temperatures (3 × i16, 0.1 °C), the alarms (u16), the
   state of charge (u8, %), the remaining capacity (u16, mAh); 23 B, one read.
 - **Processor 1 (0xF1), chip 0x00:** from 0x00, read only, the firmware's version (2 B), the
-  state (1 B: bit 0 on trial, 1 the last update failed, 2 the limbs' PGOOD), her temperature (2 B,
+  state (1 B: bit 0 on trial, 1 the last update failed, 2 the limbs powered), her temperature (2 B,
   0.1 °C), the ring's fill in cycles (2 B), the last reset's cause (1 B, at 0x07); her table from
   0x40, the firmware from 0x80, her event from 0xC0, as processor 2's. A unit gone shows as zeros
   in its place, the ring overflowed as a jump in the frames' numbers.
@@ -353,7 +359,9 @@ The first *start* takes no interrupt: TIM12's TRGO starts its DMA on both (see
   by Mamka once Baťa has tried the new version, or the unit swaps back by itself. Here the two banks
   are 512 KB each (DS14258 Rev 6, 3.4); each processor takes her image over her own SPI, a block in
   0.11 ms on processor 1's, 0.19 ms on processor 2's two, the flash's write setting the pace; the
-  kinds 5 and 6, chip 0x00 of 0xF1 and 0xF2. While the other bank is written, the flash runs with no
+  kinds 5 and 6, chip 0x00 of 0xF1 and 0xF2. Processor 2's restart on SWAP_BANK passes within the
+  RC's hold on every EN she drives, so the suit stays up and the confirm can come (see
+  [Budilnik](HARDWARE.md#budilnik)). While the other bank is written, the flash runs with no
   wait states only to 32 MHz, so LATENCY goes up for the update and back afterwards (ES0565, 2.2.9);
   the first write after power-up also freezes the core for ~120 µs (2.2.33), which the service mode
   does not mind. The backup registers that hold the update's note can come up with random contents
@@ -364,6 +372,9 @@ The first *start* takes no interrupt: TIM12's TRGO starts its DMA on both (see
   looks inside; Baťa drives the update and reads the answers.
 - **A hang** without an update is the independent watchdog's: it restarts the processor, which
   watches itself as every unit does (see [Porjadok](../porjadok/SOFTWARE.md#watchdogs)).
+  Processor 2 writes a backup register at every change of the power's state, running or
+  stopping; on any reset she reads it first: running, she re-drives HOLD and every EN as they were
+  within the RC's hold and sends event 8 with the cause; stopping or empty, she lets HOLD fall.
 - **SWD pads** for each processor take a programmer on the bench, should the update itself ever
   go wrong. They cost no header pin, so nothing on the header resets the processors.
 
