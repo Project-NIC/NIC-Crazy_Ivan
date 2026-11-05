@@ -33,6 +33,12 @@ over 24 bits).
   the chips' CMRR, −105 dB at least on the ADS1298 (SBAS459K), leave little, and what is left is
   estimated as a slowly varying sinusoid at 50 Hz and its first harmonics, tracked from quiet
   stretches, and subtracted. Whether it is needed at all the first recordings will show.
+- **The lead-off's tone** at fDR / 4, 480 Hz at 1,920 SPS (960 Hz at 3,840, above the band): the
+  chips' AC lead-off, its 6 nA through each contact (see
+  [Rubaška](../rubaska/SOFTWARE.md#an-electrode-coming-off)), locked to the samples, four a
+  period; its amplitude and phase estimated channel by channel over each 32 cycles and the tone
+  subtracted, its amplitude the contact's own measure. Whether what is left near 480 Hz harms the
+  envelopes the first recordings show.
 - **The radar's pattern** on the head's electrodes, aligned to each radar frame by the stamped
   arrival of a sphere made with the radar (its code 2 or 3), 10 frames a second, is averaged over
   hundreds of frames and subtracted (see [Míša](../misa/HARDWARE.md#radar-and-the-emg)).
@@ -67,8 +73,9 @@ EMG and kept as a measurement of its own.
 
 ## The electrodes' quality
 
-- **Off:** the electrodes on the skin come in the diagnostics, every 32 cycles, from the chips'
-  LOFF_STATP and LOFF_STATN; an electrode that has come off masks
+- **Off:** the electrodes on the skin come in the diagnostics, every 32 cycles, from the lead-off
+  tone's amplitude each unit measures, the P inputs and the N inputs by turns; an electrode that
+  has come off masks
   its channel for the model (the channel's envelope is set to a value the model learns as
   "absent") and raises an event.
 - **Quality 0–15** in the meta packet of the electrodes: from the channel's noise floor in the
@@ -102,8 +109,8 @@ Each IMU's step is its turn Δθ over 1/120 s with the coning term and its mean 
 The model takes features at the IMUs' rate, not the raw EMG: 1.61 MB/s of raw samples into a
 network would cost what it does not need, and the envelopes carry the muscles' activity.
 
-- **In, every step of 1/120 s:** 280 EMG envelopes (log-RMS of the step) and 100 IMU steps of 6
-  values, **880 values a step**; a window of **32 steps**, 267 ms, 28,160 values. Absent IMUs and
+- **In, every step of 1/120 s:** 280 EMG envelopes (log-RMS of the step) and 108 IMU steps of 6
+  values, **928 values a step**; a window of **32 steps**, 267 ms, 29,696 values. Absent IMUs and
   masked channels take their "absent" value.
 - **Out, every step:** the 127 joint values, the 32 contact bits and, from longer windows, the
   fatigue below. Neural networks learn rotations better in a six-number form than as angles or
@@ -112,6 +119,22 @@ network would cost what it does not need, and the envelopes carry the muscles' a
 - **The split:** the large fixed part on the Hailo, a small last part on a core of Baťa that
   learns this person and this fit of the suit (see [learning](SOFTWARE.md#learning)). The IMUs'
   joints are the targets the EMG part learns from.
+- **How the EMG is judged** (an answer on OpenBCI's forum, *How would you lay out a whole-body
+  sEMG suit?*, 4 Nov 2026): with the IMU steps among the inputs and the IMUs' joints as the
+  targets, a good joint score says little of the electrodes, the IMUs alone being able to give
+  it. So a layout is scored on the same task three ways, the IMUs alone, the EMG alone and both,
+  and ranked by the EMG alone and by what it adds to the IMUs; trained on earlier fittings and
+  tested on a wholly new putting-on of the suit, whole repetitions on one side of the split, never
+  neighbouring windows across it; a short recalibration, if allowed, held out before the scoring,
+  the same time for every layout.
+- **What the EMG must show beyond the joints** (the same answer's follow-up): the joints stay the
+  baseline, and one task needs the EMG, a held contraction against a fixed load cell, the force
+  measured apart and varied at one posture, relaxed trials among them, lest the model learn the
+  posture or the instruction instead of the force. A look-ahead fixes its horizon before training,
+  every input only what is there at the prediction's moment, the filters and the envelope included,
+  and is compared at the same horizon with a predictor from the IMUs' own history, a smooth movement
+  being predictable from its trajectory; the fresh putting-on for both. Never the EMG's amplitude as
+  the force's label, nor its lead over the movement as one fixed delay.
 - **Contacts** come from the model, trained by the rule that a limb that neither hangs nor is
   held must rest on something, which marks the recordings without anyone labelling.
 
@@ -140,5 +163,6 @@ the meta packet of fatigue. Surface EMG hears the neighbouring muscles too, so g
   template reaches on the limbs, the breath from the EMG against a belt,
 - the complementary filter's gains and the joint constraints' weights, on a recorded walk against
   a camera,
-- the model's window and features: 32 steps of 880 values is the first guess, to be tuned,
+- the model's window and features: 32 steps of 928 values is the first guess, to be tuned,
+- the load cell and the look-ahead's horizon for the first arm's recordings,
 - the fatigue index against a known effort, on a recording with a dynamometer.

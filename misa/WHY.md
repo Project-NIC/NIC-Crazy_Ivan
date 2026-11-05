@@ -24,7 +24,7 @@ Each entry says what it was and why it went, so that nobody digs it up without k
 | IWR6843AOP, and Mistral's module with it | 1.2–1.75 W on average and a heat plate; 15 × 15 mm; the module wants 5 V |
 | Jorjin MT5C01-02R1 | 6 m: its transmitter is turned down 10 dB for certification |
 | raw radar data: Acconeer A121, Infineon BGT60TR13C | ~10 MB/s and the FFTs on the host |
-| a bare IWRL6432AOP on our own board | the RF layout, crystal and flash, which the module brings; kept as the fallback should the module not be sold in small numbers |
+| a bare IWRL6432AOP on our own board | the RF layout, crystal and flash, which a module brings; kept as the fallback should no module with a public pinout be found |
 | fields of 5° | the radar resolves ~30°; smaller fields make ghosts |
 | a compass against the gyro's drift | steel and cars upset it |
 | a lidar with a 3D map (Livox Mid-360, Unitree L2) | SLAM wants a Raspberry Pi or a Jetson and a big battery |

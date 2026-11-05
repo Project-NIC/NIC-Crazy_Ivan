@@ -6,7 +6,7 @@
 
 **English** · [Čeština](README.cs.md) · [Русский](README.ru.md)
 
-**A neural suit:** up to 580 electrodes and 100 inertial units, 56 of them in the gloves and the
+**A neural suit:** up to 580 electrodes and 108 inertial units, 64 of them in the gloves and the
 socks, on a suit you put together from pieces like a sleeve, a trouser leg, the torso or a
 headband.
 
@@ -110,8 +110,7 @@ everything sits on it is **Bogatyr**, Kaščej dressed in the meat. Mamka's own 
 **Rebjata** (the sensing modules), hang on the **Pupovina**, the umbilical cord: the eight lines,
 one a piece of the suit, that bring power, the clock and data to them, to the gloves and to Nataša
 and Míša. Every sensing unit's main processor is a **Staršaja**, the elder; the glove, **Vešč**,
-and the sock, **Nosok**, have her younger brothers, the **Bratiški**, four small processors beside
-her on one board, each reading a finger's IMUs.
+and the sock, **Nosok**, she reads every IMU of the hand or the foot herself.
 The household's rules are the **Porjadok**, and its power, from Babuška down, the **Pitanije**.
 
 The pieces combine freely:

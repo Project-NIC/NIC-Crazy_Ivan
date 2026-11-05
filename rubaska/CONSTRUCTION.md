@@ -44,30 +44,42 @@ socks' 17 each (see [Right-leg drive](HARDWARE.md#right-leg-drive)).
   current of ±1 nA from 0 to 70 °C, so a 1 MΩ contact shifts the input by 1 mV, and the input
   range is ±VREF / gain, ±333 mV at our gain of 12 on the 4 V reference. The input filter would
   not: with 1 MΩ contacts its corner falls to ~360 Hz, inside the band.
-- **Moist, not dry.** A ring around each electrode holds the skin's moisture under it, so the
-  contact sits far below the ~1 MΩ of a dry one; tens of kilohms are taken as the working
-  figure, to be measured. The ring is of dissipative material, not plain plastic, which would
-  charge by friction. Moisture also lets charge from friction decay faster.
+- **Moist, not dry.** A ring around each electrode holds the skin's moisture under it. Bare metal on
+  dry skin is far off: 2.68 MΩ·cm² at 10 Hz for 304 steel, 2.06 for titanium, measured on people
+  (Goyal et al. 2022, PMC9656728), so ~5 MΩ under an 8 mm stud and ~10 MΩ under a 6 mm one, scaled
+  by the area (an inference); in the same paper an ECG through bare 6 cm² electrodes could not be
+  read in 7 of 10 people, and a swab of alcohol between electrode and skin, filling the air gaps and
+  wetting the skin, brought its SNR to 13–15 dB. Moist skin is another matter: a first try on the
+  owner's hand, slightly sweaty, read a lead on the order of 2 kΩ (how it was read is not recorded).
+  Tens of kilohms stay the working figure, on the safe side, until the bench measures it. The ring
+  is of dissipative material, not plain plastic, which would charge by friction. Moisture also lets
+  charge from friction decay faster.
 - **8 mm studs where there is room, 6 mm on the forearm and the hand,** each in a ring at least
   5 mm wide. The ring keeps even a small stud moist, but its contact and its noise still grow as
   it shrinks (see [The noise](HARDWARE.md#the-noise)). The rings' width is found on the body
   with the electrodes' places (see [Bogatyr](../bogatyr/CONSTRUCTION.md)); the small muscles'
   pairs, 2–3 cm apart, are the tightest.
 - 316L contains nickel; anyone allergic to nickel tries it on the skin first.
-- **Conductive silicone is the third candidate,** carbon-filled, ~5 Ω·cm: nothing in it
-  corrodes and it is washed with the suit; its few ohms are nothing against the skin's tens of
-  kilohms. Carbon rubber on the skin has a higher contact impedance than Ag/AgCl at the same EMG
-  amplitude (a study of carbon electrodes on 20 subjects, 2016), the EMS suits that wear it wet
-  it, and its resistance drifts with temperature, time and stretch. The form is a moulded plug of
-  a push-in silicone foot's shape, PINGOOD's GMC-3RF-SFB as the pattern: a domed face Ø 12 × 3 mm
-  on a stem Ø 8 × 2 mm with a 1.1 mm shoulder, 55 Shore A, pushed through the fabric into a
-  stainless eyelet on the strip, the dissipative ring round it holding the moisture; a moulder
-  runs such a tool in the conductive compound, so no tool is paid for. Tried on the first arm
-  beside the steel.
+- **Conductive silicone is the third candidate,** carbon-filled, ~5 Ω·cm: nothing in it corrodes and
+  it is washed with the suit; its few ohms are nothing against the skin's tens of kilohms. Dry,
+  carbon rubber touches the skin worse than metal: 15 mm discs on a forearm at ~1 N gave about three
+  times the impedance of steel or gold for half an hour, textured ones about five (Kusche, Kaufmann
+  and Ryschka, Biomed. Phys. Eng. Express 5(1), 2018, arXiv 1910.05033; measured at 24–391 kHz, not
+  in the EMG band). The EMS suits that wear it wet it, and its resistance drifts with temperature,
+  time and stretch. The form is a moulded plug of a push-in silicone foot's shape, PINGOOD's
+  GMC-3RF-SFB as the pattern: a domed face Ø 12 × 3 mm on a stem Ø 8 × 2 mm with a 1.1 mm shoulder,
+  55 Shore A, pushed through the fabric into a stainless eyelet on the strip, the dissipative ring
+  round it holding the moisture; a moulder runs such a tool in the conductive compound, so no tool
+  is paid for. The face is a low, smooth lens with nothing to catch as the suit is pulled on, unlike
+  the rubber electrodes of the Mollii suit, an overall of 58 for electrostimulation, found
+  cumbersome to put on (PMC10575854). Tried on the first arm beside the steel.
 
 **The offset.** Two metal electrodes on the skin differ by a DC voltage that adds to the channel
 and wanders. Steel polarises; Ag/AgCl hardly does, which makes it the reference electrode of the
-field.
+field: under current pulses of ±5 nA stainless steel and platinum polarised at once, off the
+figure's scale, while sintered Ag/AgCl held (Tallgren et al., Clin Neurophysiol 116, 2005, fig. 2;
+slow EEG). So no DC lead-off current runs through the studs (see
+[Rubaška's software](SOFTWARE.md#an-electrode-coming-off)).
 
 - Wet Ag/AgCl ECG electrodes: a median offset of 0.5–4 mV (*The electrical characteristics of
   some commercial ECG electrodes*, PubMed 621452).
@@ -213,6 +225,12 @@ wash would wear them out sooner than wearing the suit does.
 - **Over it goes Strejda Al** (after South Park's Big Gay Al and his tight outfits), a tight
   compression overall, one of the clothes: it presses the bands to the body, keeps the
   electrodes' pressure and moisture, and goes into the washing machine with the rest.
+- **Tightening straps** in the harness where the electrodes want more pressure, dry contacts above
+  all: a looser strip of fabric over the studs with loops of fabric sewn into it, a strap drawn
+  through the loops inside, pulled and clipped, so that it presses the studs to the skin. Pressure
+  lowers a dry contact's impedance most up to ~5 N an electrode and little beyond (Kusche et al.
+  2018, 15 mm discs, 1–20 N, at 24–391 kHz), but 5 N on a 15 mm disc is ~28 kPa (our arithmetic),
+  much to wear for hours; the strap's force and what is bearable are measured on the first arm.
 
 The cable and its connectors are described under
 [Porjadok](../porjadok/HARDWARE.md#cable-and-connectors-in-the-suit).
@@ -227,16 +245,16 @@ its IMUs are laid out under [Bogatyr](../bogatyr/CONSTRUCTION.md#the-gloves).
   strip does (see [electrodes](#electrodes)), polyimide like the bands', round the hand's edges
   and over its back under the board, its tail in the board's 20-way lever connector on the first
   glove and soldered in a series.
-- **The finger strips are bare polyimide flex** from JLCPCB, cut as a meander, one a finger and
-  one for the thumb, five, in the glove's inner layer. Each has seven leads, SCL1, SDA1, SCL2,
-  SDA2, REF, +3.3 V and ground, its Bratiška's two I3C buses with two IMUs on each, and runs
-  along the side of the finger, never across its back, where the skin stretches least; up to
-  ~10 cm a finger, ~6 cm to its last phalanx. The IMU boards are small rigid islands soldered to
-  it through plated holes, as LED strips are joined, the joint widened, stiffened and potted
-  (see [the IMU board](HARDWARE.md#the-imu-board)); a repair is heat, lift, a new piece. The
-  strip's tail goes into a seven-way lever connector on the board on the first glove and is
-  soldered in a series. A torn strip is replaced alone. Its shape and its life are left to a
-  bending test.
+- **The finger strips are bare polyimide flex** from JLCPCB, cut as a meander, one a finger and one
+  for the thumb, five, and a short one over the carpus, in the glove's inner layer. Each has six
+  leads, its zone's SCL, the SDA of its branch A and of its branch B, REF, +3.3 V and ground, two
+  IMUs a branch on Staršaja's switched I3C (see [hardware](HARDWARE.md#the-glove)); a finger's runs
+  along the side of the finger, never across its back, where the skin stretches least; up to ~10 cm
+  a finger, ~6 cm to its last phalanx. The IMU boards are small rigid islands soldered to it through
+  plated holes, as LED strips are joined, the joint widened, stiffened and potted (see [the IMU
+  board](HARDWARE.md#the-imu-board)); a repair is heat, lift, a new piece. The strip's tail goes
+  into a six-way lever connector on the board on the first glove and is soldered in a series. A
+  torn strip is replaced alone. Its shape and its life are left to a bending test.
 - **A glove of two layers** with a hook-and-loop closure: the outer one comes off, and the inner
   one with the strips can be changed, its strips unplugged from the board on the first glove and
   unsoldered in a series.
@@ -285,6 +303,12 @@ since each version is a circuit made and thrown away.
   through it and the offset, against a stud on a wire,
 - the ring around the electrode: its dissipative material and shape, and the contact it gives,
   measured,
+- the contact at putting-on and as it settles, with no gel and no alcohol: on skin washed with
+  shower gel and dried, expected to fail, and on skin sweaty after a day's work, expected to hold;
+  the steel, the conductive silicone lens and dry sintered Ag/AgCl side by side, with and without
+  the straps, followed by the lead-off's tone over the first 15 minutes (dry metal halved its
+  impedance in 5 minutes and settled in ~15, Kusche et al. 2018) and then measured on the bench as
+  above; whether the tone can tell the wearer when the contact is ready,
 - the electrodes on a sample: 316L discs, titanium discs, sintered Ag/AgCl and conductive
   silicone side by side on one arm: the contact, the noise, the skin, and the offset with its
   drift, and the washing, at 60 °C in a bag with the laundry, fifty times; Ag/AgCl goes in only

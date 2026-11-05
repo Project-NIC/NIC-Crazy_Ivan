@@ -15,12 +15,11 @@ by.
 
 ## Processor
 
-The units in the suit each have an **STM32H523** processor: the sensing modules, the glove's
-Staršaja, Nataša and Míša; the glove's and the sock's Bratiški are the smaller **STM32H503**.
-[Mamka](../mamka/README.md) has two of the more capable **STM32H562**, one for the limbs' lines 1–4
-and one for the head's and the trunk's lines 5–8 and the household, next to Baťa, the computer in
-the backpack, a Radxa ROCK 5T. The packages: UFQFPN48 on a module, on the glove's Staršaja and on
-Míša, LQFP64 for Nataša, UFQFPN32 for a Bratiška, LQFP100 on Mamka.
+The units in the suit each have an **STM32H523** processor: the sensing modules, the glove's and the
+sock's Staršaja, Nataša and Míša. [Mamka](../mamka/README.md) has two of the more capable
+**STM32H562**, one for the limbs' lines 1–4 and one for the head's and the trunk's lines 5–8 and the
+household, next to Baťa, the computer in the backpack, a Radxa ROCK 5T. The packages: UFQFPN48 on a
+module, on the glove's Staršaja and on Míša, LQFP64 for Nataša, LQFP100 on Mamka.
 
 ## Firmware
 

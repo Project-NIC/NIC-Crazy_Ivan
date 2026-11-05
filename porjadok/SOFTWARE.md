@@ -119,16 +119,16 @@ glove and the sock, one chip and many IMUs:
   Nataša send 0x20. Six bytes of header and CRC on 52 B of data, where two frames of 34 B would
   have cost sixteen and four empty bytes (see [WHY](WHY.md#the-frames-and-the-modes)).
 - **The IMUs' steps:** a step is 16 ADS samples, 1/120 s: the IMU's turn and mean force over it,
-  summed by the unit from sixteen samples at 1,920 Hz, or the chip's own 120 Hz sample (see
+  summed by the unit from eight samples at 960 Hz, or the chip's own 120 Hz sample (see
   [Rubaška](../rubaska/SOFTWARE.md#the-imus-settings)), 12 B an IMU. The unit lays its IMUs'
   steps one after another in the order of its table and sends them at once after the step, 4 B a
   frame, the frame whose number mod 16 is k carrying the bytes 4k to 4k + 3: a module's four IMUs
   in the frames 0–11 of the 16, zeros after them until the next step. At the 3,840 SPS to try a
   step is 32 samples and the frames count mod 32, the bytes in the same places.
 - **The glove's and the sock's** frame, 0x25, carries its ADS1298's eight channels as a module's
-  first chip's and then 28 B of its steps: the glove's 20 IMUs, 240 B, in the frames 0–8 of the
-  16, then zeros (see [Rubaška](../rubaska/SOFTWARE.md#the-glove)); a sock's 8 in 4; the 28 B
-  would hold up to 37 IMUs in the 16 frames.
+  first chip's and then 28 B of its steps: the glove's 24 IMUs, 288 B, in the frames 0–10 of the 16,
+  then zeros (see [Rubaška](../rubaska/SOFTWARE.md#the-glove)); a sock's 8 in 4; the 28 B would hold
+  up to 37 IMUs in the 16 frames.
 - **Nataša** sends her frame of data once every 32 cycles, in the cycle whose number mod 32 is
   15, half a round from the diagnostics: her slot of 256 B would not hold her frame of data, her
   diagnostics and a packet of the microphones at once, 266 B (see
@@ -141,11 +141,11 @@ glove and the sock, one chip and many IMUs:
 
 ### The diagnostics
 
-A frame of 34 B of its own kind, 0x21, from every unit on a line once every 32 cycles (the Bratiški
-are chips of their Staršaja, not units), all in the same cycle, the one whose number mod 32 is 31,
-in the free part of each unit's slot; Mamka passes them on over the SPI from a queue in the next
-cycles. **Its bits are 1 while all is well** and stay 0 once anything went wrong in those 32
-samples, so a scan of the words for all ones is enough, and a zero is looked into only when found.
+A frame of 34 B of its own kind, 0x21, from every unit on a line once every 32 cycles, all in the
+same cycle, the one whose number mod 32 is 31, in the free part of each unit's slot; Mamka passes
+them on over the SPI from a queue in the next cycles. **Its bits are 1 while all is well** and stay
+0 once anything went wrong in those 32 samples, so a scan of the words for all ones is enough, and a
+zero is looked into only when found.
 
 | B | the diagnostics |
 |---|---|
@@ -161,9 +161,12 @@ samples, so a scan of the words for all ones is enough, and a zero is looked int
 | 31 | the last reset's cause (see [Watchdogs](#watchdogs)) |
 | 32–33 | CRC-16 |
 
-- **The electrodes:** the chips' own bits are 1 for an electrode off (LOFF_STATP and LOFF_STATN,
-  12h and 13h, SBAS459K, 9.6.1.12–13), read with every sample in the status word (9.4.1.3.1); the
-  module turns them over and keeps a 0 for the 32 samples, the second chip's in the high byte.
+- **The electrodes:** from the chips' AC lead-off, its tone at fDR / 4 (SBAS459K, 9.3.1.7.4.2; see
+  [Rubaška](../rubaska/SOFTWARE.md#an-electrode-coming-off)): the unit sums each channel's 32
+  samples against the tone's pattern, and an amplitude over the threshold marks the electrode
+  off; the P inputs are excited in one period and the N inputs in the next, so bytes 12–13 and
+  14–15 each carry the bits of the last period that measured them, renewed every 64 cycles, 1 on
+  the skin, the second chip's in the high byte.
   **The bias electrode** is the first chip's RLD_STAT, CONFIG3 bit 0 (9.6.1.4), 1 for off, turned
   over the same way. A unit with no ADS1298 sends ones, a module with one chip ones for the
   second's eight.
@@ -173,7 +176,7 @@ samples, so a scan of the words for all ones is enough, and a zero is looked int
   complement, 256 LSB/°C and 0 at 25 °C, typical, so °C = value / 256 + 25, the offset within
   ±15 °C (DS13510 Rev 4, table 6 and its note 3; 9.29).
 - **The lowest 3.3 V** is measured by the processor's own ADC against its VREFINT, no part added.
-- **More than six IMUs** go by turns, which six told by the frame's number: the glove's 20 in
+- **More than six IMUs** go by turns, which six told by the frame's number: the glove's 24 in
   four diagnostics, ~67 ms, a sock's 8 in two. A temperature once a minute would do.
 
 ### How a unit builds the frame
@@ -181,7 +184,7 @@ samples, so a scan of the words for all ones is enough, and a zero is looked int
 A chip's read is 216 bits: the status word of 24 bits, then 8 channels of 24. The STM32H523's SPI
 takes frames of 4 to 32 bits (DS14540, table 10), so it reads in frames of 8 bits and the GPDMA
 moves the 27 bytes as they come, by a linked list of two nodes (RM0481 Rev 5, 16.4.13): the status
-word's three bytes to the side, where its lead-off bits go into the diagnostics, and the channels
+word's three bytes to the side, and the channels
 straight into bytes 4–27 of the frame. A module of two chips reads its second the same way after
 the first, the two in cascade on one SPI, each with a chip select of its own (see
 [Rubaška](../rubaska/SOFTWARE.md#the-ads129xs-settings)), into bytes 28–51 of its frame 0x24. The
@@ -314,7 +317,7 @@ with the command's number back. One register is written in 8 B, more in 34 B.
   Conversions go on and START stays high. The bytes of a multi-byte command must be 4 CLK periods
   apart (~2.0 µs), so writing one register takes an estimated ~16 µs.
 - **Kept free for what comes later:** the kinds 0x07–0x0F, 0x17–0x1F, 0x25–0x2F and 0x31–0x7F,
-  the chips 0x0B–0x0E. A new sensor takes a chip's number and a map of registers and needs no
+  the chips 0x07–0x0E. A new sensor takes a chip's number and a map of registers and needs no
   kind of its own; its slow data are read, its steady data come in the free part of its unit's
   slot.
 
@@ -332,7 +335,7 @@ read sent unasked.
 
 | registers | what |
 |---|---|
-| 0x00–0x3F | the unit's settings, held in RAM and sent at every start: 0x00 the bias, 0 off and 1 on, whether this unit's first chip drives the bias electrode (PD_RLD, see [Rubaška](../rubaska/SOFTWARE.md#the-ads129xs-settings)); 0x01 the IMU mode, 0 sixteen samples at 1,920 Hz summed into the step, the main mode, 1 the chip's own 120 Hz, the fallback; 0x02 a module's status LED, 1 blinking for the map's application to find it (see [Baťa](../bata/SOFTWARE.md#the-map)), 0 back to the firmware's own, neither kept by Baťa nor sent at the start; 0x03 the strip's ground layer, 0 on ground and 1 driven at the body's common mode (see [Rubaška](../rubaska/HARDWARE.md#the-strips-ground-layer)); on Mamka's processors their state and their commands instead |
+| 0x00–0x3F | the unit's settings, held in RAM and sent at every start: 0x00 the bias, 0 off and 1 on, whether this unit's first chip drives the bias electrode (PD_RLD, see [Rubaška](../rubaska/SOFTWARE.md#the-ads129xs-settings)); 0x01 the IMU mode, 0 eight samples at 960 Hz summed into the step, the main mode, 1 the chip's own 120 Hz, the fallback; 0x02 a module's status LED, 1 blinking for the map's application to find it (see [Baťa](../bata/SOFTWARE.md#the-map)), 0 back to the firmware's own, neither kept by Baťa nor sent at the start; 0x03 the strip's ground layer, 0 on ground and 1 driven at the body's common mode (see [Rubaška](../rubaska/HARDWARE.md#the-strips-ground-layer)); on Mamka's processors their state and their commands instead |
 | 0x40–0x7F | the unit's table, read only (below) |
 | 0x80–0xBF | the firmware's update (see [Updating firmware](#updating-firmware)) |
 | 0xC0–0xFF | Mamka's events, the GPS and the UTC label, on her processors only (see [Mamka](../mamka/SOFTWARE.md#mamkas-own-registers)) |
@@ -350,39 +353,35 @@ is fixed in the firmware, and the unit fills it in RAM at every start.
 |---|---|
 | 0 | the table's length, so Mamka knows how many reads it takes |
 | 1 | the unit's kind: 1 a module, 2 the glove and the sock, 3 Nataša, 4 Míša |
-| 2 | the firmware's kind: 1 a module's Staršaja, 2 the glove's and the sock's Staršaja, 3 a Bratiška, 4 Nataša, 5 Míša, 6 Mamka's processor 1, 7 her processor 2 |
+| 2 | the firmware's kind: 1 a module's Staršaja, 2 the glove's and the sock's Staršaja, 3 Nataša, 4 Míša, 5 Mamka's processor 1, 6 her processor 2 |
 | 3–4 | the firmware's version |
 | 5–16 | the UID, 12 B |
 | 17 | how many chips follow |
-| 18… | 2 B a chip: its number (0x01, 0x06, 0x10…) and its part: 1 the ADS1298, 2 the LSM6DSV16X, 3 the sound (TAD5142 and ICS-43434), 4 the motors (DRV2603), 5 Míša's sphere, 6 a Bratiška |
+| 18… | 2 B a chip: its number (0x01, 0x06, 0x10…) and its part: 1 the ADS1298, 2 the LSM6DSV16X, 3 the sound (TAD5142 and ICS-43434), 4 the motors (DRV2603), 5 Míša's sphere |
 
 - **Two kinds of sensing unit:** *a module*, one or two ADS1298 and IMUs; *the glove and the sock*,
-  one ADS1298, four Bratiški and their IMUs on one board. A chip's part says which map of registers
-  applies, so another kind of chip may sit at 0x01 or another kind of IMU at 0x1n with nothing
-  else changed.
-- **The chips' order:** the ADS1298 first, 0x01 and then 0x06; the glove's and the sock's
-  Bratiški 0x07–0x0A; the IMUs from 0x10, a module's 0x10–0x13, two on I3C1 and two on I3C2;
-  the glove's 20 from 0x10 to 0x23, its Staršaja's own four first, then Bratiška by Bratiška; a
-  sock's from 0x10 to 0x17.
-- A module's table is 30 B with two chips and four IMUs, two reads; the glove's 68 B, three; a
-  sock's 40 B with two Bratiški, two.
+  one ADS1298 and their IMUs on one board, read by Staršaja herself. A chip's part says which map of
+  registers applies, so another kind of chip may sit at 0x01 or another kind of IMU at 0x1n with
+  nothing else changed.
+- **The chips' order:** the ADS1298 first, 0x01 and then 0x06; the IMUs from 0x10, a module's
+  0x10–0x13, two on I3C1 and two on I3C2; the glove's 24 from 0x10 to 0x27 in the order of its
+  branches, I3C1's first; a sock's from 0x10 to 0x17.
+- A module's table is 30 B with two chips and four IMUs, two reads; the glove's 68 B with its
+  ADS1298 and 24 IMUs, three; a sock's 36 B with eight, two.
 - **Not in the table:** where the unit sits (Baťa holds it by the UID), its number (given by
   *assign*), its settings (sent at every start). **A unit keeps nothing in flash but its
   firmware:** the map and every setting live on Baťa, keyed by the UID.
 
-## The Bratiški
+## The glove and the sock
 
 **The glove,** Vešč, is a unit of its own on its arm's line, in the fourth slot, with its own
 drivers and number, part of every suit with arms: one board on the back of the hand with an
-ADS1298 for the hand's eight channels, its Staršaja, and four Bratiški, one a finger, each
-reading four IMUs on his two I3C buses, 20 IMU places in all with Staršaja's own four (see
+ADS1298 for the hand's eight channels and its Staršaja, who reads all its IMUs herself on her two
+I3Cs, each I3C's SDA switched among six branches of two IMUs, 24 IMUs (see
 [Rubaška](../rubaska/HARDWARE.md#the-glove)). **The sock,** Nosok, is her board and her firmware
 in a leg's fourth slot, on the calf above the ankle, the foot's eight channels and up to eight
-IMUs to start (see [Rubaška](../rubaska/HARDWARE.md#the-sock)). **The Bratiški are her chips,**
-0x07–0x0A, not units: no number, no frame of Mamka's answered, their IMUs 0x14 on under her,
-a write to one of them passed on her U(S)ART to him with the chip made his own. Each sends her his
-step of 52 B on his own full-duplex link at 4 MBd once a step, and his image goes in through her
-and ST's bootloader (see [Rubaška](../rubaska/SOFTWARE.md#the-bratiški)).
+IMUs to start (see [Rubaška](../rubaska/HARDWARE.md#the-sock)). To Mamka either is one unit, an
+ADS1298 and its IMUs as chips 0x10 on; a write to an IMU Staršaja makes on the branch it hangs on.
 
 ## Bring-up
 
@@ -532,15 +531,14 @@ source of false resets.
 
 | what | how | source |
 |---|---|---|
-| the independent watchdog, IWDG | started by hardware (IWDG_SW = 0, see [Updating firmware](#updating-firmware)), set to ~100 ms first thing after the start, ten times the longest erase of a flash sector, 10 ms; frozen in Stop (IWDG_STOP = 0), where a unit sleeps | RM0481 Rev 5, 7.4.4; RM0492 Rev 3, 7.4.5; DS14540 Rev 3, table 49 |
+| the independent watchdog, IWDG | started by hardware (IWDG_SW = 0, see [Updating firmware](#updating-firmware)), set to ~100 ms first thing after the start, ten times the longest erase of a flash sector, 10 ms; frozen in Stop (IWDG_STOP = 0), where a unit sleeps | RM0481 Rev 5, 7.4.4; DS14540 Rev 3, table 49 |
 | the supply's floor | the brownout reset at level 3 (BOR_LEV = 10, BORH_EN = 1): a reset below 2.54–2.68 V, so the processor never runs where its flash could misread | RM0481, 7.11.20; DS14540, table 23 |
 | the supply's warning | the PVD at level 6 (PVDE, PLS = 110): an interrupt below 2.69–2.83 V, after which no flash write starts until the supply is back, so a block not written stays missing in the update's map | RM0481, 10.6.3 and 10.11.12; DS14540, table 23 |
-| the memory | the flash's ECC always on, a double error an NMI; the SRAM's switched on in the option bytes, off as delivered: SRAM2 on the STM32H523, SRAM2 and SRAM3 on the STM32H562, SRAM1 and SRAM2 on the STM32H503; the stacks and the state in it, a double error an NMI (ECCNMI) | RM0481, 6.3.2, 7.9.10 and 7.11.24; RM0492, 5.3.2 |
+| the memory | the flash's ECC always on, a double error an NMI; the SRAM's switched on in the option bytes, off as delivered: SRAM2 on the STM32H523, SRAM2 and SRAM3 on the STM32H562; the stacks and the state in it, a double error an NMI (ECCNMI) | RM0481, 6.3.2, 7.9.10 and 7.11.24 |
 | the stack | MSPLIM at the stack's end: an overflow is a UsageFault (STKOF), not a silent overwrite | PM0264 Rev 8, 2.1.3.3 and 4.3.12.3 |
 | the clock | the clock security, as under [the clock tree](#the-clock-tree): the clock lost, the unit falls silent and resets | RM0481, 11.4.10 |
 
-The same thresholds stand in DS14053 Rev 4 (tables 20 and 46) and DS14258 Rev 6 (tables 25 and
-51).
+The same thresholds stand in DS14258 Rev 6 (tables 25 and 51).
 
 - **The inner loop:** each task a unit must run, in the active mode the ADS1298's reads, the IMUs'
   samples, the slot's frame and Mamka's frames read, sets its bit as it runs; the main loop feeds
@@ -569,8 +567,7 @@ The same thresholds stand in DS14053 Rev 4 (tables 20 and 46) and DS14258 Rev 6 
   after a reset in the service mode, an update swapped back, a unit back without its line's
   power going off, and Mamka's processor 1. A unit that resets while measuring is out until its
   line's power goes off and on, which clears the cause, so it shows only as its place empty from
-  that cycle on; a Bratiška's, as his IMUs missing and his bit among his Staršaja's chips 0 (see
-  [Rubaška](../rubaska/SOFTWARE.md#the-bratiški)).
+  that cycle on.
 
 ## Into Baťa
 
@@ -635,16 +632,15 @@ firmware is split into parts only in its source, the communication one library f
 The way is made so that no unit is ever lost and a bad version returns to the old by itself.
 
 **Two banks.** Every STM32H5 here has its flash in two banks and reads one while writing the other
-(DS14540 Rev 3 and DS14258 Rev 6, 3.4; DS14053 Rev 4 for the STM32H503), so a failed update never
-leaves a unit without a firmware. An image is at most one bank: 128 KB on a module's STM32H523CC
-(two equal banks of its 256 KB, RM0481 Rev 5, table 53), the glove's Staršaja's too, 256 KB on
-Nataša's STM32H523RE and 512 KB on Mamka's STM32H562VG or H563VG; a Bratiška has no banks, his image
-going in through his Staršaja (below). The map of the blocks received shows 256 at a time, 128 KB,
-through a window, so a whole bank is mapped in one to four windows: a module's image in one,
-Nataša's in two, Mamka's in four. A bank is erased in 64 ms, 320 ms at most, and 16 B are written in
-31 µs, 100 µs at most, so a block of 512 B in ~1 ms, 3.2 ms at most, against the 0.26 ms it takes to
-come at 19.66 Mbaud: the flash sets the pace. The program flash takes 10,000 cycles (DS14540 Rev 3,
-tables 49 and 50).
+(DS14540 Rev 3 and DS14258 Rev 6, 3.4), so a failed update never leaves a unit without a firmware.
+An image is at most one bank: 128 KB on a module's STM32H523CC (two equal banks of its 256 KB,
+RM0481 Rev 5, table 53), the glove's Staršaja's too, 256 KB on Nataša's STM32H523RE and 512 KB on
+Mamka's STM32H562VG or H563VG. The map of the blocks received shows 256 at a time, 128 KB, through a
+window, so a whole bank is mapped in one to four windows: a module's image in one, Nataša's in two,
+Mamka's in four. A bank is erased in 64 ms, 320 ms at most, and 16 B are written in 31 µs, 100 µs at
+most, so a block of 512 B in ~1 ms, 3.2 ms at most, against the 0.26 ms it takes to come at 19.66
+Mbaud: the flash sets the pace. The program flash takes 10,000 cycles (DS14540 Rev 3, tables 49 and
+50).
 
 | register (chip 0x00) | what |
 |---|---|
@@ -652,7 +648,7 @@ tables 49 and 50).
 | 0x81 | the firmware's kind (see [the unit's table](#the-registers)) |
 | 0x82–0x85 | the image's length |
 | 0x86–0x87 | the version |
-| 0x88 | the state, read only: 0 idle, 1 erasing, 2 receiving, 3 the CRC wrong, 4 on trial, 5 the last update failed, 6 programming the Bratiški |
+| 0x88 | the state, read only: 0 idle, 1 erasing, 2 receiving, 3 the CRC wrong, 4 on trial, 5 the last update failed |
 | 0x89 | the map's window: which 256 blocks 0x90–0xAF show, 0 the blocks 0–255, 1 the blocks 256–511, and on; 0 after *begin* |
 | 0x90–0xAF | the map of the blocks received in the window, read only, a bit a block |
 
@@ -697,7 +693,7 @@ once, to every unit of a kind; no unit answers a block.
   or more is a start after a reset nobody asked for, so the firmware writes the phase *failed*,
   swaps the banks back and resets, and the old image comes up and shows the failure. The timer
   running out does the same. The independent watchdog starts by hardware, the option bit IWDG_SW
-  cleared (RM0481, 7.4.4; RM0492, 7.4.5; see [Watchdogs](#watchdogs)), so a new image that hangs
+  cleared (RM0481, 7.4.4; see [Watchdogs](#watchdogs)), so a new image that hangs
   before it feeds the watchdog still ends in a reset and the swap back; the option bytes are not
   swapped with the banks.
 - **The zero stage.** MCUboot, the usual bootloader of this class, keeps the test-and-revert
@@ -707,12 +703,7 @@ once, to every unit of a kind; no unit answers a block.
   swaps back when the count says so, and jumps to the application in the rest of the bank. A unit
   refuses an image whose first sector is not its own, so the stage never changes by an update;
   a new stage, should one ever be needed, goes in over SWD.
-- **The Bratiški's image,** kind 3, goes to the glove's and the sock's Staršaja: *begin* with the
-  kind 3 makes the blocks hers to keep, in RAM, 64 KB at most, her map showing them; at *check and
-  restart* she checks its CRC-32 and programs her Bratiški through ST's bootloader over the
-  board's traces, ~15 s, her state 6 meanwhile and 5 if one fails; no bank, no trial and no
-  *confirm* for them (see [Rubaška](../rubaska/SOFTWARE.md#the-bratiški)). Mamka's own images
-  are under [Mamka](../mamka/SOFTWARE.md#firmware).
+- **Mamka's own images** are under [Mamka](../mamka/SOFTWARE.md#firmware).
 
 ## Output
 
@@ -818,7 +809,7 @@ none. The meta packets 3, 4, 5 and 7 want the class of 512 B.
 | 3 | the joint table, values 0–63 | 4 B a value: the joint (u8, from the joint list), the axis (u8: 1 flexion, 2 abduction, 3 rotation, 4 swing forward, 5 swing out, 6 twist), the range's low and high ends (2 × i8, in 2°); the value's place in the snapshot is its index | 256 |
 | 4 | the joint table, values 64–126, and the contacts | 63 values as above, then the 32 contact areas (u8 each, from the area list) | 284 |
 | 5 | the electrodes | the EMG units' channels in the map's order, 8 a chip, 16 a module of two, the glove's and the sock's 8, 280 × 1 B, zeros beyond the last: bit 0 P off, bit 1 N off (from the diagnostics), bit 2 the channel is on, bit 3 reserved (0), bits 4–7 the signal's quality 0–15 as Baťa rates it; then the unit driving the bias as its place in the map (u8), the bias electrodes found connected at start (u32, a bit a unit, from the diagnostics) and the driving unit's bias electrode now (u8, 1 off) | 286 |
-| 6 | temperatures and the battery | the units' processors in the map's order (22 × i16), the IMUs in the map's order, unit by unit, as many as meta 1 says (i8, °C, 0x7F none), up to 121: the modules' 64 places, the gloves' 40, the socks' 16 and Míša's; Mamka's two processors and Baťa's CPU (3 × i16); the battery as the BMS gives it (23 B, see [Mamka](../mamka/SOFTWARE.md#mamkas-own-registers)); the power's bits (u16) and the fan (u16, rpm) | ~202 |
+| 6 | temperatures and the battery | the units' processors in the map's order (22 × i16), the IMUs in the map's order, unit by unit, as many as meta 1 says (i8, °C, 0x7F none), up to 129: the modules' 64 places, the gloves' 48, the socks' 16 and Míša's; Mamka's two processors and Baťa's CPU (3 × i16); the battery as the BMS gives it (23 B, see [Mamka](../mamka/SOFTWARE.md#mamkas-own-registers)); the power's bits (u16) and the fan (u16, rpm) | ~210 |
 | 7 | the muscles' fatigue | the muscle group of each of the 280 channels in the map's order (u8 each, 0 none), then the fatigue of groups 1–64 (u8 each, 0 fresh to 255) | 344 |
 | 8 | time and place | the UTC label: the suit's sample (u32) at which a UTC second began and that second (u32, Unix time), 0 while no PPS has come; the position (2 × i32, 10⁻⁷ °), the height (i16, m), the fix's quality (u8), the satellites (u8), 4 B zeros | 24 |
 
@@ -885,11 +876,10 @@ processor's table is on its own page ([the module and the glove](../rubaska/SOFT
 - **A fast link splits:** a line's or an SPI's receiving on GPDMA1, its sending on GPDMA2, so the
   two directions have a controller and its master ports each. The slow ones fill what is left.
 - **The peripherals on channels 0–3,** the next ones on 4–5; 6 and 7 stay free, for a memory copy
-  should one be needed, everywhere but on the glove's Staršaja, where two of the Bratiški's
-  receivers take GPDMA1's.
+  should one be needed.
 - **Priority,** GPDMA_CxCR.PRIO (16.4.11): 3, the time-sensitive class with a fixed precedence
-  over the rest, for the lines, the ADS1298's reads and the SPIs to Baťa; 2 for the sound and the
-  Bratiški's steps; 1 for the IMUs and Míša's radar; 0 for settings. The slow UARTs, the BMS's, the
+  over the rest, for the lines, the ADS1298's reads and the SPIs to Baťa; 2 for the sound; 1 for
+  the IMUs and Míša's radar; 0 for settings. The slow UARTs, the BMS's, the
   GPS's and the one between Mamka's processors, take no channel: their FIFO of 8 B and an
   interrupt are enough.
 - **Receiving is circular:** a linked list whose last node points back to its first (16.4.13),
@@ -902,14 +892,14 @@ processor's table is on its own page ([the module and the glove](../rubaska/SOFT
 - **The CRC unit** is fed by the core, its data register taking words and bytes alike: for a frame
   of 34 B the 32 B before its CRC as eight words, for one of 58 B the 56 as fourteen, for a frame of
   8 B the six as a word and two bytes.
-- **Counted per processor,** none takes more than 13 of the 16 channels: the glove's Staršaja, a
-  module's nine and the four Bratiški's receivers; Mamka's processor 2 twelve, her four lines
-  receiving, their two senders, two SPIs both ways and the SAI's two.
+- **Counted per processor,** none takes more than 12 of the 16 channels: Mamka's processor 2, her
+  four lines receiving, their two senders, two SPIs both ways and the SAI's two; a module and the
+  glove's Staršaja nine.
 
 ## The clock tree
 
-Every processor of the suit but a Bratiška runs from the suit clock, 9.8304 MHz, as a digital clock
-into the HSE in bypass, and all set their clocks the same way (RM0481 Rev 5, 11.8; DS14540 Rev 3 and
+Every processor of the suit runs from the suit clock, 9.8304 MHz, as a digital clock into the HSE
+in bypass, and all set their clocks the same way (RM0481 Rev 5, 11.8; DS14540 Rev 3 and
 DS14258 Rev 6 for the limits). **The units' cores run at 49.152 MHz,** a quarter of Mamka's, their
 lines' USARTs on a PLL of their own at 196.608 MHz: there is no constraint between a USART's bus
 clock and its kernel clock (RM0481 Rev 5, 56.5.3), a USART takes pclk, PLL2 Q or PLL3 Q (RCC_CCIPR1,
@@ -937,12 +927,9 @@ glove](../rubaska/SOFTWARE.md#clocks), [Mamka](../mamka/SOFTWARE.md#clocks),
   unit's timer and ÷ 100 in Mamka's; the pages give both.
 - **The IMUs' REF,** 24 or 15 Hz, is the suit clock ÷ 409,600 or ÷ 655,360, a timer's output on
   every unit with IMUs, ÷ 2,048,000 or ÷ 3,276,800 in a unit's timer: on it the LSM6DSV16X's
-  1.6 kHz setting runs at 1,920 Hz, +20 % of the ±33 % allowed, 80 or 128 samples a period, where
-  at least 64 and 40 ms are asked (its ODR-triggered mode, DS13510 Rev 4, 6.6; AN5763 Rev 4, 3.3,
+  800 Hz setting runs at 960 Hz, +20 % of the ±33 % allowed, 40 or 64 samples a period, where at
+  least 32 and 40 ms are asked (its ODR-triggered mode, DS13510 Rev 4, 6.6; AN5763 Rev 4, 3.3,
   table 15).
-- **A Bratiška** runs on his own HSI and never takes the suit clock: his IMUs sample on the REF
-  that his Staršaja makes from it, his steps run on their samples, and the HSI sets only his
-  U(S)ART's bit rate (see [Rubaška](../rubaska/SOFTWARE.md#clocks)).
 - **After a reset** every processor runs on its HSI, 32 MHz in VOS3 (RM0481 Rev 5, 10.7.2 and
   11.8.1), and takes the suit clock before anything else: VOS1, waiting for VOSRDY; the flash's
   latency; the HSE, waiting for HSERDY; the PLLs, waiting for their lock, 45 µs and 100 µs at most
@@ -975,7 +962,7 @@ processor's table is on its page ([the module and the glove](../rubaska/SOFTWARE
 | 0 | the measurement's moment: the ADS1298's DRDY, line 8's cycle |
 | 1 | the frame out: the read done, a slot's start |
 | 2 | the lines in: Mamka's frames and the echo; on Mamka the frames in and the SPIs to Baťa |
-| 4 | the links and the sound: the Bratiški's U(S)ARTs on their Staršaja, the link between Mamka's processors, the SAI and the I2S |
+| 4 | the links and the sound: the link between Mamka's processors, the SAI and the I2S |
 | 6 | the sensors: the I3C, the radar, the ultrasound |
 | 8 | the slow ones: the ADC, the flash, the BMS, the GPS, the fan |
 

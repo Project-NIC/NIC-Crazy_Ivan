@@ -6,7 +6,7 @@
 
 [English](README.md) · **Čeština** · [Русский](README.ru.md)
 
-**Neurální oblek:** až 580 elektrod a 100 inerciálních jednotek, 56 z nich v rukavicích a
+**Neurální oblek:** až 580 elektrod a 108 inerciálních jednotek, 64 z nich v rukavicích a
 ponožkách, na obleku, který si skládáš z dílů, jako je rukáv, nohavice, trup nebo čelenka.
 
 Vlastní signály svalů a pohyb těla jdou do počítače v batohu, Radxa ROCK 5T s vlastním NPU nebo
@@ -103,8 +103,8 @@ Na těle je oblek **Rubaška**, košilka, v níž se člověk rodí, na **Kašč
 co sedí, je **Bogatyr**, Kaščej oblečený do masa. Mamčiny vlastní děti, **Rebjata** (snímací
 moduly), visí na **Pupovině**, pupeční šňůře: na osmi linkách, jedné na díl obleku, které jim,
 rukavicím, Nataše a Míšovi nosí napájení, hodiny a data. Hlavní procesor každé snímací jednotky je
-**Staršaja**, ta starší; rukavice, **Vešč**, a ponožka, **Nosok**, mají její mladší bratříčky,
-**Bratiški**, čtyři malé procesory vedle ní na jedné desce, každý čte IMU jednoho prstu.
+**Staršaja**, ta starší; v rukavici, **Vešč**, a v ponožce, **Nosok**, čte sama každou IMU ruky
+nebo nohy.
 Pravidla domácnosti jsou **Porjadok** a její napájení, od Babušky dolů, **Pitanije**.
 
 Díly se volně kombinují:

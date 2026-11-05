@@ -141,8 +141,11 @@ What was tried for the frames and the modes and left:
   surface EMG uses (SENIAM's 10–500 Hz; Delsys at 1,926 SPS, Meta at 2,000, OT at 2,048): 1,920 is
   the rate and 3,840 the setting to try, a twitch of a few milliseconds seen at either.
 - **The IMUs' step of 60 Hz at 1,920 SPS** (to 29 Oct 2026), thirty-two samples kept at the lower
-  rate. The step is 1/120 s at either rate, sixteen samples at 1,920 and the frames counted mod 16,
-  thirty-two and mod 32 at 3,840.
+  rate. The step is 1/120 s at either rate, the frames counted mod 16 at 1,920 and mod 32 at 3,840.
+- **The IMUs at 1,920 Hz, sixteen samples a step** (to 4 Nov 2026), a sample every cycle, read as
+  it came. Eight a step at 960 Hz, the 800 Hz setting under the same REF, is what Xsens's MTw does,
+  sampling at 1,000 Hz and sending 120 (its leaflet), and halves the I3C's load and the units'
+  work (the owner); the step, its 12 B and the frames stay.
 - **The foot's and the hand's IMUs on their module's bus** (to 29 Oct 2026), two beyond the joint
   on the strip that crosses it. The hand and the foot want more than a module's four places (the
   owner: losing their detail makes no sense), so a unit of the glove's kind in the limb's fourth
@@ -151,9 +154,13 @@ What was tried for the frames and the modes and left:
 - **The glove's frame of 34 B of steps alone, and the Bratiški as units behind their Staršaja**
   (to 29 Oct 2026), with numbers of their own from *discover* passed on down their wires and
   "IMUs alone" as a kind of unit. The hand got its own eight channels on the glove's board, so the
-  glove and the sock send 0x25, 58 B, eight channels and 28 B of steps, and the Bratiški, on the
-  board, are Staršaja's chips 0x07–0x0A, with no number and no frame of Mamka's to answer; their
-  image goes in through her and ST's bootloader (see [Rubaška](../rubaska/WHY.md)).
+  glove and the sock send 0x25, 58 B, eight channels and 28 B of steps, and the Bratiški became
+  Staršaja's chips.
+- **The Bratiški as Staršaja's chips** (to 4 Nov 2026): 0x07–0x0A, a part of their own, their
+  image a firmware's kind of its own kept in her RAM and written through ST's bootloader, her
+  state 6 meanwhile, their steps on links of their own. Staršaja reads all the glove's and the
+  sock's IMUs herself, two on every SDA at a time (see [Rubaška](../rubaska/WHY.md)), so the
+  chips, the part, the kind and the state went with them, the kinds after it moving up one.
 - **The line clock as the switch between the modes** (23 Oct 2026): every
   unit on its HSI at 38,400 Bd until Mamka raised its line's clock, then at 19.66 Mbaud, and back
   when the clock went. It took a second setting of every peripheral for the HSI and a change of

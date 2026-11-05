@@ -31,7 +31,7 @@ says so.
   [construction](CONSTRUCTION.md#the-electrodes-rules)).
 - **The IMUs,** 44 on the body of 64 places, two or more on each segment of a limb, more where
   the skin slides most, four in a square on the head and four down the neck and the upper back;
-  the gloves' 2 × 20 and the socks' 2 × 8, 100 in all.
+  the gloves' 2 × 24 and the socks' 2 × 8, 108 in all.
 - **What was left out,** the muscles surface EMG cannot reach and the places the body presses
   on, and the layouts tried.
 
@@ -49,5 +49,5 @@ What the electrodes, the strips and the harness are made of is under
 | | modules | electrodes | IMUs |
 |---|---|---|---|
 | the body | 16: the head, the neck with the upper back, the two shoulders, the chest with the abdomen, the lower back, the two hips, and two on each limb | 496, 32 on a module of the body and on the head's, 16 on the neck's; a bias electrode on every module, 512 | 44 of 64 places |
-| the gloves | one unit each, the hand's: an ADS1298 on the board | 2 × 17: sixteen and a bias | 2 × 20 |
+| the gloves | one unit each, the hand's: an ADS1298 on the board | 2 × 17: sixteen and a bias | 2 × 24 |
 | the socks | one each, the foot's | 2 × 17 | 2 × 8 |

@@ -10,6 +10,7 @@ Where the pages leave a detail to the code, the choice is said in the docstring.
 """
 from __future__ import annotations
 
+import math
 import struct
 from dataclasses import dataclass, field
 
@@ -49,7 +50,6 @@ NATASA, MISA = 0x81, 0x82              # line 8's, fixed
 SENSING = range(0x01, 0x80)            # given at the start by *assign*
 
 CHIP_UNIT, CHIP_ADS, CHIP_SOUND, CHIP_MOTORS, CHIP_BMS, CHIP_SPHERE, CHIP_ADS2 = range(7)
-CHIP_BRATISKA = 0x07                   # 0x07-0x0A the glove's and the sock's Bratiški, her chips
 CHIP_EVERY_IMU, CHIP_IMU = 0x0F, 0x10  # 0x10... the IMUs in the order of the unit's table
 
 DONE, NO_ANSWER, NO_CHIP, NO_REGISTER, REFUSED = range(5)              # a write's result
@@ -302,6 +302,7 @@ def bus_errors(frame: bytes) -> int:
 ADS_SPS = 1920         # the EMG's rate; 3,840 the setting to try, with a step of 32
 STEP = 16              # cycles a step: 16 ADS samples at 1,920 SPS, 1/120 s
 PERIOD = 32            # cycles between a unit's diagnostics, and Nataša's frames of data
+IMU_HZ, IMU_SAMPLES = 960, 8   # every IMU: the 800 Hz setting under REF; eight samples summed a step
 IMU_STEP_LEN = 12      # an IMU's step: the turn and the mean force, three i16 each
 MODULE_IMU, END_IMU = 4, 28        # IMU bytes a frame of data: a module's; the glove's and the sock's
 
@@ -333,7 +334,7 @@ def imu_bytes(cycle: int, steps: list[bytes], per_frame: int) -> bytes:
 
 
 def frames_for(imus: int, per_frame: int) -> int:
-    """How many frames of the STEP a unit's steps take: a module's four 12, the glove's 20 nine."""
+    """How many frames of the STEP a unit's steps take: a module's four 12, the glove's 24 eleven."""
     return -(-imus * IMU_STEP_LEN // per_frame)
 
 
@@ -389,54 +390,20 @@ def parse_data(frame: bytes) -> tuple[int, int, list[int], bytes]:
     return f.unit, f.number, channels, f.body[3 * n:]
 
 
-# --- the Bratiški, on the glove's and the sock's board (rubaska/SOFTWARE.md, the Bratiški) --------
+# --- the glove's and the sock's IMUs, read by Staršaja herself (rubaska/HARDWARE.md, the glove) ---
 
-BRATISKI, BRATISKA_IMUS = 4, 4     # four on the board, one a finger; four IMUs each, two a bus
-BRATISKA_STEP_LEN = 52             # his step to Staršaja: 1 + 1 + 4 × 12 + 2
+END_BUSES, END_BRANCHES, BRANCH_IMUS = 2, 6, 2   # her two I3Cs, six branches each, two IMUs a branch
+END_IMUS = END_BUSES * END_BRANCHES * BRANCH_IMUS  # 24 places on the board
 
 
-def bratiska_step(step: int, imus: list[bytes | None]) -> bytes:
-    """A Bratiška's step on his UART to Staršaja, 52 B: a bit for each of his four IMUs that
-    answers in bits 3-0 of byte 0, the step's number mod 256, the four IMUs' 12 B, zeros for one
-    that does not answer, and the CRC-16. Nothing says which Bratiška: the UART does."""
-    if len(imus) != BRATISKA_IMUS:
-        raise ValueError("four IMUs")
-    if any(i is not None and len(i) != IMU_STEP_LEN for i in imus):
+def end_steps(steps: list[bytes | None]) -> list[bytes]:
+    """Staršaja's IMU steps for her frames of data, in her table's order, the order of her
+    branches, I3C1's first: an IMU that did not answer in the step gives zeros."""
+    if len(steps) > END_IMUS:
+        raise ValueError("24 places at most")
+    if any(s is not None and len(s) != IMU_STEP_LEN for s in steps):
         raise ValueError("12 B an IMU")
-    present = sum(1 << n for n, i in enumerate(imus) if i is not None)
-    steps = b"".join(i or bytes(IMU_STEP_LEN) for i in imus)
-    return seal(bytes([present, step & 0xFF]) + steps)
-
-
-def parse_bratiska_step(b: bytes) -> tuple[int, list[bytes | None]]:
-    """The step's number and the four IMUs' steps, None for one not answering; ValueError for a
-    wrong length or CRC, which Staršaja takes as a step missing."""
-    if len(b) != BRATISKA_STEP_LEN:
-        raise ValueError("not 52 B")
-    if struct.unpack_from("<H", b, BRATISKA_STEP_LEN - 2)[0] != crc16(b[:-2]):
-        raise ValueError("bad CRC")
-    present = b[0] & 0x0F
-    imus = [b[2 + 12 * n:14 + 12 * n] if present >> n & 1 else None for n in range(BRATISKA_IMUS)]
-    return b[1], imus
-
-
-def end_steps(own: list[bytes], links: list[bytes | None],
-              fitted: tuple[int, ...] = (4, 4, 4, 4)) -> list[bytes]:
-    """Staršaja's IMU steps for her frames of data, in her table's order: her own IMUs' first,
-    then each Bratiška's as his step brought them, as many of his four as her table lists; a step
-    missing or failing its CRC, and an IMU that does not answer, give zeros."""
-    if len(links) != len(fitted) or len(links) > BRATISKI:
-        raise ValueError("a step a Bratiška, four at most")
-    out = list(own)
-    for b, n in zip(links, fitted):
-        imus: list[bytes | None] = [None] * BRATISKA_IMUS
-        if b is not None:
-            try:
-                _, imus = parse_bratiska_step(b)
-            except ValueError:
-                pass
-        out += [i or bytes(IMU_STEP_LEN) for i in imus[:n]]
-    return out
+    return [s or bytes(IMU_STEP_LEN) for s in steps]
 
 
 NATASA_MISA, NATASA_WARNING, NATASA_MOTOR, NATASA_TRIAL, NATASA_FAILED = 1, 2, 4, 8, 16
@@ -490,13 +457,32 @@ def which_imus(cycle: int, imus: int) -> range:
     return range(first, min(first + IMU_TEMPS, imus))
 
 
-def on_skin(loff_stat: list[int]) -> int:
-    """One chip's LOFF_STATP or LOFF_STATN over 32 samples turned over: 1 on the skin in every
-    one of them."""
-    off = 0
-    for s in loff_stat:
-        off |= s
-    return ~off & 0xFF
+def tone(samples: list[int], first: int = 0) -> float:
+    """The AC lead-off's tone at fDR / 4 in one channel's samples (32 in a diagnostics period):
+    their sum against exp(-j pi n / 2), four samples a period, n counted from the cycle's number
+    `first`; the amplitude in the samples' own units."""
+    re = im = 0
+    for n, x in enumerate(samples, first):
+        k = n % 4
+        if k == 0:
+            re += x
+        elif k == 1:
+            im -= x
+        elif k == 2:
+            re -= x
+        else:
+            im += x
+    return 2 * math.hypot(re, im) / len(samples)
+
+
+def on_skin(tones: list[float], threshold: float) -> int:
+    """One chip's eight P or eight N inputs from their channels' tones in the period that excited
+    them: 1 on the skin where the tone stays under the threshold, found by testing."""
+    bits = 0
+    for i, a in enumerate(tones[:8]):
+        if a < threshold:
+            bits |= 1 << i
+    return bits
 
 
 def skin_word(first: int, second: int = 0xFF) -> int:
@@ -573,8 +559,8 @@ def blink(unit: int, on: bool, number: int = 0) -> bytes:
     firmware's own."""
     return write(unit, CHIP_UNIT, REG_LED, int(on), number)
 
-FW_MODULE, FW_GLOVE, FW_BRATISKA, FW_NATASA, FW_MISA, FW_P1, FW_P2 = range(1, 8)
-PART_ADS1298, PART_LSM6DSV16X, PART_SOUND, PART_MOTORS, PART_SPHERE, PART_BRATISKA = range(1, 7)
+FW_MODULE, FW_GLOVE, FW_NATASA, FW_MISA, FW_P1, FW_P2 = range(1, 7)
+PART_ADS1298, PART_LSM6DSV16X, PART_SOUND, PART_MOTORS, PART_SPHERE = range(1, 6)
 
 
 @dataclass
@@ -617,18 +603,16 @@ def module_table(uid: bytes, imus: int = 4, version: int = 0x0100, imu: int = PA
     return UnitTable(KIND_EMG, FW_MODULE, version, uid, chips)
 
 
-HAND_IMUS, FOOT_IMUS = 20, 8       # the glove's places, Staršaja's four and the Bratiški's; a sock's to start
-END_IMUS = 20                      # the board's places: two I3C buses of two on Staršaja and on each Bratiška
+HAND_IMUS, FOOT_IMUS = 24, 8       # the glove's all 24 places; a sock's to start
 
 
-def end_table(uid: bytes, imus: int = HAND_IMUS, bratiski: int = BRATISKI, version: int = 0x0100,
+def end_table(uid: bytes, imus: int = HAND_IMUS, version: int = 0x0100,
               imu: int = PART_LSM6DSV16X) -> UnitTable:
-    """The glove's, and the sock's, the same board: its ADS1298 at 0x01, its Bratiški from 0x07,
-    its IMUs from 0x10 in the frame's order, Staršaja's own first; 0x10-0x23 for the glove's 20."""
-    if not 0 <= bratiski <= BRATISKI or not 1 <= imus <= END_IMUS:
-        raise ValueError("up to four Bratiški and 20 IMUs")
+    """The glove's, and the sock's, the same board: its ADS1298 at 0x01, its IMUs from 0x10 in
+    the frame's order, the order of Staršaja's branches; 0x10-0x27 for the glove's 24."""
+    if not 1 <= imus <= END_IMUS:
+        raise ValueError("1 to 24 IMUs")
     chips = [(CHIP_ADS, PART_ADS1298)]
-    chips += [(CHIP_BRATISKA + i, PART_BRATISKA) for i in range(bratiski)]
     chips += [(CHIP_IMU + i, imu) for i in range(imus)]
     return UnitTable(KIND_END, FW_GLOVE, version, uid, chips)
 
@@ -743,7 +727,6 @@ FW_MAP_WINDOW = 0x89                   # which 256 blocks the map shows
 FW_MAX_BLOCKS = 1024                   # the largest bank, Mamka's 512 KB, in four windows
 FW_BEGIN, FW_CHECK, FW_CONFIRM, FW_ABORT = 1, 2, 3, 4
 FW_IDLE, FW_ERASING, FW_RECEIVING, FW_CRC_WRONG, FW_ON_TRIAL, FW_FAILED = range(6)
-FW_PROGRAMMING = 6     # the glove's Staršaja writing her Bratiški through ST's bootloader
 
 
 @dataclass

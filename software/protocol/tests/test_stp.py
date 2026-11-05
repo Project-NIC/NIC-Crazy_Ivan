@@ -157,31 +157,27 @@ class TestData(unittest.TestCase):
         with self.assertRaises(ValueError):
             stp.end_data(1, 0, ch, bytes(4))
 
-    def test_the_bratiskas_steps(self):
-        imus = [bytes([0x40 + i] * 12) for i in range(4)]
-        imus[2] = None                                                 # the third not answering
-        b = stp.bratiska_step(257, imus)
-        self.assertEqual(len(b), stp.BRATISKA_STEP_LEN)
-        self.assertEqual(b[:2], bytes([0x0B, 1]))                     # IMUs 0, 1, 3; step 1
-        self.assertEqual(b[26:38], bytes(12))
-        self.assertEqual(stp.parse_bratiska_step(b), (1, imus))
-        bad = bytearray(b); bad[7] ^= 1
+    def test_the_ends_steps(self):
+        self.assertEqual((stp.END_BUSES, stp.END_BRANCHES, stp.BRANCH_IMUS, stp.END_IMUS),
+                         (2, 6, 2, 24))                               # two IMUs on every SDA path
+        steps = [bytes([0x40 + i] * 12) for i in range(stp.HAND_IMUS)]
+        steps[3] = None                                               # one not answering
+        out = stp.end_steps(steps)
+        self.assertEqual(len(b"".join(out)), 288)                     # 24 IMUs, 11 frames of 28 B
+        self.assertEqual(stp.frames_for(len(out), stp.END_IMU), 11)
+        self.assertEqual(out[3], bytes(12))
+        self.assertEqual(out[:3] + out[4:], steps[:3] + steps[4:])
+        self.assertEqual(stp.frames_for(stp.END_IMUS, stp.END_IMU), 11)   # all 24: frames 0-10
+        self.assertEqual(len(stp.end_steps(steps[:stp.FOOT_IMUS])), 8)   # a sock's to start
         with self.assertRaises(ValueError):
-            stp.parse_bratiska_step(bytes(bad))
-        own = [bytes([0x80 + i] * 12) for i in range(4)]              # Staršaja's own four
-        links = [stp.bratiska_step(1, [bytes([f * 4 + i] * 12) for i in range(4)])
-                 for f in range(4)]
-        links[1] = None                                               # a step missing
-        links[2] = bytes(bad)                                         # failing its CRC
-        out = stp.end_steps(own, links)
-        self.assertEqual(len(b"".join(out)), 240)                     # 20 IMUs, 9 frames of 28 B
-        self.assertEqual(out[:4], own)
-        self.assertEqual(out[4:8], [bytes([i] * 12) for i in range(4)])
-        self.assertEqual(out[8:16], [bytes(12)] * 8)
-        self.assertEqual(out[16:], [bytes([12 + i] * 12) for i in range(4)])
-        self.assertEqual(len(stp.end_steps(own, links[:2], (4, 0))), 8)   # a sock's two Bratiški
+            stp.end_steps([None] * 25)
         with self.assertRaises(ValueError):
-            stp.end_steps(own, links, (4, 4))
+            stp.end_steps([bytes(11)])
+
+    def test_the_imus_step(self):
+        # eight IMU samples at 960 Hz and sixteen ADS samples at 1,920 SPS: one step, 1/120 s
+        self.assertEqual(stp.IMU_HZ / stp.IMU_SAMPLES, stp.ADS_SPS / stp.STEP)
+        self.assertEqual(stp.IMU_HZ / stp.IMU_SAMPLES, 120)
 
     def test_natasa(self):
         b = stp.natasa_data(31, 0x00F0, stp.NATASA_MISA)
@@ -211,12 +207,15 @@ class TestDiagnostics(unittest.TestCase):
 
     def test_by_turns_and_bits(self):
         seen = set()
-        for k in range(4):                                            # the glove's 20 in four
-            seen |= set(stp.which_imus(31 + 32 * k, 20))
-        self.assertEqual(seen, set(range(20)))
+        for k in range(4):                                            # the glove's 24 in four
+            seen |= set(stp.which_imus(31 + 32 * k, 24))
+        self.assertEqual(seen, set(range(24)))
         self.assertEqual(list(stp.which_imus(31, 4)), [0, 1, 2, 3])
         self.assertEqual(stp.chip_bits(5, [True, True, False, True, True]), 0xFFFFFFFB)
-        self.assertEqual(stp.on_skin([0x00, 0x04, 0x00]), 0xFB)
+        sq = [1000 if n % 4 < 2 else -1000 for n in range(32)]       # the tone, a square wave
+        self.assertAlmostEqual(stp.tone(sq), 1000 * 2 ** 0.5, delta=1)  # its first harmonic
+        self.assertAlmostEqual(stp.tone([500] * 32), 0.0)               # DC is not the tone
+        self.assertEqual(stp.on_skin([10.0] * 2 + [1e6] + [10.0] * 5, 1e3), 0xFB)
         self.assertEqual(stp.mv_byte(3300), 130)
 
 
@@ -231,14 +230,17 @@ class TestTable(unittest.TestCase):
         h = stp.module_table(bytes(12), 2, ads=(stp.PART_ADS1298,))   # the neck's, one chip
         self.assertEqual((len(h.pack()), h.chips[0]), (24, (0x01, stp.PART_ADS1298)))
         g = stp.end_table(bytes(12))                                  # the glove's
-        self.assertEqual(len(g.pack()), 68)                           # an ADS1298, 4 Bratiški, 20 IMUs
+        self.assertEqual(len(g.pack()), 68)                           # an ADS1298 and 24 IMUs
         self.assertEqual(len(g.reads()), 3)
-        self.assertEqual(g.chips[:2], [(0x01, stp.PART_ADS1298), (0x07, stp.PART_BRATISKA)])
-        self.assertEqual((g.chips[5][0], g.chips[-1][0]), (0x10, 0x23))
-        self.assertEqual(len(stp.end_table(bytes(12), stp.FOOT_IMUS, 2).pack()), 40)  # a sock's
-        self.assertEqual({p for _, p in m.chips[2:] + g.chips[5:]}, {stp.PART_LSM6DSV16X})
+        self.assertEqual(g.chips[:2], [(0x01, stp.PART_ADS1298), (0x10, stp.PART_LSM6DSV16X)])
+        self.assertEqual((g.chips[1][0], g.chips[-1][0]), (0x10, 0x27))
+        s = stp.end_table(bytes(12), stp.FOOT_IMUS)                   # a sock's
+        self.assertEqual((len(s.pack()), len(s.reads())), (36, 2))
+        full = stp.end_table(bytes(12), stp.END_IMUS)                 # every place of the board
+        self.assertEqual((len(full.pack()), len(full.reads()), full.chips[-1][0]), (68, 3, 0x27))
+        self.assertEqual({p for _, p in m.chips[2:] + g.chips[1:]}, {stp.PART_LSM6DSV16X})
         with self.assertRaises(ValueError):
-            stp.end_table(bytes(12), 21)
+            stp.end_table(bytes(12), 25)
 
 
 class TestSpis(unittest.TestCase):
@@ -291,7 +293,7 @@ class TestFirmware(unittest.TestCase):
     def test_blocks(self):
         image = stp.image_with_crc(bytes(range(256)) * 4 + b"\x55" * 7)   # 1,035 B
         self.assertEqual(struct.unpack("<I", image[-4:])[0], crc32(image[:-4]))
-        frames = stp.fw_frames(stp.FW_BRATISKA, image)
+        frames = stp.fw_frames(stp.FW_NATASA, image)
         self.assertEqual([len(f) for f in frames], [519] * 3)
         f = stp.FirmwareFrame.unpack(frames[2])
         self.assertEqual((f.unit, f.firmware, f.block), (0, 3, 2))
@@ -306,7 +308,7 @@ class TestFirmware(unittest.TestCase):
     def test_begin_and_map(self):
         r = stp.Registers.unpack(stp.fw_begin(stp.FW_NATASA, bytes(131072), 0x0203))
         self.assertEqual((r.unit, r.chip, r.reg), (0, 0, 0x80))
-        self.assertEqual(r.values, struct.pack("<BBIH", 1, 4, 131072, 0x0203))
+        self.assertEqual(r.values, struct.pack("<BBIH", 1, 3, 131072, 0x0203))
         m = bytearray(b"\xFF" * 32); m[1] = 0b11110111
         self.assertEqual(stp.missing(bytes(m), 256), [11])
         self.assertEqual([stp.fw_windows(n) for n in (256, 257, 512, 1024)], [1, 2, 2, 4])

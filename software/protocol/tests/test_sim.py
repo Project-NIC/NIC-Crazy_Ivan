@@ -24,7 +24,7 @@ class TestSimulator(unittest.TestCase):
         self.assertEqual([u.slot for u in suit.of(1) if u.line == 3], [1, 2, 3, 4])
         self.assertEqual((suit.unit("glove L").slot, suit.unit("sock R").slot), (4, 4))
         self.assertEqual([u.number for u in suit.of(2)][-2:], [0x81, 0x82])
-        self.assertEqual(sum(u.imus for u in suit.units if u.line < 8), 44 + 40 + 16)
+        self.assertEqual(sum(u.imus for u in suit.units if u.line < 8), 44 + 48 + 16)
         self.assertEqual(sum(u.imus for u in Suit.standard(16, gloves=False, socks=False).units
                              if u.line < 8), 44)
         self.assertEqual(sum(u.place for u in suit.of(1)), 16 * 58)          # the places of data
@@ -42,7 +42,7 @@ class TestSimulator(unittest.TestCase):
         self.assertEqual(len(suit.unit("thigh L").frames(0, 0.0, [])[0]), 58) # two ADS1298
         g = suit.unit("glove L").frames(0, 0.0, suit.steps)[0]
         self.assertEqual((len(g), g[1]), (58, stp.K_END))                     # an ADS1298 and steps
-        self.assertEqual((suit.unit("glove L").chips, suit.unit("sock R").chips), (25, 11))
+        self.assertEqual((suit.unit("glove L").chips, suit.unit("sock R").chips), (25, 9))  # ADS + IMUs
 
     def test_a_quarter_second(self):
         suit = Suit.standard(16)
@@ -55,7 +55,7 @@ class TestSimulator(unittest.TestCase):
         self.assertEqual((len(suit.p1[0]), len(suit.p2[0][0]), len(suit.p2[0][1])),
                          (1064, 192, 192))
         self.assertEqual((bata.cycles, bata.lost, bata.empty, bata.out_of_step), (960, 0, 0, 0))
-        self.assertEqual(bata.steps, 60 * 100)                          # every IMU, every step
+        self.assertEqual(bata.steps, 60 * 108)                          # every IMU, every step
         self.assertEqual(len(bata.diagnostics), 22)                    # every unit's came
         out = summarize(btp.Frame.unpack(f) for f in bata.frames_out)
         self.assertEqual(out["packets"][btp.P_SNAPSHOT], 60)           # 960 / 16
@@ -70,7 +70,7 @@ class TestSimulator(unittest.TestCase):
         self.assertGreater(bata.empty, 0)
         self.assertLessEqual(bata.empty, suit.stats["bad"])            # no repeat for data
         self.assertEqual((bata.lost, bata.out_of_step), (0, 0))
-        self.assertLess(bata.steps, 25 * 100)
+        self.assertLess(bata.steps, 25 * 108)
 
     def test_buttons_make_events(self):
         def press(i, suit):

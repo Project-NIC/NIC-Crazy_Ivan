@@ -244,8 +244,8 @@ Every rate in the suit is the base multiplied or divided by a whole number, apar
 | ADS1298 | 1.96608 MHz | ÷ 5 |
 | ADS1298 samples | 1,920 SPS | ÷ 5,120 |
 | LSM6DSV16X, its reference REF on INT2 | 24 Hz or 15 Hz | ÷ 409,600 or ÷ 655,360 |
-| LSM6DSV16X samples, the 1.6 kHz setting | 1,920 Hz, held to REF, 80 or 128 a period (DS13510 Rev 4, 6.6; AN5763 Rev 4, 3.3; see [Rubaška](../rubaska/HARDWARE.md#the-imu)) | ÷ 5,120 |
-| IMU steps | 120 Hz, 1,920 / 16 | ÷ 81,920 |
+| LSM6DSV16X samples, the 800 Hz setting | 960 Hz, held to REF, 40 or 64 a period (DS13510 Rev 4, 6.6; AN5763 Rev 4, 3.3; see [Rubaška](../rubaska/HARDWARE.md#the-imu)) | ÷ 10,240 |
+| IMU steps | 120 Hz, 960 / 8 | ÷ 81,920 |
 | every line | 19,660,800 Bd | × 2 |
 
 The ADS1298 accepts 1.94 to 2.25 MHz (SBAS459K); its sample rates in its high-resolution mode then
@@ -376,8 +376,8 @@ the fan's 5 V use the same part.
 
   | rail | load | capacitance it charges at start | start |
   |---|---|---|---|
-  | 4 V, an arm's line, 1 or 2: three modules and the glove | ~0.31 A on average, ~0.50 A at worst | ~400 µF, an estimate: four units' inputs, each an RC beside its ceramics (see [Filtering](#filtering)), the π filter, C_OUT | within the 3.5 ms soft start; at its fastest, 2 ms, briefly at the current limit |
-  | 4 V, a leg's line, 3 or 4: three modules and the sock | ~0.29 A on average, ~0.47 A at worst | ~350 µF, an estimate: four units' inputs, the π filter, C_OUT | within the 3.5 ms soft start; at its fastest, 2 ms, briefly at the current limit |
+  | 4 V, an arm's line, 1 or 2: three modules and the glove | ~0.29 A on average, ~0.45 A at worst | ~400 µF, an estimate: four units' inputs, each an RC beside its ceramics (see [Filtering](#filtering)), the π filter, C_OUT | within the 3.5 ms soft start; at its fastest, 2 ms, briefly at the current limit |
+  | 4 V, a leg's line, 3 or 4: three modules and the sock | ~0.28 A on average, ~0.45 A at worst | ~350 µF, an estimate: four units' inputs, the π filter, C_OUT | within the 3.5 ms soft start; at its fastest, 2 ms, briefly at the current limit |
   | 4 V, lines 5 and 6, a module each; line 7, two modules | ~0.07 A on average, ~0.14 A at worst; ~0.14 and ~0.23 A | ~140 µF, an estimate: one module's, the π filter, C_OUT; ~230 µF with two | within the soft start |
   | 4 V, line 8 | ~0.35 A on average, ~1.0 A for a millisecond when the radar chirps while two motors run | ~800 µF, an estimate, Nataša's motors' polymer and Míša's input polymer among them | within the 3.5 ms soft start; at its fastest, briefly at the current limit |
   | 6 V, the whole suit | ~0.10 A, ~7 mA a module | ~0.8–1.0 mF, an estimate: the units' inputs, each an RC beside its ceramics | at the current limit, ~5–6 ms |
@@ -415,7 +415,7 @@ parts:
 1. **On Mamka,** right behind each converter: a π filter with the modules' parts, two chokes
    SWPA252012S2R2MT side by side (2.2 µH, 0.17 Ω and 1.85 A each, so 1.1 µH and 0.085 Ω) with 10 µF
    and 100 nF on both sides, then two ferrite beads GZ2012D301TF side by side (300 Ω at 100 MHz, at
-   most 0.2 Ω and 500 mA each). At an arm's line's worst ~0.50 A the pair drops ~0.09 V. No bulk
+   most 0.2 Ω and 500 mA each). At an arm's line's worst ~0.45 A the pair drops ~0.08 V. No bulk
    sits at the board's outputs: the lines' inputs are damped at the units, and one here would only
    add to what the converter charges at start. The converters sit on one side of the board with
    copper poured under them, away from the clock and the processor.

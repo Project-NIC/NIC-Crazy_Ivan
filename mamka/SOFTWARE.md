@@ -353,7 +353,7 @@ The first *start* takes no interrupt: TIM12's TRGO starts its DMA on both (see
   by Mamka once Baťa has tried the new version, or the unit swaps back by itself. Here the two banks
   are 512 KB each (DS14258 Rev 6, 3.4); each processor takes her image over her own SPI, a block in
   0.11 ms on processor 1's, 0.19 ms on processor 2's two, the flash's write setting the pace; the
-  kinds 6 and 7, chip 0x00 of 0xF1 and 0xF2. While the other bank is written, the flash runs with no
+  kinds 5 and 6, chip 0x00 of 0xF1 and 0xF2. While the other bank is written, the flash runs with no
   wait states only to 32 MHz, so LATENCY goes up for the update and back afterwards (ES0565, 2.2.9);
   the first write after power-up also freezes the core for ~120 µs (2.2.33), which the service mode
   does not mind. The backup registers that hold the update's note can come up with random contents

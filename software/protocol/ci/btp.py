@@ -14,8 +14,8 @@ KIND_ALIVE, KIND_PACKETS = 0, 1
 P_SNAPSHOT, P_META, P_ECG, P_SPHERE, P_EVENT, P_VITALS = 1, 2, 3, 4, 5, 6
 SNAPSHOT_LEN = 127 + 4       # the joints' bytes and the contacts' 32 bits
 META_FIXED = {2: 36, 3: 256, 4: 284, 5: 286, 7: 344, 8: 24}   # 1 and 6 grow with the map
-CHANNELS, IMUS = 280, 121     # the suit's EMG channels at most (15 × 16 + 8 + 4 × 8), and
-                              # its IMU places in meta 6: 64, the gloves' 40, the socks' 16, Míša's
+CHANNELS, IMUS = 280, 129     # the suit's EMG channels at most (15 × 16 + 8 + 4 × 8), and
+                              # its IMU places in meta 6: 64, the gloves' 48, the socks' 16, Míša's
 UNITS = 22                    # units in the map at most: 20 on lines 1-7, Nataša, Míša
 
 SUBSCRIBE_MARK = b"\xC1\xA1"   # C1 first
@@ -210,11 +210,11 @@ def meta_electrodes(channels: bytes, bias_unit: int, bias_found: int, bias_stat:
 
 def meta_temperatures(processors: list[int], imus: list[int], boards: tuple[int, int, int],
                       battery: bytes, power: int, fan_rpm: int) -> Packet:
-    """Meta 6: the units' processors (22 × i16), the IMUs as many as meta 1 says (i8), up to 121:
-    the modules' 64 places, the gloves' 40, the socks' 16 and Míša's; Mamka's two and Baťa's CPU
+    """Meta 6: the units' processors (22 × i16), the IMUs as many as meta 1 says (i8), up to 129:
+    the modules' 64 places, the gloves' 48, the socks' 16 and Míša's; Mamka's two and Baťa's CPU
     (3 × i16), the battery's 23 B, the power's bits (u16) and the fan."""
     if len(processors) != UNITS or len(imus) > IMUS or len(battery) != 23:
-        raise ValueError("22 processors, up to 121 IMUs, 23 B of the battery")
+        raise ValueError("22 processors, up to 129 IMUs, 23 B of the battery")
     data = struct.pack(f"<{UNITS}h", *processors) + struct.pack(f"<{len(imus)}b", *imus)
     data += struct.pack("<3h", *boards) + battery + struct.pack("<HH", power, fan_rpm)
     return meta(6, data)

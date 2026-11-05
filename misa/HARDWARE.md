@@ -36,7 +36,7 @@ pins, and the radar beside the EMG.
 | STM32H523 | UFQFPN48 or LQFP64 | 1 | the processor, as in every module |
 | THVD1452 | VSSOP-10, or SOIC-14 | 1 | line 8's return pair (see [Porjadok](../porjadok/HARDWARE.md#drivers-on-a-unit)) |
 | AM26LV32E | VQFN-16, 3.5 × 4 mm | 1 | line 8's pair from Mamka, the echo and the suit's clock |
-| Jorjin MT5C01-03 | module 15.5 × 7.0 mm, on a Hirose BM23PF0.8-14DS-0.35V | 1 | the radar, see below |
+| a module with TI's IWRL6432AOP, to be chosen | Jorjin's MT5C01-03, the one known: 15.5 × 7.0 mm, on a Hirose BM23PF0.8-14DS-0.35V | 1 | the radar, see below |
 | LSM6DSV16X | LGA-14L, 2.5 × 3 × 0.83 mm | 1 | the IMU, the suit's: the head's tilt from gravity, short turns from the gyro; 100 nF at each supply pin and 1 kΩ in series with INT2, as on the IMU board (see [Rubaška](../rubaska/HARDWARE.md#the-imu)) |
 | ICU-20201 | LGA-14, 3.5 × 3.5 × 1.26 mm | 1 | the ultrasound ahead, in a 45° horn |
 | TPS62850x | SOT583, 2.1 × 1.6 mm | 3 | 4 V to 3.3 V, 1.8 V and 1.2 V for the radar module, after Jorjin's reference design (2.7–6 V in, 2 A) |
@@ -45,7 +45,9 @@ pins, and the radar beside the EMG.
 | socket | to choose | 3 | more ultrasonic sensors, on boards of their own: the temples and the nape |
 
 - **The radar to the processor:** its UART, and its reset and SOP0, so the processor can put it
-  into flashing mode and load new radar firmware; the radar can be updated through the suit.
+  into flashing mode and load new radar firmware; the radar can be updated through the suit. Its
+  SYNC_IN from a timer's output, so a frame can start on the suit's clock (see
+  [Radar and the EMG](#radar-and-the-emg)).
 - **The ultrasonic sensors:** one SPI with a chip select each and no interrupt lines, as below.
 - **On line 8,** a unit of his own, 0x82, with a tap, the Picoflex PF-50 header 90814-0816 where the
   line's cable passes (see [Porjadok](../porjadok/HARDWARE.md#cable-and-connectors-in-the-suit)),
@@ -63,19 +65,20 @@ pins, and the radar beside the EMG.
 Míša's STM32H523 is the module's **STM32H523CCU6** in UFQFPN48, 35 I/Os, and keeps the module's
 pins wherever the job is the same, so the numbers below are the module's (DS14540, figure 6 and
 tables 14 and 15; see [Rubaška](../rubaska/HARDWARE.md#sensing-module), *The processor's pins*).
-He needs 25:
+He needs 26:
 
 | what | pins | where |
 |---|---|---|
 | the suit clock in | 1 | PH0-OSC_IN (5), the HSE in bypass, as on a module |
 | the radar: its UART, NRESET, SOP0, its host interrupt | 5 | USART1_TX PA9 (30), USART1_RX PA10 (31), AF7; NRESET PA11 (32) and SOP0 PA12 (33), outputs; the interrupt PA15 (38), an input on EXTI15 |
+| the radar's SYNC_IN | 1 | a timer's channel on the suit's clock, an output, chosen when the board is drawn |
 | the radar's supplies: EN of its three converters together | 1 | PB10 (21), an output, so the processor can power the module down and up |
 | the ultrasonic sensors: one SPI and a chip select each | 7 | SPI1 (AF5): SCK PA5 (15), MISO PA6 (16), MOSI PA7 (17), mode 3, at most 13 MHz (DS-000478), 78.6432 MHz ÷ 8 = 9.83 MHz; CS as outputs: the sensor on the board PA4 (14), the three sockets PB0, PB1, PB2 (18–20) |
 | the IMU: one I3C bus and REF | 3 | I3C1_SCL PB6 (42), I3C1_SDA PB7 (43), AF3; REF from TIM1_CH1 on PA8 (29), AF1, to the IMU's INT2, 24 or 15 Hz from the suit's 9.8304 MHz ÷ 409,600 or ÷ 655,360 |
 | line 8: transmit, the echo, DE, receive from Mamka | 4 | USART2_TX PA2 (12), the echo on USART2_RX PA3 (13), USART2_DE PA1 (11), AF7; Mamka's frames on UART5_RX PB5 (41), AF14 (tables 14 and 15), the radar keeping USART1, NRESET and SOP0 on PA9–PA12 |
 | SWD and SWO | 3 | PA13 (34), PA14 (37), PB3 (39), AF0 |
 | status LED | 1 | PB12 (25), as on a module |
-| **total** | **25** | 10 I/Os free |
+| **total** | **26** | 9 I/Os free |
 
 - **The module's pins where the job is the same:** the clock in, SPI1, I3C1, REF, SWD and the
   LED sit where the module has them, so the IMU and clock code carry over unchanged. SPI1 serves
@@ -86,9 +89,9 @@ He needs 25:
   module's line pins, so Míša's line takes other pins: 196.608 MHz ÷ 157, 0.18% off, inside
   what a UART tolerates. NRESET and SOP0 let the processor put the module
   into its flashing mode (see [the board](#the-board)); the exact pin names on the MT5C01-03's
-  connector are to be read in Jorjin's sheet. Its host interrupt says when a frame of points is
-  ready.
-- **The IMU** runs at 1,920 Hz as in a module: its 1.6 kHz setting is held to the REF that Míša
+  connector are to be read in the chosen module's sheet. Its host interrupt says when a frame of
+  points is ready.
+- **The IMU** runs at 960 Hz as in a module: its 800 Hz setting is held to the REF that Míša
   makes from the suit's clock on his own timer, the ODR-triggered mode (DS13510 Rev 4, 6.6; AN5763
   Rev 4, 3.3, table 15). REF stays low until the IMU is set, its INT2 being an output forced to
   ground from power-on (DS13510 Rev 4, table 23); should the IMU reset while REF runs, the 1 kΩ
@@ -100,8 +103,12 @@ He needs 25:
 
 ## The radar
 
-The **Jorjin MT5C01-03** carries a TI **IWRL6432AOP** with its antennas in the package, a 40 MHz
-crystal and a 16 Mbit flash (Jorjin's datasheet MT5C01-03-DTS-R01; TI's SWRS323B).
+**The module is still to be chosen.** The one known, Jorjin's **MT5C01-03**, gives its pinout only
+under an NDA; asked without one, Jorjin has not answered, and a part whose pins may not be published
+cannot go into an open design. So the best module with a TI **IWRL6432AOP** and a public pinout is
+to be found, Jorjin's if its pinout comes free. The figures below are the MT5C01-03's, from its
+public datasheet: the IWRL6432AOP with its antennas in the package, a 40 MHz crystal and a 16 Mbit
+flash (Jorjin's datasheet MT5C01-03-DTS-R01; TI's SWRS323B).
 
 | | MT5C01-03 |
 |---|---|
@@ -183,8 +190,9 @@ those bursts have harmonics at 10, 20, 30 … Hz, right in the EMG band up to ~5
   the suit's cycles, averages it and takes it away; how much that stamp wanders against the
   chirps is for the trial. Locked frames, each started on the same ADS sample (10 Hz is
   1,920 / 192), want a hardware trigger: the chip has one, SYNC_IN, ~160 ns from the pulse to the
-  frame (its datasheet), but TI's SDK 05.05 does not use it yet, and Jorjin's pinout must bring
-  it out.
+  frame (its datasheet), which the chosen module must bring out on its connector. Míša's timer
+  gives the pulse every 192 cycles; TI's SDK 05.05 does not use SYNC_IN yet, so the demo is to
+  set the pin's mode and start its frames from it.
 - **The radar's 60 GHz itself** hardly reaches the leads: at a 5 mm wavelength they are poor
   antennas, and it sends +15 dBm EIRP. The ADS1298 has an RC filter at every input, ~3 MHz
   (SBAS459K, 9.3.1.1), and a module's inputs keep empty places for small common-mode capacitors
@@ -193,14 +201,15 @@ those bursts have harmonics at 10, 20, 30 … Hz, right in the EMG band up to ~5
 
 ## Open questions
 
-- first a trial: Jorjin's evaluation board MT5C01E02R1, or TI's IWRL6432AOPEVM, on Baťa: glass
+- the module: one with the IWRL6432AOP and a public pinout, SYNC_IN on its connector; Jorjin's
+  MT5C01-03 if its pinout comes without an NDA,
+- first a trial: the chosen module's evaluation board, or TI's IWRL6432AOPEVM, on Baťa: glass
   doors, a post, a car at the roadside, the fields and the two conditions, before a board is
   drawn,
-- whether the MT5C01-03 can be bought in small numbers, and its price,
 - the EMG beside the radar: a module next to the evaluation board, its noise with the radar
   off, and at 10 Hz,
 - 16 frames a second: TI's demo's processing time a frame (its stats) against 62.5 ms and a
-  frame period under 100 ms; SYNC_IN on Jorjin's connector and a hardware trigger in the demo,
+  frame period under 100 ms; the demo started by SYNC_IN,
 - whether the CH201's horns fit the ICU-20201,
 - the ultrasound without INT1: the end of a measurement over SPI (only some sensor firmware) or
   waited for, and whether an unused INT1, an open drain, wants a pull-up,

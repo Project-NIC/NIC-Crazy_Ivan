@@ -102,11 +102,11 @@ waits for the professionals' advice; what was tried is under
 | hips | 2 | 64 | 2 | 2 |
 | upper arms | 2 | 64 | 2 | 8 |
 | forearms | 2 | 64 | 2 | 4 |
-| hands, the gloves | 2 | 32 | 2 | 40 |
+| hands, the gloves | 2 | 32 | 2 | 48 |
 | thighs | 2 | 64 | 2 | 8 |
 | calves | 2 | 64 | 2 | 4 |
 | feet, the socks | 2 | 32 | 2 | 16 |
-| **the suit** | **16 modules, 2 gloves, 2 socks** | **560** | **20, 580 electrodes in all** | **100** |
+| **the suit** | **16 modules, 2 gloves, 2 socks** | **560** | **20, 580 electrodes in all** | **108** |
 
 **The heart and the breath.** The heart's ECG shows in the EMG, strongest on the torso and
 weaker on the limbs. Cleaning the EMG means estimating the ECG and subtracting it, and the ECG
@@ -144,7 +144,7 @@ output; see [Porjadok](../porjadok/SOFTWARE.md#output).
 
 - **Four IMUs a module at most:** two I3C buses of two, since the LSM6DSV16X has one address pin,
   SDO/SA0, for 0x6A or 0x6B, and its I3C identity differs only by it (DS13510 Rev 4, 5.1.2 and
-  table 17); 64 places on 16 modules, 44 fitted. The gloves come on top, 20 each, and the
+  table 17); 64 places on 16 modules, 44 fitted. The gloves come on top, 24 each, and the
   socks, 8.
 - **At least the segments of a commercial suit:** Xsens MVN puts 17 sensors on the pelvis (the
   sacrum), the sternum, the head, both shoulders (the scapula), the upper arms, the forearms,
@@ -164,7 +164,7 @@ output; see [Porjadok](../porjadok/SOFTWARE.md#output).
 - **Over bone and flat places, where the skin slides least;** where an IMU and an electrode need
   the same bone, both stay on it a few centimetres apart.
 - **The hand and the foot are the glove's and the sock's:** one board in the limb's fourth slot
-  with one ADS1298 and the IMUs, the glove's 20 places, a sock's eight to start (see
+  with one ADS1298 and the IMUs, the glove's 24, a sock's eight to start (see
   [Rubaška](../rubaska/HARDWARE.md#the-glove)); the forearm's and the calf's modules keep their
   two.
 
@@ -184,24 +184,27 @@ output; see [Porjadok](../porjadok/SOFTWARE.md#output).
 | | IMUs |
 |---|---|
 | the body's modules | 44 of 64 places |
-| the gloves | 2 × 20 |
+| the gloves | 2 × 24 |
 | the socks | 2 × 8 |
-| all, with two gloves and two socks | 100 |
+| all, with two gloves and two socks | 108 |
 
 ### The glove's
 
-The glove's board on the back of the hand carries the hand's ADS1298 and 20 IMU places (see
-[Rubaška](../rubaska/HARDWARE.md#the-glove)). **The electrodes,** eight channels, wait with the
-rest (above). **The IMUs,** 20 places: on each finger its three phalanges, the proximal and the
-middle on the Bratiška's first bus, the distal on the second with a place to spare; on Staršaja's
-own buses the thumb's metacarpal and its two phalanges, and the board's own, on the back of the
-hand over the carpus; the four spares for the palm's arch, the fourth and fifth metacarpals' heads,
-where the arch bends, and a second on the thumb's metacarpal, because its skin slides. Over bone,
-not between the bones, where the interosseous muscles bulge under the skin; the strips along the
-sides of the fingers. Which are fitted the recordings decide: 20; 12, the thumb's three, the
-board's own and two a finger, the proximal and the distal; or 8, the thumb's three, the board's own
-and one a finger, the proximal, a mitt open at the fingers for a hand without a glove. The palm's
-arch bending only past the middle finger is anatomy, not measured here.
+The glove's board on the back of the hand carries the hand's ADS1298 and 24 IMU places in six zones
+of four, two to a branch on Staršaja's two switched I3Cs (see
+[Rubaška](../rubaska/HARDWARE.md#the-glove)). **The electrodes,** eight channels, wait with the rest
+(above). **The IMUs,** 24, a zone a finger and the sixth over the carpal bones: on each finger its
+three phalanges, the proximal and the middle on its branch A, the distal on its branch B with a
+place to spare; the thumb's metacarpal and proximal phalanx on its A, its distal and the board's
+own, on the back of the hand over the carpus, on its B; the four spares for the palm's arch, the
+fourth and fifth metacarpals' heads, where the arch bends, and a second on the thumb's metacarpal,
+because its skin slides. Over bone, not between the bones, where the interosseous muscles bulge
+under the skin; the strips along the sides of the fingers. Which are fitted the recordings decide:
+all 24; 12, the thumb's three, the board's own and two a finger, the proximal and the distal; or 8,
+the thumb's three, the board's own and one a finger, the proximal, a mitt open at the fingers for a
+hand without a glove. The palm's arch bending only past the middle finger is anatomy, not measured
+here. Where on the carpus the four sit, and whether IMUs on its skin follow its bones or the skin
+sliding over them, the first glove shows.
 
 ### The socks
 
@@ -209,15 +212,17 @@ Nosok's board sits on the calf above the ankle (see [Rubaška](../rubaska/HARDWA
 the foot its ADS1298's sixteen electrodes, eight channels waiting with the rest, and up to eight
 IMUs, the segments of a multi-segment foot model, the Oxford Foot Model's hindfoot, forefoot and
 hallux (Stebbins et al., Gait & Posture 23, 2006): the heel over the calcaneus, the midfoot's inner
-side, the fourth metatarsal and the hallux's proximal phalanx, four to start, on Staršaja's own
-places, the other four, on one Bratiška, for trials, the forefoot's outer side and the lesser toes
-among them; over bone, not on the sole, which is stood on, and clear of the foot's electrodes; the
-first places a proposal.
+side, the fourth metatarsal and the hallux's proximal phalanx, four to start, the other four for
+trials, the forefoot's outer side and the lesser toes among them, all on Staršaja's switched
+branches as the glove's; over bone, not on the sole, which is stood on, and clear of the foot's
+electrodes; the first places a proposal.
 
 ## Open questions
 
 - **the electrodes' places on every module,** asked of professionals (4 Nov 2026); then checked on
-  a body by the first recordings, the first arm first, before a strip is drawn in a series;
+  a body by the first recordings, the first arm first, before a strip is drawn in a series, each
+  layout ranked by what its EMG gives alone and adds to the IMUs, tested on a new putting-on of
+  the sleeve (see [Baťa](../bata/SIGNALS.md#the-model));
 - **the sock's IMU places on the foot** beyond the first four, the heel, the midfoot, the forefoot
   and the hallux being Staršaja's own, with the hand's layout;
 - how far apart a pair may sit: no source found gives a limit;

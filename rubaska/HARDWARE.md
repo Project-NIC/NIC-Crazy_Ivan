@@ -159,7 +159,7 @@ right the line's, the top the IMUs'.
   I3C address (DS13510 Rev 4, table 17); its provisioned ID, read by GETPID, differs only by that
   pin (table 17), so two to a bus: more would need IDs that differ, and nothing promises that.
 - **The cable** of a bus has five wires: SCL, SDA, +3.3 V, ground and REF. The data are
-  small, 12 B per IMU 1,920 times a second, 46 kB/s a bus, so the bus can run well below the
+  small, 12 B per IMU 960 times a second, 23 kB/s a bus, so the bus can run well below the
   12.5 MHz of I3C SDR, which helps over a cable.
 - **The IMUs' rate** is held by REF, on a wire of its own into each IMU's INT2 (see
   [The IMU](#the-imu)). I3C has a clock over the bus too (synchronous timing control,
@@ -169,8 +169,9 @@ right the line's, the top the IMUs'.
   its rate held to an outside clock only from INT2 (AN5763 Rev 4, 3.3): the wire stays.
 - **I3C2 has no Fm+:** PB4 and PB5 are FT_h pins, and only FT_f pins drive Fm+ (DS14540,
   5.3.32). Should the IMUs fall back to I2C, I3C2's bus runs at 400 kHz; I3C1 on PB6 and PB7
-  (FT_f, FT_fa) could run 1 MHz. At 400 kHz two IMUs at 1,920 Hz would want ~1.3 times the
-  bus, so as I2C the IMUs run the 120 Hz mode (see [software](SOFTWARE.md#the-imus-settings)).
+  (FT_f, FT_fa) could run 1 MHz. At 400 kHz two IMUs at 960 Hz would want ~0.65 of the bus,
+  too little room left, so as I2C the IMUs run the 120 Hz mode (see
+  [software](SOFTWARE.md#the-imus-settings)).
 
 **Clocks.** The suit clock, 9.8304 MHz, comes in through the THVD1450 and feeds the processor:
 PLL1 makes the core's 49.152 MHz, on which the timers run, and the SPI's clock from a second
@@ -212,8 +213,9 @@ resistor a lead and one capacitor a channel, nothing else fitted.
   fitted only if the arm shows a phone or the glasses in the signal; the strip's shielded leads
   do that job first.
 - The resistor's thermal noise, 0.41 µVrms a pair over the band, lies inside the contacts' (see
-  [The noise](#the-noise)); the lead-off current across it is steady and small, 6 nA × 4.99 kΩ =
-  30 µV, the input's 1 nA 5 µV (SBAS459K, Electrical Characteristics, 0–70 °C).
+  [The noise](#the-noise)); the lead-off current alternates (see
+  [software](SOFTWARE.md#an-electrode-coming-off)), so it leaves no DC across it, the input's 1 nA
+  5 µV (SBAS459K, Electrical Characteristics, 0–70 °C).
 - **Protection** rests on the right-leg drive and the resistors, with no TVS and no clamp. The
   drive is the only wire that joins the body to the suit at low impedance, so it drains static
   from the body and holds it at mid-supply; the resistors limit the current into the chips' own
@@ -285,7 +287,8 @@ taken as 50 kΩ (the working figure, to be measured):
   | 6 mm | 0.56× | ~89 kΩ | 1.26 µVrms | ~1.3× | 3.9 kHz |
 
   Every one passes the band to 500 Hz, and the DC the inputs' currents leave stays negligible
-  (1 nA × 89 kΩ = 89 µV, 6 nA × 89 kΩ = 0.53 mV).
+  (1 nA × 89 kΩ = 89 µV; the lead-off's 6 nA alternates, a tone of ~0.5 mV at fDR / 4 through
+  89 kΩ, which Baťa takes out).
 - **Measured on a sample, with no instrument:** the same channel on the body and with its inputs
   shorted inside the chip (MUX 001 in CHnSET, SBAS459K, 9.3.1.3.1) parts the skin's noise from
   the electronics'.
@@ -300,9 +303,9 @@ its price:
 - **A rate held to the suit's.** In its ODR-triggered mode the chip takes a reference on INT2 and
   aligns its data, in frequency and in phase, to the reference's edges (DS13510, 6.6; AN5763
   Rev 4, 3.3). The rates it takes then, ODRsel, are 12.5 Hz × 2ⁿ, and the real rate may lie up
-  to ±33 % off the one set; at 1,600 Hz a reference period holds at least 64 samples and 40 ms
-  (AN5763, table 15). The 1.6 kHz setting runs at **1,920 Hz,** +20 %, so the reference,
-  **REF,** is **24 Hz,** 80 samples a period, 41.7 ms, or **15 Hz,** 128 samples, 66.7 ms: the
+  to ±33 % off the one set; at 800 Hz a reference period holds at least 32 samples and 40 ms
+  (AN5763, table 15). The 800 Hz setting runs at **960 Hz,** +20 %, so the reference,
+  **REF,** is **24 Hz,** 40 samples a period, 41.7 ms, or **15 Hz,** 64 samples, 66.7 ms: the
   suit clock ÷ 409,600 or ÷ 655,360, five or eight steps of 120 Hz a period. The samples a period
   are set in ODR_TRIG_CFG, in twos from 8 to 510, the edge by INT2_IN_LH, its pulse at least
   5 µs long, and the chip is locked four reference periods after REF starts, 167 ms at 24 Hz
@@ -316,7 +319,7 @@ its price:
   noise, 2.8 mdps/√Hz, adds up as a random walk, ~0.02° a minute and ~0.02 °/s RMS in a step of
   120 Hz, far below any movement. Our calculation from the sheet's figures, the ~12 °C an
   estimate. The accelerometer 60 µg/√Hz in the high-performance mode (table 3).
-- **1,920 Hz to 120 Hz.** The module sums each step's sixteen samples into the step's turn and
+- **960 Hz to 120 Hz.** The module sums each step's eight samples into the step's turn and
   mean force (see [software](SOFTWARE.md#the-imus-settings)); in noise that equals the chip's own
   filtering to 120 Hz, and it keeps the turn right in fast swings.
 - **Its current,** 0.65 mA with both sensors on in the high-performance mode, at a VDD of 1.8 V,
@@ -552,61 +555,88 @@ under [software](SOFTWARE.md#the-glove); where its electrodes and its IMUs sit o
   channel, and the hand's strip, 20 ways: the sixteen electrodes, the bias, the ground and the
   +5 V, one spare, in a lever connector on the first glove and soldered in a series (see
   [Sensing module](#sensing-module)). On the other side Staršaja, the line's drivers and their
-  Picoflex header, the four Bratiški, the two LDOs and the five finger strips' joints. The
-  board sits over the bases of the second and third metacarpals, which hardly move against the
-  wrist (see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-gloves)); its size is seen when it is drawn.
+  Picoflex header, the IMUs' three switches and three buffers, the two LDOs and the five finger
+  strips' joints. The board sits over the bases of the second and third metacarpals, which hardly
+  move against the wrist (see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-gloves)); its size is seen
+  when it is drawn.
 - **Its Staršaja,** the elder, is the module's own part, the **STM32H523CCU6 in UFQFPN48,** so that
-  one processor serves the module and the glove. Its 35 I/Os and six serial ports, five U(S)ARTs and
-  the LPUART (DS14540 Rev 3, table 2), go round one way: the line keeps a module's one sender and
-  two receivers, the master on USART1's RX and the echo on the LPUART's, which receives at the
-  line's rate; the four Bratiški take USART2, USART3, UART4 and UART5; and since USART3's RX is PB1
-  alone, where a module has START, her TIM2 makes the ADS1298's CLK and START and TIM5 counts the
-  ticks; 33 I/Os in all, below. Beside her the line's drivers, a THVD1452 for the return pair and
-  the quad receiver AM26LV32E for the pair from the master, the echo and the clock (see
+  one processor serves the module and the glove, and she reads every IMU of the hand herself. Her 35
+  I/Os (DS14540 Rev 3, table 2) go round one way: the line keeps a module's one sender and two
+  receivers, the master on USART1's RX and the echo on the LPUART's, which receives at the line's
+  rate; her TIM2 makes the ADS1298's CLK and START and TIM5 counts the ticks; six plain GPIOs set
+  the switches; 29 I/Os in all, below. Beside her the line's drivers, a THVD1452 for the return pair
+  and the quad receiver AM26LV32E for the pair from the master, the echo and the clock (see
   [Porjadok](../porjadok/HARDWARE.md#drivers-on-a-unit)), and her LDOs, a TPS7A2033 and an
   LP2985-5.0 as on a module (see [power](#power)).
-- **Four Bratiški,** the younger brothers, on the board beside her, one a finger: each an
-  **STM32H503KB in UFQFPN32** (5 × 5 mm) reading four IMUs, two on each of its two I3C buses, and
-  sending their steps to Staršaja on a U(S)ART of its own. The package has no OSC_IN, and none is
-  needed: Staršaja makes the IMUs' REF from the suit clock for the whole board, so the IMUs
-  sample in step with the suit, and a Bratiška only reads them, on his own HSI, ~6.2 kB/s of
-  steps.
-- **No SWD on a Bratiška.** An STM32H503 with nothing in its flash boots ST's bootloader with
-  BOOT0 low, and with BOOT0 high always, its product state Open as delivered (AN2606 Rev 70,
-  table 2, pattern 17; RM0492 Rev 3, table 8); the bootloader listens on USART2 among others, PA5
-  and PA15, the very pins to Staršaja (AN2606, table 121). So the four come empty from the
-  assembler and Staršaja programs them over the board's traces (AN3155 Rev 22: 8 bits, even
-  parity, the rate found from a first byte 0x7F, 1,200 to 115,200 Bd; *Write Memory* 256 B at a
-  time, *Read Memory* to check, each packet with an XOR checksum), and recovers one that will not
-  answer by the BOOT0 line and a reset. The pads for SWD, and the debugger, are hers alone. How
-  his image reaches her is under [software](SOFTWARE.md#the-bratiški).
-- **The links** on the board, Staršaja's U(S)ART to each Bratiška's USART2, run full duplex at
-  4 MBd, 8N1, push-pull, no pull-up: a step of 52 B in 0.13 ms (see
-  [software](SOFTWARE.md#the-bratiški)). The receivers tolerate 3.33 % at Staršaja's USARTs,
-  whose divider, 49, is not a multiple of 16 (RM0481 Rev 5, table 630), and 3.75 % at the Bratiška
-  (RM0492 Rev 3, table 292), against the clocks' ~1.8 % at worst: the HSI 63.7–64.3 MHz at 30 °C
-  and ±1 % over −20…105 °C (DS14053 Rev 4, table 40), Staršaja +0.31 %; on a trace of a few
-  centimetres the edges cost nothing.
-- **20 IMUs, 20 places:** on Staršaja's two buses the thumb's metacarpal and its two phalanges
-  and the board's own, on the back of the hand; on each Bratiška's first bus the finger's proximal
-  and middle phalanges, on its second the distal and a place to spare, four spares for the palm's
-  arch, the fourth and fifth metacarpals' heads, and a second on the thumb's metacarpal, because
-  its skin slides. Which are fitted, 20, 12 or 8, the recordings decide, the unit's table telling
-  Baťa (see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-gloves)). Each finger's strip carries seven
-  wires, SCL1, SDA1, SCL2, SDA2, REF, +3.3 V and ground, its Bratiška's two buses with two IMUs
-  on each at 0x6A and 0x6B; it joins the board in a seven-way lever connector on the first glove
-  and is soldered in a series, its IMU boards soldered along it as islands (see
-  [the IMU board](#the-imu-board) and [construction](CONSTRUCTION.md#the-glove)).
+- **Her two I3Cs read every IMU of the hand,** I3C1 on PB6 and PB7, I3C2 on PB5 and PB4, as a
+  module's, two IMUs on a path, 0x6A and 0x6B by SDO/SA0: each I3C's SDA is switched among **six
+  branches** of two by **three TI TS3USB3031** side by side (SCDS348D; JLCPCB C2652459), never one
+  behind another. Each chip has a lane on I3C1's SDA and one on I3C2's, one SEL0 and SEL1 for
+  both, so the two buses move together. Its USB1 channel, SEL 00, where its internal 6 MΩ
+  pull-downs hold it from power-up (SCDS348D, 6.4), is left unconnected as its **park**; the
+  branches are on USB2 (01) and MHL (10). A chip not in use sits on its park, so every change is
+  a change of channel, 400 ns at most; the high-Z state (SEL 11), up to 100 µs back on (table
+  5.6), is never used. **24 places in six zones of four,** a zone a chip's lane on one I3C, its
+  two branches and an SCL of its own: a finger a zone, the thumb with the board's own, and the
+  sixth the carpal bones. Staršaja makes the IMUs' REF from the suit clock for the whole board, on
+  PA8 (TIM1_CH1), so they sample in step with the suit.
+- **SCL** goes to each zone through a plain gate of its own, always on, six SN74LVC1G34 in SOT-5
+  (DRL, 1.6 × 1.6 mm; JLCPCB C2872902; ±24 mA at 3 V, tpd 4.7 ns at most into 50 pF, SCES519O, 5.3
+  and 5.8), each beside its zone's connector, three on each I3C's SCL: a zone's SCL, four IMUs' pins
+  and a finger's strip, is ~80 pF, its edge ~11 ns at 24 mA (an estimate). A branch not selected
+  sees SCL with its SDA held high by its own pull-up, so no START. Each branch's SDA has 4.7 kΩ at
+  the IMUs' side, so that it idles high when switched away, and each common SDA 2.2 kΩ, 1.5 kΩ
+  together: the open-drain rise ~127 ns against SCLL_OD's 344 ns (AN5879 Rev 7, 9.5.3), the IMU
+  sinking 2.2 mA of the 4 mA it holds at 0.2 V (DS13510 Rev 4, table 4). Fourteen pull-ups.
+- **The SDA path** while a branch is selected, her pin, ~3 cm of board, the three chips' lanes, a
+  finger's strip to its tip and two IMUs: ~70 pF with 10 pF an IMU's pin (not given by ST; I²C's
+  ceiling a pin, NXP UM10204 Rev 7.0, table 10), ~53 pF with the strip's ground hatched under
+  it, ~60 and ~43 pF at 5 pF a pin. Its edge comes in time up to 8 MHz at the IMU's guaranteed
+  4 mA, up to 10 MHz at 10 mA (assumed): the bus runs at 10 MHz, 8 should the scope say so
+  (estimates, our calculation).
+- **A round** of reads at 960 Hz, 1,041.7 µs: the six positions of the chips in turn, both I3Cs
+  reading their branch's two IMUs together, 220 µs at 10 MHz (21 %), 311 µs at 6.25 MHz (30 %). The
+  IMUs are read by Staršaja's schedule from REF, not on their IBI, which a branch switched away
+  cannot raise, and each has a dynamic address of its own, so a branch wrongly selected answers
+  nothing (see [software](SOFTWARE.md#the-glove)). The IMUs take ~16 % of her 49.152 MHz (250 cycles
+  a read and 100 a sample's sum, estimates).
+- **The Bratiški,** the little brothers, are this part of the board, set apart from the rest: the
+  three switches, the six gates and the fourteen pull-ups, beside the six zones' connectors. They
+  take ~70 mm² of the board with their courtyards, routing not counted, and ~2.6 mA on 3.3 V, ~2.5
+  of it SCL's switching (estimates).
+- **24 IMUs in six zones:** each finger and the thumb a zone of two branches, A and B: a finger's A
+  its proximal and middle phalanges, its B the distal and a place to spare, four spares for the
+  palm's arch, the fourth and fifth metacarpals' heads, and a second on the thumb's metacarpal,
+  because its skin slides; the thumb's A its metacarpal and proximal phalanx, its B the distal and
+  the board's own, on the back of the hand; the sixth zone four over the carpal bones. Which are
+  fitted, all 24, 12 or 8, the recordings decide, the unit's table telling Baťa (see
+  [Bogatyr](../bogatyr/CONSTRUCTION.md#the-gloves)):
+
+  | chip, channel | I3C1 | I3C2 |
+  |---|---|---|
+  | each chip, USB1 (00) | its park | its park |
+  | A, USB2 (01) | the thumb's A | the ring finger's A |
+  | A, MHL (10) | the thumb's B | the ring finger's B |
+  | B, USB2 (01) | the index's A | the little finger's A |
+  | B, MHL (10) | the index's B | the little finger's B |
+  | C, USB2 (01) | the middle finger's A | the carpus's A |
+  | C, MHL (10) | the middle finger's B | the carpus's B |
+
+- **Each zone's strip** carries six wires, its SCL, the SDA of its A and of its B, REF, +3.3 V and
+  ground, two IMUs a branch at 0x6A and 0x6B, the carpus's a short one; it joins the board in a
+  six-way lever connector on the first glove and is soldered in a series, its IMU boards soldered
+  along it as islands (see [the IMU board](#the-imu-board) and
+  [construction](CONSTRUCTION.md#the-glove)).
 - **Across the wrist** nothing crosses but the arm's line itself, the flat cable sewn in
   meanders over the wrist's back to the board's Picoflex header; the glove comes off it and its
   strips only for a repair, as a module does (see
   [Porjadok](../porjadok/HARDWARE.md#cable-and-connectors-in-the-suit)).
 
 **Staršaja's pins** in the glove, from the module's (see [Sensing module](#sensing-module)): the
-second chip's two pins free, the master's receiver on USART1 and the echo's on the LPUART, UART4
-and USART3 given to the Bratiški with USART2 and UART5, the ADS1298's CLK and START on TIM2, and
-RESET, SHDN and the LED moved; the signals and their alternate functions from ST's
-STM32_open_pin_data (STM32H523CCUx and GPIO modes v1_0, 29 Oct 2026), to be read against
+second chip's two pins free, the master's receiver on USART1 and the echo's on the LPUART, the
+ADS1298's CLK and START on TIM2, RESET, SHDN and the LED moved, and six of the free pins the
+switches' SEL0 and SEL1, chosen when she is drawn; the signals and their alternate functions from
+ST's STM32_open_pin_data (STM32H523CCUx and GPIO modes v1_0, 29 Oct 2026), to be read against
 DS14540's tables 14 and 15 when she is drawn:
 
 | pin | name | use | AF |
@@ -615,31 +645,31 @@ DS14540's tables 14 and 15 when she is drawn:
 | 2 | PC13 | the strip's ground layer's driver, TLV9001S SHDN, with a pull-down | GPIO |
 | 3, 4 | PC14, PC15 | free | |
 | 5 | PH0-OSC_IN | the suit clock, 9.8304 MHz, into the HSE in bypass | |
-| 6 | PH1-OSC_OUT | the Bratiški's NRST line, open-drain | GPIO |
+| 6 | PH1-OSC_OUT | free | |
 | 7 | NRST | to the SWD connector | |
 | 8, 9 | VSSA, VDDA | | |
-| 10 | PA0 | to the third Bratiška: UART4_TX | AF8 |
+| 10 | PA0 | free | |
 | 11 | PA1 | ADS1298 CLK: TIM2_CH2 | AF1 |
-| 12 | PA2 | to the first Bratiška: USART2_TX | AF7 |
-| 13 | PA3 | from the first Bratiška: USART2_RX | AF7 |
+| 12 | PA2 | free | |
+| 13 | PA3 | free | |
 | 14 | PA4 | the ADS1298's CS: SPI1_NSS | AF5 |
 | 15 | PA5 | ADS1298 SCLK: SPI1_SCK | AF5 |
 | 16 | PA6 | ADS1298 DOUT: SPI1_MISO | AF5 |
 | 17 | PA7 | ADS1298 DIN: SPI1_MOSI | AF5 |
 | 18 | PB0 | ADS1298 RESET | GPIO |
-| 19 | PB1 | from the second Bratiška: USART3_RX | AF7 |
+| 19 | PB1 | free | |
 | 20 | PB2 | the ADS1298's DRDY, on EXTI2 | GPIO |
-| 21 | PB10 | to the second Bratiška: USART3_TX | AF7 |
+| 21 | PB10 | free | |
 | 22 | VCAP | 2.2 µF | |
 | 23, 24 | VSS, VDD | | |
-| 25 | PB12 | from the fourth Bratiška: UART5_RX | AF14 |
-| 26 | PB13 | to the fourth Bratiška: UART5_TX | AF14 |
+| 25 | PB12 | free | |
+| 26 | PB13 | free | |
 | 27 | PB14 | the status LED | GPIO |
 | 28 | PB15 | the line, receive from the master: USART1_RX | AF4 |
 | 29 | PA8 | the IMUs' REF, the whole board's: TIM1_CH1 | AF1 |
 | 30 | PA9 | the line, transmit: USART1_TX | AF7 |
 | 31 | PA10 | the echo: LPUART1_RX | AF3 |
-| 32 | PA11 | from the third Bratiška: UART4_RX | AF6 |
+| 32 | PA11 | free | |
 | 33 | PA12 | the line, the driver's DE: USART1_DE | AF7 |
 | 34 | PA13 | SWDIO | AF0 |
 | 35, 36 | VSS, VDD | | |
@@ -651,7 +681,7 @@ DS14540's tables 14 and 15 when she is drawn:
 | 42 | PB6 | I3C1_SCL | AF3 |
 | 43 | PB7 | I3C1_SDA | AF3 |
 | 44 | BOOT0 | to ground through 10 kΩ | |
-| 45 | PB8 | the Bratiški's BOOT0 line | GPIO |
+| 45 | PB8 | free | |
 | 46 | VCAP | 2.2 µF | |
 | 47, 48 | VSS, VDD | | |
 | pad | the exposed pad | to ground (section 6.5, note 3) | |
@@ -659,9 +689,10 @@ DS14540's tables 14 and 15 when she is drawn:
 - **The line as a module's,** one sender and two receivers: she sends on USART1's TX and takes the
   master's frames on its RX, PB15, and reads her own sending back on the LPUART's RX, PA10, at the
   line's 19.66 MBd: ten kernel clocks a bit, of the 3 to 4,096 allowed (RM0481 Rev 5, 57.4.8), BRR
-  2,560, and a tolerance of 3.90 % (table 640) for what is her own signal; so UART4 is free for a
-  Bratiška, and she listens before she talks on the echo's receiver as a module does. SWD and SWO
-  stay. Two I/Os are left, PC14 and PC15.
+  2,560, and a tolerance of 3.90 % (table 640) for what is her own signal, and she listens before
+  she talks on the echo's receiver as a module does. SWD and SWO stay. Twelve I/Os are free, PA0,
+  PA2, PA3, PA11, PB1, PB8, PB10, PB12, PB13, PC14, PC15 and PH1: six take the three switches'
+  SEL0 and SEL1, chosen when the board is drawn, and six stay free.
 - **PA15 as START** is JTDI after reset, pulled up (RM0481 Rev 5, GPIOx_MODER reset values), so
   START carries a pull-down of 10 kΩ, which holds it low from power-up to *start*, as the chip
   wants it, until the firmware drives it; PC13 as SHDN sources nothing but its pull-down's few
@@ -672,25 +703,7 @@ DS14540's tables 14 and 15 when she is drawn:
   DMA the USARTs' (DS14540, table 9). **TIM2 and TIM5:** TIM2 makes the ADS1298's CLK on its CH2
   and START on its CH1, the module's TIM3 PWM moved, and TIM5, 32 bits like TIM2 (DS14540, 3.31.2),
   counts the suit clock's ticks from the start command to START and from DRDY to the slot, with no
-  pin. PH1 is a plain GPIO with the HSE in bypass (RM0481 Rev 5, 13.3.12).
-
-**The Bratiška's pins** (DS14053 Rev 4, figure 5, tables 11 and 12):
-
-| pin | name | what | AF |
-|---|---|---|---|
-| 4 | NRST | the reset line from Staršaja, shared by the four, open-drain | — |
-| 6 | PA0 | REF, counted: TIM2_ETR | AF14 |
-| 11 | PA5 | to Staršaja: USART2_TX | AF9 |
-| 25 | PA15 | from Staršaja: USART2_RX | AF9 |
-| 26 | PB3 | I3C2_SCL | AF3 |
-| 27 | PB4 | I3C2_SDA | AF3 |
-| 29 | PB6 | I3C1_SCL | AF3 |
-| 30 | PB7 | I3C1_SDA | AF3 |
-| 31 | BOOT0 | the BOOT0 line from Staršaja, shared by the four, 10 kΩ to ground | — |
-
-Nothing else of his is wired but the supply, VCAP and the exposed pad; the WLCSP25, 2.33 × 2.24
-mm at a 0.40 mm pitch, carries every pin above too (DS14053 Rev 4, figure 4), should the hand's
-board want it (see [WHY](WHY.md#the-sensing-module)).
+  pin. PH1, free, is a plain GPIO with the HSE in bypass (RM0481 Rev 5, 13.3.12).
 
 **The glove's current,** an estimate on the 4 V rail, counted as the modules are, on the safe
 side:
@@ -699,27 +712,27 @@ side:
 |---|---|---|
 | Staršaja | counted as a module's processor, 53.3 mA typical, 84 mA at most | DS14540, table 26 (see [power](#power)) |
 | the ADS1298, digital side | 0.5 mA | SBAS459K, Power Supply |
-| four Bratiški at 32 MHz in VOS3 | ~4.7 mA typical and ~11.6 mA at TJ 105 °C each, between the 25 and 60 MHz rows with every peripheral on; 18.8 and 46.4 mA | DS14053 Rev 4, table 23 |
-| 20 LSM6DSV16X | 20 × 0.65 mA, both sensors on in the high-performance mode, 13 mA | DS13510 Rev 4, table 4 |
+| the IMUs' switches and gates: three TS3USB3031, six SN74LVC1G34, SCL's switching | ~2.6 mA, an estimate | SCDS348D; SCES519O; our calculation |
+| 24 LSM6DSV16X | 24 × 0.65 mA, both sensors on in the high-performance mode, 15.6 mA | DS13510 Rev 4, table 4 |
 | the THVD1452 | ~2 mA | TI |
 | the AM26LV32E | 8 mA typical, 17 mA at most | SLLS849E |
 | status LED | ~2 mA | estimate |
 | the driver while it sends | ~37 mA, ~8 % of the time | estimate |
-| **the glove, 4 V** | **~0.10 A on average, ~0.20 A at worst** | |
+| **the glove, 4 V** | **~0.087 A on average, ~0.16 A at worst** | |
 | the ADS1298's analog side and the TLV9001S, on 6 V | 3.1 mA and 60 µA | SBAS459K; SBOS833R |
 
 ### The sock
 
 The sock is **Nosok**, Russian for a sock: the glove's board and firmware for the foot, a unit of
 the glove's kind in its leg's fourth slot, after the hip's, the thigh's and the calf's modules,
-with its own drivers and number (see [Porjadok](../porjadok/SOFTWARE.md#the-bratiški)). The
+with its own drivers and number (see [Porjadok](../porjadok/SOFTWARE.md)). The
 board sits on the calf above the ankle, where the calf's module's strip crosses too, not on the
 foot, which a shoe presses: the foot's **16 electrodes on 8 channels** come up on a strip across
-the ankle, and its IMU strips go down to the foot, **up to eight IMUs** to start, on Staršaja's
-own places and one or two Bratiški, the other Bratiški unfitted, its table telling how many.
+the ankle, and its IMU strips go down to the foot, **up to eight IMUs** to start of the board's
+24 places, in Staršaja's zones as the glove's, its table telling how many.
 Where they sit is under [Bogatyr](../bogatyr/CONSTRUCTION.md#the-socks); the strips and the
 layers under [construction](CONSTRUCTION.md#the-sock). Its current, counted as the glove's above
-with two Bratiški and eight IMUs, **~0.08 A on average, ~0.17 A at worst** on 4 V.
+with eight IMUs, **~0.075 A on average, ~0.15 A at worst** on 4 V (an estimate).
 
 ## Power
 
@@ -834,7 +847,7 @@ section 11, Power Supply Recommendations):
   the DMA table (see [software](SOFTWARE.md#dma)), checked on the first board,
 - the two chips in cascade on one SPI: the second's select on PA15, both reads within 22 µs, the
   second chip's DRDY against the first's, on the first board,
-- the LSM6DSV16X held by REF: the 1.6 kHz setting at 1,920 Hz, REF at 24 against 15 Hz, the lock
+- the LSM6DSV16X held by REF: the 800 Hz setting at 960 Hz, REF at 24 against 15 Hz, the lock
   and the samples' place against the cycle; the 1 kΩ on INT2 against an IMU reset while REF
   runs; on the first board,
 - I3C over a cable: try the length and the rate on a sample,
@@ -857,18 +870,11 @@ section 11, Power Supply Recommendations):
 - the IMU board: the strip's tail in the lever connector on the first arm, and the strip soldered
   and potted in a series, bent and pulled,
 - the glove: Staršaja's pins above checked against DS14540's tables 14 and 15, the board's size and
-  its place on the back of the hand with the hand's strip, the finger strips' seven wires in their
-  connectors; the Bratiški programmed through the bootloader over the board's traces, the BOOT0 and
-  NRST lines, on the first board; the sock: the foot's strip across the ankle and its IMU strips;
-  the IMUs' addresses on one I3C bus by SDO/SA0 and SETDASA, tried on the bench,
-- the module and the glove's Staršaja at 49.152 MHz, the Bratiški at 32 MHz: their currents,
-  measured,
-- **two Bratiški on the glove instead of four,** an option only, the glove keeping four while
-  the questions stand (the owner): each Bratiška reads two fingers of four IMUs, one I3C unit a
-  finger with two SCL branches and one SDA (the STM32H503KBU: I3C1 SCL on PB6 and PB8, SDA PB7;
-  I3C2 SCL on PB3 and PB5, SDA PB4; ST's STM32_open_pin_data), two IMUs on each branch at 0x6A
-  and 0x6B; a finger then takes 6 wires, SCL-A, SCL-B, SDA, +3.3 V, ground and REF, or 5 should
-  TDK or ST confirm a sync carried by the bus. Staršaja's PB8 then leaves the Bratiški's BOOT0
-  line for her own second SCL branch, and the BOOT0 line moves to a pin of the two U(S)ARTs the
-  option does without. To be tried on the first module, where PB8 is free; the sock stays
-  as it is.
+  its place on the back of the hand with the hand's strip, the zones' strips' six wires in their
+  connectors; the carpus's four places, whether IMUs on its skin follow its bones or the skin
+  sliding over them; the IMU's SDA pin capacitance and drive on a scope, which set the bus's clock,
+  10 MHz or 8; the switches' change of channel between reads, and the branches switched away quiet;
+  the sock: the foot's strip across the ankle and its IMU strips; the IMUs' addresses by SDO/SA0 and
+  a dynamic address an IMU by SETDASA, branch by branch, tried on the bench,
+- the module and the glove's Staršaja at 49.152 MHz: their currents, and the glove's SCL
+  switching, measured.

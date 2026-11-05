@@ -2,7 +2,7 @@
 
 # Rubaška
 
-**The suit itself:** the pieces with their sensing modules, up to 580 electrodes and 100 IMUs, 56
+**The suit itself:** the pieces with their sensing modules, up to 580 electrodes and 108 IMUs, 64
 of them in the two gloves and the two socks.
 
 ↑ [NIC-Crazy_Ivan](../README.md)
@@ -39,8 +39,8 @@ under [software](SOFTWARE.md); the electrodes, the fabric and the harness under
 
 | file | what is in it |
 |---|---|
-| [HARDWARE.md](HARDWARE.md) | the sensing module's board: parts, pins, the IMUs on I3C, the input circuit, connectors; the IMU and its board; the right-leg drive and the reference; the strip's ground layer; the power; the glove, Vešč, one board for the hand's EMG and IMUs, its Staršaja and Bratiški, and the sock, Nosok |
-| [SOFTWARE.md](SOFTWARE.md) | the ADS1298's and the IMUs' settings, an electrode coming off, the glove and the sock on the line and the Bratiški on their board, the rules from the errata |
+| [HARDWARE.md](HARDWARE.md) | the sensing module's board: parts, pins, the IMUs on I3C, the input circuit, connectors; the IMU and its board; the right-leg drive and the reference; the strip's ground layer; the power; the glove, Vešč, one board for the hand's EMG and IMUs, its Staršaja reading every IMU on switched branches, and the sock, Nosok |
+| [SOFTWARE.md](SOFTWARE.md) | the ADS1298's and the IMUs' settings, an electrode coming off, the glove and the sock on the line and their IMUs on switched branches, the rules from the errata |
 | [CONSTRUCTION.md](CONSTRUCTION.md) | the electrodes and their strips, the fabric, the harness, the overall over it and the washing, the glove's strips and layers |
 | [WHY.md](WHY.md) | what is not used, and why |
 
@@ -52,9 +52,9 @@ under [software](SOFTWARE.md); the electrodes, the fabric and the harness under
 | **measuring electrodes**, 16 a chip (8 differential channels) | **32** | **32** | **16** | **16** | **560** |
 | the bias electrode | 1 | 1 | 1 | 1 | 20 |
 | electrodes in all | 33 | 33 | 17 | 17 | **580** |
-| IMUs | up to 4 | 4 | 4 | 20 places on the glove, 8 on the sock, 4 to start | 64 places on the modules, 44 fitted; 56 on the gloves and the socks, **100** |
+| IMUs | up to 4 | 4 | 4 | 24 places; 24 on the glove, 8 on the sock to start | 64 places on the modules, 44 fitted; 64 on the gloves and the socks, **108** |
 
 The ADS1298 sample at **1,920 SPS**, 3,840 SPS a setting to try (see
-[software](SOFTWARE.md#the-ads129xs-settings)). The IMUs sample at 1,920 Hz and give one step per
-16 ADS samples (120 Hz), interleaved into the frames; see
+[software](SOFTWARE.md#the-ads129xs-settings)). The IMUs sample at 960 Hz and give one step of
+eight samples per 16 ADS samples (120 Hz), interleaved into the frames; see
 [Porjadok](../porjadok/SOFTWARE.md#the-frames).

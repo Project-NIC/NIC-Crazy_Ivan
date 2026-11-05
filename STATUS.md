@@ -2,12 +2,12 @@
 
 # Status
 
-**Beta 0.6, 31 Oct 2026, updated 3 Nov 2026:** every module on the ADS1298, the IMU the
+**Beta 0.6, 31 Oct 2026, updated 4 Nov 2026:** every module on the ADS1298, the IMU the
 LSM6DSV16X held to the suit's clock by a reference, the strips polyimide shielded on both faces,
 the units potted on the harness with connectors for assembly only, Mamka's converters at 1 MHz,
 Mrazík the cooling block, two bias drivers caught by software; the electrodes' places on the
-body asked of professionals; 280 channels at 1,920 SPS and 100 IMUs, still all on paper, nothing
-built.
+body asked of professionals; every IMU at 960 Hz, the glove's read by its Staršaja alone; 280
+channels at 1,920 SPS and 108 IMUs, still all on paper, nothing built.
 
 ↑ [NIC-Crazy_Ivan](README.md)
 
@@ -29,7 +29,8 @@ part has been bought. What is here is of four kinds, and each page says which:
 ## In 0.6
 
 - **the suit's IMU, the LSM6DSV16X,** held to the suit's clock by a reference on INT2, 24 or 15 Hz
-  from the suit clock, its 1.6 kHz setting at 1,920 Hz; two a bus by their addresses; the IMU board
+  from the suit clock, its 800 Hz setting at 960 Hz, eight samples a step; two a bus by their
+  addresses; the IMU board
   with what ST asks and 1 kΩ on INT2 ([Rubaška](rubaska/HARDWARE.md#the-imu)),
 - **the ADS1298 on every module,** the head and the neck too: one chip, one board, one firmware;
   every channel differential, no reference electrode
@@ -74,9 +75,10 @@ part has been bought. What is here is of four kinds, and each page says which:
 - **the inputs:** one 4.99 kΩ a lead, one 220 pF C0G a channel, empty places for 10 pF, no TVS, a
   discharge computed ([Rubaška](rubaska/HARDWARE.md#sensing-module)),
 - **the glove, Vešč, one board on the back of the hand:** the hand's ADS1298, 16 electrodes on 8
-  channels, Staršaja and four Bratiški, one a finger, 20 IMU places, the finger strips passive;
+  channels, Staršaja alone with 20 of 24 IMU places, two IMUs a branch, each I3C's SDA switched
+  among its branches, the finger strips passive;
   **the sock, Nosok,** the same board for the foot on the calf above the ankle, up to eight IMUs:
-  100 IMUs on a suit with two gloves and two socks, 44 of them on the modules
+  108 IMUs on a suit with two gloves and two socks, 44 of them on the modules
   ([Rubaška](rubaska/HARDWARE.md#the-glove)),
 - the purpose and the requirements written down: first a controller, second rehabilitation,
   the assistants beside them, how we know it works, and what it must do in ranges
@@ -112,11 +114,12 @@ part has been bought. What is here is of four kinds, and each page says which:
   the hair, nothing where the body is pressed); **the electrodes' places not laid out,** asked of
   professionals; 44 IMUs on the body, four in a square on the head, four down the neck, more where
   the skin slides ([Bogatyr](bogatyr/README.md)),
-- **the Bratiški without SWD:** chips of their Staršaja, not units, each on a full-duplex link of
-  4 MBd on the board, his step of 52 B once a step; an empty STM32H503 boots ST's bootloader on
-  the same pins, so Staršaja programs them herself, a shared BOOT0 line for recovery; the glove
-  a unit on its arm's line and part of every suit with arms, its Staršaja the module's own part
-  in UFQFPN48 ([Rubaška](rubaska/SOFTWARE.md#the-bratiški)),
+- **the glove's IMUs by Staršaja alone:** 24 in six zones of four, a finger a zone and the sixth
+  over the carpal bones; the Bratiški, the switches' part of the board, three TS3USB3031 side by
+  side on her two SDAs, each keeping a channel unconnected as its park, so a change is a change of
+  channel, and six SN74LVC1G34 giving each zone its own SCL; two IMUs on every SDA path, the reads
+  on her schedule from REF; the glove a unit on its arm's line and part of every suit with arms, its
+  Staršaja the module's own part in UFQFPN48 ([Rubaška](rubaska/HARDWARE.md#the-glove)),
 - line 8 by its slots always, each unit on a timer of its own, Mamka's heartbeat the correction:
   the sound in packets of 198 B with a buffer at each end, Nataša's frames, the motors as a chip,
   Nataša optional ([Nataša](natasa/SOFTWARE.md)); Míša a unit of his own on his own tap, on the
@@ -132,7 +135,7 @@ part has been bought. What is here is of four kinds, and each page says which:
 - the battery on LiFePO4, the EVE C40 in 4S1P the first candidate ([Babuška](babuska/HARDWARE.md)),
 - Terem for 2280 cards, the Hailo-10H with 8 GB, its board an L under the ROCK, read from Radxa's
   3D model, with windows over the ROCK's tallest parts ([Terem](terem/CONSTRUCTION.md#the-board)),
-- the names by family ties: Borovičok, the Bratiški, Staršaja every sensing unit's main
+- the names by family ties: Borovičok, Staršaja every sensing unit's main
   processor, Kormilica Mamka's power section ([NAMES](NAMES.md)),
 - the codecs and the simulator for all of it ([software](software/protocol/README.md)).
 
@@ -163,7 +166,7 @@ Each page ends with its open questions. The largest:
   SPIs behind the ROCK's translators at 11.1 MHz,
 - the top at 80% on LiFePO4's flat curve: the BMS's count or a full charge,
 - the glove's board on the back of the hand: Staršaja's pins in UFQFPN48 against the datasheet's
-  tables, the Bratiški programmed through the bootloader, on the first board; Mamka's eight line
+  tables, on the first board; Mamka's eight line
   headers, which do not fit one edge: two rows or a smaller IDC,
 - datasheets not read: the BMS's manuals,
 - the clock trees and the DMA tables of the six processor designs, written on paper, checked on
@@ -176,8 +179,9 @@ Each page ends with its open questions. The largest:
   discs against Ag/AgCl, titanium and conductive silicone; the polyimide strips, washed and worn,
 - the four-layer strip's own artifact and its ground layer on ground and driven, on the first arm;
   the powered-down bias output's leakage, the LP2985's noise with the inputs shorted inside, the
-  IMUs' reference on INT2 and its 1 kΩ, on the first module; the glove on two Bratiški of eight
-  IMUs, two SCL branches a finger, to be tried there,
+  IMUs' reference on INT2 and its 1 kΩ, on the first module; on the first glove the IMU's SDA
+  pin and drive on a scope, which set the bus's clock, the switches' change of channel, and the
+  branches switched away staying quiet,
 - the backpack's heat with the *brutal* fitting, up to ~40 W; Mrazík's closure, the Hailos' path to
   its wall and its fans, drawn with the schematics ([Babuška](babuska/CONSTRUCTION.md#mrazík));
   Mamka's converters free near 1 MHz against the ADS1298's 983.04 kHz, and the 6 V starting into

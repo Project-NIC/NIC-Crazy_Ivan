@@ -40,9 +40,9 @@ processor at its datasheet maximum and the line driver sending:
   [Rubaška](../rubaska/HARDWARE.md#power)); its core at 49.152 MHz saves an estimated ~14 mA
   more (see [software](SOFTWARE.md#the-clock-tree)), not taken off here.
 - **On a line only one driver sends at a time,** so an arm's line, three modules and the glove at
-  ~0.11 A on average and ~0.21 A at worst (see [Rubaška](../rubaska/HARDWARE.md#the-glove)), takes
-  ~0.31 A on the 4 V rail on average and ~0.50 A at worst, the most any line of the body draws; a
-  leg's, three modules and the sock at ~0.09 A and ~0.17 A, ~0.29 A and ~0.47 A.
+  ~0.087 A on average and ~0.16 A at worst (see [Rubaška](../rubaska/HARDWARE.md#the-glove)), takes
+  ~0.29 A on the 4 V rail on average and ~0.45 A at worst, the most any line of the body draws; a
+  leg's, three modules and the sock at ~0.075 A and ~0.15 A, ~0.28 A and ~0.45 A.
 - The digital rail at 4 V costs ~0.3 W across the suit against 3.7 V and buys the margin the
   LDOs and the head's motors need (see [WHY](WHY.md)). The analog rail is 6 V, the 5 V LDO's
   output plus 1 V, the input at which the LP2985-5.0's sheet gives its figures, its 70 dB of
@@ -59,7 +59,7 @@ Eight lines leave Mamka, **a line a piece of the suit,** at most four units a li
 comes apart in its pieces with no connector along it: each piece's cable goes straight to the
 backpack, an arm's over its shoulder and down the arm, the units chained along it. Fully populated,
 that is 35 ADS1298, two on every module but the neck's, which has one, and one on each glove and
-sock, 280 channels; 64 IMU places in the modules, two gloves of 20 IMUs and two socks of 8.
+sock, 280 channels; 64 IMU places in the modules, two gloves of 24 IMUs and two socks of 8.
 
 | line | processor | the piece | slots 1–4 |
 |---|---|---|---|
@@ -170,7 +170,7 @@ on the two +4 V wires and ~8 mV on the six grounds, ~33 mV, at ~0.13 Ω/m: 26 AW
 copper with a little for the tin and the lay, an estimate, 3M's sheet giving no resistance. At
 most it is taken as ~151 Ω/km, UL 1571's 239 Ω/km for 28 AWG of 7 × 0.127 mm (LTK's sheet)
 scaled by the cross-section, so the six grounds come to ~0.025 Ω/m: a unit a metre out sits
-≤ ~13 mV off Mamka's ground at an arm's worst 0.50 A, two units on different lines twice that at
+≤ ~11 mV off Mamka's ground at an arm's worst 0.45 A, two units on different lines twice that at
 most. Against the volts of the ADS1298's common-mode range it is nothing.
 
 The 6 V rail carries little, ~7 mA a module at most, so one wire would be plenty; the cable gives
@@ -181,7 +181,7 @@ it two.
 The TPS7A2033 holds its ±1.5% from an input of 3.6 V up and falls out of regulation below
 ~3.44 V: its dropout is at most 140 mV at 300 mA, over −40 to 125 °C (SBVS338H, 5.5). From
 Mamka's converter to a module's LDO, at ~0.54 A, all of it at the end of a metre, every part at
-its worst; the table keeps the 0.54 A first counted, more than any line now draws (~0.50 A, an
+its worst; the table keeps the 0.54 A first counted, more than any line now draws (~0.45 A, an
 arm's three modules and the glove), so the margin is a little larger than it shows:
 
 | from Mamka to the LDO | resistance | drop |
@@ -261,7 +261,7 @@ one impedance table and one order.
 | [Terem](../terem/README.md) | under the ROCK 5T | ten PCIe Gen 3 pairs at 85 Ω in 0.5 mm pitch; 0.8 mm thick for the M.2 sockets |
 | the sensing module | [Rubaška](../rubaska/HARDWARE.md#sensing-module) | two ADS1298, one on each side, or the neck's one, beside a processor and line drivers on one narrow board: analog and digital returns apart on a plane |
 | the IMU board | [Rubaška](../rubaska/HARDWARE.md#the-imu) | small; the same stack for the same order, I3C over a plane |
-| the glove's, Vešč, and the sock's, Nosok | [Rubaška](../rubaska/HARDWARE.md#the-glove) | one board on the back of the hand, or on the calf above the ankle for the foot: an ADS1298 with its inputs on one side, Staršaja, the line's drivers and four Bratiški on the other; the same stack as a module's |
+| the glove's, Vešč, and the sock's, Nosok | [Rubaška](../rubaska/HARDWARE.md#the-glove) | one board on the back of the hand, or on the calf above the ankle for the foot: an ADS1298 with its inputs on one side, Staršaja, the line's drivers and her IMUs' switches and buffers on the other; the same stack as a module's |
 | [Míša](../misa/README.md) | the headband | the radar module, the ultrasound, a processor, the line's drivers |
 | [Nataša](../natasa/README.md) | the headband | I2S, the DAC and the amplifier beside the processor |
 

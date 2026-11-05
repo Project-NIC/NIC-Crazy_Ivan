@@ -50,7 +50,6 @@ class Unit:
     uid: bytes = b""
     kind: int = 0
     ads: int = 0                # its ADS1298 chips: two, one or none
-    bratiski: int = 0           # the glove's and the sock's Bratiški, chips of their Staršaja
 
     def __post_init__(self) -> None:
         if not self.uid:
@@ -62,7 +61,7 @@ class Unit:
 
     @property
     def chips(self) -> int:
-        return self.ads + self.bratiski + self.imus
+        return self.ads + self.imus
 
     @property
     def place(self) -> int:
@@ -112,10 +111,9 @@ class Module(Unit):
 @dataclass
 class Glove(Module):
     """The glove, Vešč, a unit of its own in its arm's fourth slot: one ADS1298 on the hand's 16
-    electrodes and up to 20 IMUs, Staršaja's own four and four Bratiški's; the sock, Nosok, the
-    same board in a leg's fourth slot, with up to 8 IMUs on two Bratiški to start."""
+    electrodes and 24 IMUs, all read by its Staršaja; the sock, Nosok,
+    the same board in a leg's fourth slot, with 8 IMUs to start."""
     imus: int = stp.HAND_IMUS
-    bratiski: int = stp.BRATISKI
     kind: int = stp.KIND_END
     ads: int = 1
 
@@ -190,7 +188,7 @@ class Suit:
         if socks:
             for m in [u for u in units if u.name.startswith("calf")]:
                 units.append(Glove(m.line, 4, "sock " + m.name[-1], imus=stp.FOOT_IMUS,
-                                   bratiski=2, rng=random.Random(10 + m.line)))
+                                   rng=random.Random(10 + m.line)))
         if line8:
             units += [Natasa(rng=random.Random(81)), Misa(rng=random.Random(82))]
         units.sort(key=lambda u: (u.line, u.slot))

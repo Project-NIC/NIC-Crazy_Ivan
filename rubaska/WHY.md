@@ -72,24 +72,25 @@ thing waits in reserve, it says so.
 - **The glove as a unit of IMUs alone,** Staršaja on the sleeve with five Bratiški on the fingers
   (to 29 Oct 2026): 22 IMUs and no EMG, the hand's three channels going across the wrist to the
   forearm's module. The forearm's module got its sixteen channels for the forearm, and the hand
-  its own eight on one board on the back of the hand with its IMUs, an ADS1298, Staršaja and
-  four Bratiški, the frame 0x25 carrying both (see [hardware](HARDWARE.md#the-glove)).
+  its own eight on one board on the back of the hand with its IMUs, an ADS1298, Staršaja and, to
+  4 Nov 2026, four Bratiški (below), the frame 0x25 carrying both (see
+  [hardware](HARDWARE.md#the-glove)).
 - **Bratiški on the fingers, one wire each across the wrist** (to 29 Oct 2026): a processor on
   every finger, eight wires over the wrist, each an open-drain half-duplex wire at 4 MBd with a
   470 Ω pull-up, the step in halves of 4.17 ms and the finger in every step. On the board the
-  four sit beside Staršaja, full duplex on traces, and the fingers carry passive strips of seven
-  wires; nothing crosses the wrist but the line's cable.
+  four then sat beside Staršaja, full duplex on traces, and the fingers carried passive strips of
+  seven wires; nothing crosses the wrist but the line's cable.
 - **Five Bratiški and 22 IMUs** (to 29 Oct 2026), one a finger with its metacarpal, and two of
   Staršaja's own. The thumb's three and the board's own sit on Staršaja's two buses, so four
   Bratiški read the four fingers, 20 places in all, the fourth place on each finger spare for the
   palm's arch and a second on the thumb's metacarpal.
 - **SWD on the Bratiški** (to 29 Oct 2026): pads for four programmers on a board on the hand. An
   empty STM32H503 boots ST's bootloader, which listens on USART2 on the very pins to Staršaja; she
-  programs them through it and recovers one by the shared BOOT0 line, and the pads stay for her
-  alone.
+  was to program them through it and recover one by the shared BOOT0 line, the pads staying for
+  her alone.
 - **A bank swap and a zero stage on a Bratiška** (29 Oct 2026): his image in frames through
-  Staršaja into his second bank, with a trial and a swap back. With the bootloader there is
-  nothing in him to update but the one image Staršaja writes; his 128 KB are one image.
+  Staršaja into his second bank, with a trial and a swap back. With the bootloader there was
+  nothing in him to update but the one image Staršaja wrote; his 128 KB were one image.
 - **Staršaja counting her cycles from *start* on a timer** (to 29 Oct 2026): with no ADS129x she
   had no DRDY. With one she keeps the cycle from DRDY as a module does.
 - **The connector at the wrist** (to 29 Oct 2026), eight wires plugged into Staršaja on the
@@ -100,9 +101,10 @@ thing waits in reserve, it says so.
   replaced alone.
 - **LQFP64 for the glove's Staršaja** (to 29 Oct 2026), for six U(S)ARTs. The module's STM32H523CCU6
   in UFQFPN48 does it with the echo received on the LPUART and the master on USART1's RX, which
-  frees UART4, and the ADS1298's CLK and START made by TIM2, which frees USART3's PB1: four Bratiški
-  on USART2, USART3, UART4 and UART5, the echo kept, 33 of its 35 I/Os, so one processor serves the
-  module and the glove (the owner's wish; see [hardware](HARDWARE.md#the-glove)).
+  frees UART4, and the ADS1298's CLK and START made by TIM2, which freed USART3's PB1: four
+  Bratiški then on USART2, USART3, UART4 and UART5, the echo kept, 33 of its 35 I/Os, so one
+  processor serves the module and the glove (the owner's wish; see
+  [hardware](HARDWARE.md#the-glove)).
 - **The glove's line on one USART, no echo compared** (29 Oct 2026, for an hour), the fourth
   Bratiška on the LPUART instead. The owner: the line needs its two receivers. The echo went to
   the LPUART, which receives 19.66 MBd with room to spare, and nothing of a module's line was
@@ -138,6 +140,11 @@ thing waits in reserve, it says so.
   against the polymers' 0.08–0.35 Ω (computed), for $0.15 against $1.09 a unit, two kinds of
   Extended part fewer, and ~26 µF an input for the line's converter to charge at start where
   they made ~110 (see [hardware](HARDWARE.md#power)).
+- **The DC lead-off** (to 5 Nov 2026): 6 nA from every input all the time, the comparators'
+  bits in the status word. Under a few nA of DC, stainless steel polarises at once (Tallgren et
+  al., Clin Neurophysiol 116, 2005, fig. 2, a pointer on OpenBCI's forum), so the 316L studs would
+  drift; the AC lead-off at fDR / 4 leaves no DC through them, its tone taken out by Baťa. The
+  register was then written 0x00, FLEAD_OFF 00, which the datasheet forbids with lead-off on.
 - **Microamp lead-off currents** (6 or 24 µA, the ADS1299's). Through a 50 kΩ contact they make
   0.3 or 1.2 V, most of the input range at a gain of 12 or far beyond it. The ADS1298's are 6 to
   24 nA.
@@ -179,7 +186,7 @@ thing waits in reserve, it says so.
   a Bratiška only reads them, on its own HSI. Its bank holds an image of 64 KB (DS14053 Rev 4).
 - **The Vnučata at the module's then 196.608 MHz in VOS1.** 21–47 mA each typical and 72 mA at most
   (DS14540, table 26), more than one TPS7A2033 can give five of them at worst. A Bratiška at
-  32 MHz in VOS3 does the work at ~5 mA.
+  32 MHz in VOS3 did the work at ~5 mA.
 - **An oscillator on the glove's boards.** The line brings the suit clock to Staršaja, as to every
   unit, and the glove runs in step with the suit.
 - **The whole glove behind the forearm's module,** on its UART across the wrist, in the line's
@@ -192,9 +199,24 @@ thing waits in reserve, it says so.
   2026; see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-imus)).
 - **BGA and WLCSP packages for the small processors.** The STM32H523's WLCSP39 would take the
   clock in 2.8 × 2.8 mm (DS14540), but at a 0.4 mm pitch it wants a dearer board and, on a hand
-  that bends, an underfill. The STM32H503's WLCSP25, 2.33 × 2.24 mm at 0.40 mm, stays the
-  Bratiška's fallback: USART2 on PA5 and PA15, the I3C pins, PA0, NRST and BOOT0 are all on it,
-  with VDDIO2 to feed and via-in-pad to route (DS14053 Rev 4, figure 4).
+  that bends, an underfill. The STM32H503's WLCSP25, 2.33 × 2.24 mm at 0.40 mm, was the
+  Bratiška's fallback while there were Bratiški: USART2 on PA5 and PA15, the I3C pins, PA0, NRST
+  and BOOT0 all on it, with VDDIO2 to feed and via-in-pad to route (DS14053 Rev 4, figure 4).
+- **Four Bratiški on the glove** (29 Oct to 4 Nov 2026), an STM32H503 a finger reading its four
+  IMUs, two on each of its two I3C buses, and sending Staršaja their steps on a U(S)ART of its
+  own; with them their bootloader path, their firmware's kind, the BOOT0 and NRST lines and four
+  of Staršaja's serial ports. Two IMUs a path keep an SDA's capacitance low, and switches do it
+  too: Staršaja's two I3Cs, each SDA switched among six branches of two by three TS3USB3031 side
+  by side, give the same two IMUs a path at less than half the area (~71 against ~157 mm²) and a
+  sixth of the current (~3 against ~19 mA), estimates (see [hardware](HARDWARE.md#the-glove)).
+  Weighed the same day: one or two Bratiški beside Staršaja, and Staršaja alone with her clocks
+  gated and every branch's SDA together, ~200 pF on a line, too close to what the IMU can drive.
+  The name stayed with the switches' part of the board.
+- **SCL through a buffer channel a branch** (4 to 5 Nov 2026): three quad SN74LVC126A, twelve SCL
+  lines, two on every finger's strip of seven wires. A finger's two branches can share one SCL, so a
+  plain gate a finger, an SN74LVC1G34, does it with six wires a strip in about the same area and
+  less current (~80 pF a zone, but six edges instead of twelve); a finger's two branches then sit on
+  one chip's lane, and a round takes six positions instead of five, 220 µs instead of 184 at 10 MHz.
 
 ## The IMU
 
@@ -208,7 +230,13 @@ thing waits in reserve, it says so.
   ten samples at 1,200 Hz, but a step of 8.3 ms taken as one rotation misses the coning term
   when a piece turns about two axes at once, a few degrees by the end of a fast swing; Movella's
   MTw integrates at 1,000 Hz on the sensor for that reason. The block sums at the IMU's rate,
-  1,920 Hz, and the chip's own 120 Hz stays a mode for the I2C fallback and for comparison.
+  960 Hz (below), and the chip's own 120 Hz stays a mode for the I2C fallback and for comparison.
+- **The IMU at 1,920 Hz, sixteen samples a step** (to 4 Nov 2026). Sixteen came from running the IMU
+  at the EMG's rate, not from what movement needs: Xsens's MTw Awinda samples at 1,000 Hz inside and
+  sends 120 Hz ([leaflet](https://www.xsens.com/hubfs/Downloads/Leaflets/mtw-awinda%20leaflet.pdf)),
+  about eight. At 960 Hz, the 800 Hz setting under the same REF (AN5763 Rev 4, table 15), the step
+  is eight samples and the buses and the processors carry half (see
+  [hardware](HARDWARE.md#the-imu)).
 - **Bosch BMI570.** Lower noise on paper, but we found no external clock input, and the suit
   runs every sensor from one clock.
 - **TDK's ICM-45686** (the suit's IMU from 28 to 31 Oct 2026). The ICM-42688-P's newer
@@ -230,15 +258,20 @@ thing waits in reserve, it says so.
   islands on the fingers want the room: one 1 µF at the input is all.
 - **IMUs chained behind one on its sensor hub** (31 Oct 2026). The LSM6DSV16X's hub takes four
   sensors, but reads 18 B a trigger at up to 480 Hz (AN5763, 7.1 and 7.2.3), short of full IMUs
-  at 1,920 Hz; each bus keeps its two IMUs, read by the processor itself.
+  at 960 Hz; each bus keeps its two IMUs, read by the processor itself.
 - **IIM-42652** (28 Oct 2026, the same day). The ICM-42688's industrial twin (DS-000440), in
   stock and fitting without a change, but its offset drifts ±20 mdps/°C, four times the
   ICM-45686's at the same noise.
-- **The rest of the ICM-426xx family.** The ICM-42686-P is noisier, 5.3 mdps/√Hz, for a
-  ±4000 °/s the ICM-45686 has too; the ICM-42605 has no clock input; the ICM-42688-V is the
-  ICM-42688-P again and as hard to get (the family's table on DS-000347 Rev 1.6's first page;
-  DS-000439; DS-000292). An "ICM-42688-P" from TOKMAS at JLCPCB is another maker's chip under
-  the name, 9 mdps/√Hz and 170 µg/√Hz by its own sheet.
+- **The rest of the ICM-426xx family.** The ICM-42686-P is noisier, 5.3 mdps/√Hz, for a ±4000 °/s
+  the ICM-45686 has too; the ICM-42605 has no clock input; the ICM-42688-V is the ICM-42688-P again
+  and as hard to get (the family's table on DS-000347 Rev 1.6's first page; DS-000439; DS-000292).
+  An "ICM-42688-P" from TOKMAS at JLCPCB is another maker's chip under the name, 9 mdps/√Hz and 170
+  µg/√Hz by its own sheet. Should a TDK part come back, its CLKIN is the easy part: the units' suit
+  clock gives 38,400 Hz by an exact division (49.152 MHz ÷ 1,280), inside the ICM-42686-P's 31–50
+  kHz (DS-000639, table 8), and the ODR follows the external clock (4.10), the 800 Hz setting then
+  at 960 Hz (our inference). TDK confirmed that it takes even a period a tick longer or shorter now
+  and then, with no sample lost or doubled and no noise added, while CLKIN stays within that range
+  ([zephyr.hal_tdk#40](https://github.com/tdk-invn-oss/zephyr.hal_tdk/issues/40), 5 Nov 2026).
 
 ## The electrodes and the suit
 
