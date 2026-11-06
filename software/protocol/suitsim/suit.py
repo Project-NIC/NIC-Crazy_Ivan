@@ -192,8 +192,11 @@ class Suit:
         if line8:
             units += [Natasa(rng=random.Random(81)), Misa(rng=random.Random(82))]
         units.sort(key=lambda u: (u.line, u.slot))
-        for n, u in enumerate([u for u in units if u.line < 8], 1):
-            u.number = n                            # *assign*'s, by the map's order here
+        counts = {stp.T_TWO: 0, stp.T_ONE: 0, stp.T_GLOVE: 0}
+        for u in [u for u in units if u.line < 8]:  # *assign*'s, the map's, by its order here
+            t = stp.T_GLOVE if u.kind == stp.KIND_END else stp.T_TWO if u.ads == 2 else stp.T_ONE
+            counts[t] += 1
+            u.number = stp.address(t, counts[t])
         return cls(units, **kw)
 
     def of(self, processor: int) -> list[Unit]:

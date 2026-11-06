@@ -19,15 +19,15 @@ The project's name and the picture on the front page are a joke too, nothing mor
 | name | meaning | why |
 |---|---|---|
 | [**Babuška**](babuska/README.md) | grandma | the battery: grandma keeps the pantry, and everyone eats from her. |
-| [**Ključnica**](babuska/HARDWARE.md#the-bms) | the housekeeper with the keys | the BMS: she holds the keys to Babuška's pantry and decides what goes in and out. |
+| [**Ključnica**](babuska/HARDWARE.md#the-bms) | the housekeeper with the keys | the BMS: she holds the keys to Babuška's pantry and decides what goes in and out; her button switches the suit on and off. |
 | [**Borovičok**](bata/HARDWARE.md#borovičok) | Staričok-Borovičok, the little old mushroom man of the fairy tales | Babuška's husband, computer B: he runs the applications and the glasses on his USB-C, the household's picture and its magic. |
 | [**Mamka**](mamka/README.md) | mum | Russian slang for a motherboard; she runs the house with the wooden spoon and the rolling pin, and feeds her own children, the Rebjata. |
-| [**Kormilica**](mamka/HARDWARE.md#mamkas-own-supply) | the wet nurse | Mamka's whole power section, her own supply, the lines' converters and the computers' eFuses: she feeds the children. |
+| [**Kormilica**](mamka/HARDWARE.md#mamkas-own-supply) | the wet nurse | the suit's power on Mamka: the eight lines' converters and the 6 V that processor 2 switches; she feeds the children. |
 | [**Baťa**](bata/README.md) | dad, and in slang the boss | the computer: he does the thinking for the family. |
 | [**Umnica**](bata/HARDWARE.md#umnica) | the clever one | the Hailo-10H, the educated daughter who thinks for dad. |
 | [**Terem**](terem/README.md) | the upper chamber, where the daughters lived | the board under the ROCK 5T that holds the two Umnicas, each with her own supply. |
 | [**Ďaďa Sem**](bata/HARDWARE.md#ďaďa-sem) | Uncle Sam | the uncle from America, who lives in the attic and watches everything: the cameras. |
-| [**Budilnik**](mamka/HARDWARE.md#budilnik) | the alarm clock | the start button and its latch: one press wakes the household, and when everyone has shut down it lets the house go dark. |
+| [**Budilnik**](bata/SOFTWARE.md#budilnik) | the alarm clock | wakes a wearer who has left the suit alone with a line in the headphones, and if nobody answers puts the household to bed. |
 | [**Storož**](bata/SOFTWARE.md#storož) (Tron) | the night watchman | Baťa's halt daemon: when something fatal breaks he puts the household's services out, leaves the gate open, the terminal and the link to Borovičok, and says why. Our Tron, the program that fights for the users. |
 | [**Perevodčica**](porjadok/SOFTWARE.md#output) | the interpreter | the converters on Baťa: she tells whoever asks, Unreal, Unity, VRChat, a lab or a robot, what the body does, each in its own tongue, and writes the recordings. |
 | **Nastěnka** | the good stepdaughter of *Mrazík*, the fairy tale | the main software, which had no name so far. |
@@ -47,7 +47,7 @@ The project's name and the picture on the front page are a joke too, nothing mor
 | [**Nosok**](rubaska/HARDWARE.md#the-sock) | the sock | the glove's board and firmware for the foot, on the calf above the ankle: the foot's sixteen electrodes and eight IMUs of 24 places to start. |
 | [**Pupovina**](porjadok/HARDWARE.md#links-between-boards) | the umbilical cord | the eight lines from Mamka, one a piece of the suit: power, the clock and data to the Rebjata and the gloves on lines 1–7 and to Nataša and Míša on line 8. |
 | [**Porjadok**](porjadok/README.md) | order | the household's rules, which every member keeps: processor, firmware, links, output. |
-| [**Pitanije**](porjadok/HARDWARE.md#power) | food, and a power supply | the suit's power, from Babuška down to every module; the Russian word means both. |
+| [**Pitanije**](porjadok/HARDWARE.md#power) | food, and a power supply | the suit's power, from Babuška down to every module, with its fuses and protections; the Russian word means both. |
 
 Nataša, the unit in the headband, Míša, the household's bear with a place of his own on line 8,
 and the assistants Soňa, Taťána and Nikita are older and have names of their own (see

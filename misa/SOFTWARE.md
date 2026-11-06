@@ -82,6 +82,10 @@ heartbeat's numbers, so the sphere carries the suit's time with no one writing i
 - **The wearer's own walking:** everything standing still comes closer at the walking speed,
   and the radar sees it on the ground, the walls and the posts at once. Their common speed is
   the wearer's; taken away, what still moves really moves: a car, a bicycle, a person. To try.
+- **Warnings by time to contact:** a field's distance over its closing speed, so a car far off and
+  fast warns before a wall near and still. Drop-offs and stairs down are the cane's, not his: the
+  radar does not look down, nor does the ultrasound. His rows are levelled from his own gyro and
+  accelerometer, and his ultrasound starts at dithered times so that no two units hear each other.
 - **Confidence:** a field counts as taken once 2 of the last 3 frames hit it, which costs
   100–200 ms at 10 frames a second, 14–28 cm at a walking pace. A fast approach is reported from
   its first frame:

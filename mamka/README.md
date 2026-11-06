@@ -30,7 +30,7 @@ alone leaves processor 1 and the limbs' lines off the board.
 | to the suit | lines 1–4, the arms with their shoulders and the legs, one sender for all four | lines 5–7, the head, the chest and the back, one sender for all three; line 8, Nataša and Míša |
 | to Baťa | SPI1_M1 at 37.5 MHz both ways: the frames up as they came, the settings and firmware down; "data ready" | SPI0_M2 and SPI3_M0 at 11.1 MHz, one transfer striped over both: the frames, Míša's sphere, her own registers (the battery, the power, the GPS, the events), the firmware; "data ready"; the I2S with the sound |
 | to each other | START, "the limbs powered", a UART at 115,200 Bd | the same |
-| the rest | | the BMS, the converters, the computers' eFuses, Budilnik (the start button and the latch), the fan, the GPS if fitted |
+| the rest | | the BMS, the converters, the computers' fuses and eFuses, the BMS's *Shutdown*, the fan, the GPS if fitted |
 | DMA | 7 of 16: the lines 5, the SPI 2 | 12 of 16: the lines 6, the SPIs 4, the SAI 2 |
 
 What is on the board, pin by pin, is under [hardware](HARDWARE.md); what the two processors do

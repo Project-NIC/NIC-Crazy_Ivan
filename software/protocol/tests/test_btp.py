@@ -1,3 +1,4 @@
+import struct
 import unittest
 
 from ci import btp
@@ -15,7 +16,7 @@ class TestFrames(unittest.TestCase):
 
     def test_round_trip_and_alignment(self):
         pk = [btp.snapshot(0, bytes(range(127)), 0x80000001), btp.event(1, 2, 3, b"ab"),
-              btp.ecg(1000, [bytes(32)] * 4), btp.meta_time(1, 2, 3, 4, 5, 6, 7)]
+              btp.ecg(1000, [[0] * 16] * 4), btp.meta_time(1, 2, 3, 4, 5, 6, 7)]
         f = btp.Frame(123456789, pk)
         b = f.pack()
         self.assertEqual(len(b), 512)
@@ -65,7 +66,12 @@ class TestMeta(unittest.TestCase):
         self.assertEqual(len(btp.meta_time(0, 0, 0, 0, 0, 0, 0).data), 24)
 
     def test_vitals(self):
-        self.assertEqual(len(btp.vitals(72, 40, 14, 33, 0x0F).data), 8)
+        v = btp.vitals(72, 40, 14, 33, 0x0F, 3).data
+        self.assertEqual((len(v), v[4]), (8, 0xF3))
+
+    def test_ecg_two_bytes(self):
+        p = btp.ecg(7, [[-40000, 100], [5, 40000]])
+        self.assertEqual(p.data[4:], struct.pack("<4h", -32768, 100, 5, 32767))
 
 
 class TestSubscribe(unittest.TestCase):
@@ -80,4 +86,11 @@ class TestSubscribe(unittest.TestCase):
         ask = btp.subscribe(1 << btp.P_SNAPSHOT | 1 << btp.P_EVENT, btp.RATE_128, btp.CLASS_128)
         self.assertEqual(btp.unpack_subscribe(btp.answer_subscribe(ask, largest))[2], btp.CLASS_256)
         ask = btp.subscribe(1 << btp.P_META, btp.RATE_128, btp.CLASS_128)
+        self.assertEqual(btp.unpack_subscribe(btp.answer_subscribe(ask, largest))[2], btp.CLASS_512)
+
+    def test_the_sphere_beside_a_snapshot_wants_512(self):
+        largest = {btp.P_SNAPSHOT: 136, btp.P_SPHERE: 116}
+        ask = btp.subscribe(1 << btp.P_SPHERE, btp.RATE_128, btp.CLASS_128)
+        self.assertEqual(btp.unpack_subscribe(btp.answer_subscribe(ask, largest))[2], btp.CLASS_128)
+        ask = btp.subscribe(1 << btp.P_SNAPSHOT | 1 << btp.P_SPHERE, btp.RATE_128, btp.CLASS_128)
         self.assertEqual(btp.unpack_subscribe(btp.answer_subscribe(ask, largest))[2], btp.CLASS_512)

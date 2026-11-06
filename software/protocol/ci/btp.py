@@ -104,12 +104,15 @@ def snapshot(sub: int, joints: bytes, contacts: int) -> Packet:
     return Packet(P_SNAPSHOT, sub, joints + struct.pack("<I", contacts))
 
 
-def ecg(first_sample: int, channels: list[bytes], decimation: int = 1) -> Packet:
-    """1 B a sample a channel: the first sample's number (u16), the count, the channel count."""
+def ecg(first_sample: int, channels: list[list[int]], decimation: int = 1) -> Packet:
+    """2 B a sample a channel, i16 in µV, clipped to its range: the first sample's number (u16),
+    the count, the channel count, then the samples channel by channel."""
     n = len(channels[0])
     if any(len(c) != n for c in channels) or n > 255:
         raise ValueError("equal counts up to 255")
-    data = struct.pack("<HBB", first_sample & 0xFFFF, n, len(channels)) + b"".join(channels)
+    data = struct.pack("<HBB", first_sample & 0xFFFF, n, len(channels))
+    for c in channels:
+        data += struct.pack(f"<{n}h", *(max(-32768, min(32767, int(v))) for v in c))
     return Packet(P_ECG, decimation, data)
 
 
@@ -119,14 +122,21 @@ def sphere(data: bytes) -> Packet:
     return Packet(P_SPHERE, 0, data)
 
 
+(E_PRESSED, E_RELEASED, E_BMS, E_ELECTRODE, E_START, E_STOP, E_SOUND, E_HALTED,
+ E_RUNNING) = range(1, 10)                          # the event's what
+
+
 def event(counter: int, what: int, which: int, detail: bytes = b"") -> Packet:
     return Packet(P_EVENT, 0, bytes([counter & 0xFF, what, which]) + detail.ljust(5, b"\0")[:5])
 
 
-def vitals(heart_bpm: int, rmssd_ms: int, breaths: int, module_c: int, quality: int) -> Packet:
+def vitals(heart_bpm: int, rmssd_ms: int, breaths: int, module_c: int, quality: int,
+           source: int = 0) -> Packet:
     """8 B once a second: the heart rate, its variability, the breathing rate, the module temperature
-    (the trunk modules' processors, not the skin)."""
-    return Packet(P_VITALS, 0, struct.pack("<BBBbB3x", heart_bpm, rmssd_ms, breaths, module_c, quality))
+    (the trunk modules' processors, not the skin), the ECG's quality 0-15 in bits 7-4 and the
+    breath's source in 3-0 (0 none, 1 the EMG, 2 the trunk IMUs, 3 both agreeing, 4 unsure)."""
+    shared = (quality & 0x0F) << 4 | (source & 0x0F)
+    return Packet(P_VITALS, 0, struct.pack("<BBBbB3x", heart_bpm, rmssd_ms, breaths, module_c, shared))
 
 
 # --- the meta packets -----------------------------------------------------------------------------
@@ -253,9 +263,13 @@ def unpack_subscribe(b: bytes) -> tuple[int, int, int]:
 
 def answer_subscribe(b: bytes, largest: dict[int, int]) -> bytes:
     """Baťa's answer: the class raised to hold the largest packet of the types asked for, given as
-    {type: its largest packet's size with the header}."""
+    {type: its largest packet's size with the header}, and the snapshot and the sphere together,
+    each on the 8 B grid, when both are asked (Porjadok: beside a snapshot the sphere wants 512)."""
     types, rate, cls = unpack_subscribe(b)
     need = max((size for t, size in largest.items() if types >> t & 1), default=0)
+    if types >> P_SNAPSHOT & 1 and types >> P_SPHERE & 1:
+        both = sum(-(-largest.get(t, 0) // 8) * 8 for t in (P_SNAPSHOT, P_SPHERE))
+        need = max(need, both)
     while need > data_len(cls):
         cls += 1
         if cls not in CLASS_LEN:

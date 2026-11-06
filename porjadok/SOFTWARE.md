@@ -61,8 +61,10 @@ starts again as after power-on, in the service mode. A bring-up of 5–10 minute
 otherwise sends *heartbeat* (0x14) every **1 s**, the cycle's number in it. A unit that has heard
 nothing for **3 s** asks *Mamka?* (0x15) in its slot, which every unit on the line hears on the
 return pair; with no frame from Mamka within **1 s** more, all of them stop: *stopped*, the ADS1298
-on idle and still in step. It is done in software, in the interrupt that takes Mamka's frames
-anyway.
+on idle and still in step. Stopped, a unit goes on sending its frames, which do not count, until
+Mamka's next *start*; a heartbeat whose cycle's number differs from the unit's own sets the unit's
+count to it and counts an error in its diagnostics. It is done in software, in the interrupt that
+takes Mamka's frames anyway.
 
 ## The frames
 
@@ -79,10 +81,14 @@ or too few.
 | the firmware's frame, 519 B | the unit's number 1 (0 every unit), the kind 1, the kind of unit it is for 1, the block's number 2, 512 B of the image, CRC-16 2 | a block of firmware | down only, in the service mode |
 | the sound's packet, 198 B | the unit's number and the kind 2, the packet's number 2, 192 B of sound, CRC-16 2 | 1 ms of sound | line 8, both ways (see [Nataša](../natasa/SOFTWARE.md#sound-across-the-suit)) |
 
-- **The unit's number** alone says what the unit is: 1–0x7F for the sensing units, given at the
-  start by the UID (*discover*, then *assign*); the system's parts have theirs fixed, Mamka's
-  processors 0xF1 and 0xF2, Nataša 0x81 and Míša 0x82, both always on line 8; 0 is every unit.
-  Whether a number is split into a line and a unit on it is open.
+- **The unit's number** alone says what the unit is: its type in bits 7–5 and its number of that
+  type, 1–31, in bits 4–0. Type 1 is Mamka's processor 1, 0x21; 2 her processor 2, 0x41; 3 a module
+  of two ADS1298 and its four to eight IMUs, frames of 58 B (0x24), 0x61–0x7F; 4 a module of one
+  ADS1298 and its IMUs, 34 B, 0x81–0x9F; 5 Nataša, 0xA1; 6 Míša, 0xC1; 7 a unit of one ADS1298 and
+  the Bratiški's IMUs, up to 24, the glove and the sock, 58 B (0x25), 0xE1–0xFF. Number 0 of a type
+  is every unit of it, 0x00 every unit. A sensing unit's number is the map's, given at every start
+  by its UID (*discover*, then *assign*), whichever line it sits on; the system's parts have theirs
+  fixed, Nataša and Míša always on line 8.
 - **The frame's number is the cycle's number,** the same for every unit in a cycle: Mamka gives
   the first in *start*, and every unit counts its cycles from then by the suit clock. A frame
   lost, a frame late or old, and a unit out of step show by it, and Baťa pairs one cycle's frames
@@ -151,7 +157,7 @@ zero is looked into only when found.
 |---|---|
 | 0–3 | the unit's number, 0x21, the frame's number |
 | 4–7 | the sensors alive, a bit a chip in the order of the unit's table; unused bits 1 |
-| 8–11 | the sensors without an error over the 32 samples, the same bits |
+| 8–11 | the sensors without an error over the 32 samples, the same bits: an ADS1298 with every DRDY on time and its status word's fixed bits as figure 61 draws them (SBAS459K, 9.4.1.3.1), an IMU answering every read with no NACK and a new sample each time |
 | 12–13 | the electrodes P1–P16 on the skin, a bit each, the second chip's eight in byte 13 |
 | 14–15 | the electrodes N1–N16 on the skin, the same way |
 | 16 | bit 0 the bias electrode on the skin, bit 1 the frames from Mamka without an error, bit 2 the first chip's PD_RLD as its setting asks (on the driving module alone); the rest 1 |
@@ -162,8 +168,9 @@ zero is looked into only when found.
 | 32–33 | CRC-16 |
 
 - **The electrodes:** from the chips' AC lead-off check, its tone at fDR / 4 (SBAS459K,
-  9.3.1.7.4.2; see [Rubaška](../rubaska/SOFTWARE.md#an-electrode-coming-off)), run only in the
-  service mode and when Baťa asks, every P and N input together for one period of 32 cycles: the
+  9.3.1.7.4.2; see [Rubaška](../rubaska/SOFTWARE.md#an-electrode-coming-off)), run in the
+  active mode when Baťa asks (register 0x04 below), never while recording, every P and N input
+  together for one period of 32 cycles: the
   unit sums each channel's samples against the tone's pattern, and an amplitude over the threshold
   or a channel at a rail marks the pair off; bytes 12–13 and 14–15 carry the same bits, a pair's
   in both, as the last check left them, 1 on the skin, the second chip's in the high byte; all
@@ -205,19 +212,19 @@ slots take the cycle's first half; its second half is quiet.
 | µs from DRDY | four slots |
 |---|---|
 | 0 | DRDY, every ADS1298 at once |
-| 0–22.0 | each unit reads its two chips, 216 bits each on SPI at 19.66 MHz, a unit of one chip in 11.0; nothing on the line |
-| slot 1 | 22.0–87.1, a module's frame 22.0–51.5, a frame of 34 B to 39.3 |
-| slot 2 | 87.1–152.2, the frame 87.1–116.6 |
-| slot 3 | 152.2–217.3, the frame 152.2–181.7 |
-| slot 4 | 217.3–282.4, the frame 217.3–246.8 |
+| 0–24.0 | each unit reads its two chips, 216 bits each on SPI at 19.66 MHz, the first's CS held 4 tCLK, 2.03 µs, after its last SCLK (tSCCS, SBAS459K 7.6) before the second's falls; a unit of one chip in 11.0; nothing on the line |
+| slot 1 | 24.0–89.1, a module's frame 24.0–53.5, a frame of 34 B to 41.3 |
+| slot 2 | 89.1–154.2, the frame 89.1–118.6 |
+| slot 3 | 154.2–219.3, the frame 154.2–183.7 |
+| slot 4 | 219.3–284.4, the frame 219.3–248.8 |
 | free in a slot after the frame of data | 35.6 µs, 70 B behind 58 B; 47.8 µs, 94 B behind 34 B |
 | the line busy on an arm's or a leg's, four units | 23 %, 36 % in the diagnostics' cycle |
 
 - **Four units a line:** an arm's line is full, its shoulder, upper arm, forearm and glove, a
   leg's its hip, thigh, calf and sock; the trunk's and the head's have slots free. One rule for
   every line, one firmware.
-- **The last slot's end** falls at 282 µs, in the cycle's quiet half; at the 3,840 SPS to try, a
-  cycle of 260.4 µs, it falls 22 µs into the next cycle, while the units read their chips, which
+- **The last slot's end** falls at 284 µs, in the cycle's quiet half; at the 3,840 SPS to try, a
+  cycle of 260.4 µs, it falls 24 µs into the next cycle, while the units read their chips, which
   needs no line.
 - **The guard,** the last 1 µs of every slot, is twenty times what the drivers need: a THVD1452
   lets go of the pair within 25 ns of DE falling and drives it within 50 ns of DE rising, with its
@@ -229,12 +236,12 @@ slots take the cycle's first half; its second half is quiet.
   slots, filling the cycle, the IMU step and the envelope counted in 32 samples instead of 16, at
   120 Hz as before; a full line at 45 %, processor 1's SPI at 87 % (see [Into Baťa](#into-baťa)).
 
-The ADS1298 takes SCLK at most at 20 MHz (a 50 ns period, SBAS459K, 7.6), and the STM32H523's
-SPI kernel clock at most 100 MHz in VOS1 (DS14540, table 20), so the line's 196.608 MHz cannot
-feed it. PLL1's second output does: the suit clock straight in, × 40 = a 393.216 MHz VCO, which
-gives the SPI 78.6432 MHz ÷ 5; the SPI divides that by 4 to 19.66 MHz (50.9 ns). The input and
-the VCO lie in the PLL's wide range of 2–16 MHz and 128–560 MHz (DS14540, table 46); a read takes
-11.0 µs, a module's two 22.0.
+The ADS1298 takes SCLK at most at 20 MHz (a 50 ns period, SBAS459K, 7.6), and the STM32H523's SPI
+kernel clock at most 100 MHz in VOS1 (DS14540, table 20), so the line's 196.608 MHz cannot feed it.
+PLL1's second output does: the suit clock straight in, × 40 = a 393.216 MHz VCO, which gives the SPI
+78.6432 MHz ÷ 5; the SPI divides that by 4 to 19.66 MHz (50.9 ns). The input and the VCO lie in the
+PLL's wide range of 2–16 MHz and 128–560 MHz (DS14540, table 46); a read takes 11.0 µs, a module's
+two 24.0 with the first's tSCCS between them (4 tCLK, SBAS459K 7.6).
 
 ### Line 8
 
@@ -242,7 +249,8 @@ the VCO lie in the PLL's wide range of 2–16 MHz and 128–560 MHz (DS14540, ta
 130.2 µs, 256 B each, Nataša's and Míša's, in the cycle's first half. Each counts the cycle on a
 timer of its own from the suit clock, so they run round by themselves and never part. **Mamka's
 *heartbeat* is the correction:** on line 8 she sends it once a second in every mode, at a cycle's
-start, with the cycle's number; after power-on a unit finds the cycle's start by it and stays silent
+start, with the cycle's number, from the first *start* on the suit's own count, which Nataša and
+Míša take for theirs; after power-on a unit finds the cycle's start by it and stays silent
 until then, and later it only confirms that nothing slipped. Either unit may be missing: one alone
 runs its slot by itself. What goes in the slots is under [Nataša](../natasa/SOFTWARE.md#line-8).
 
@@ -251,7 +259,7 @@ runs its slot by itself. What goes in the slots is under [Nataša](../natasa/SOF
 Mamka's pair down is hers alone: she sends a frame whenever she has one, for the whole system, a
 line, one unit or one chip, in the service mode and the active mode alike. **The lines with
 modules share a sender a processor:** processor 1's one TX drives lines 1–4's drivers at once,
-processor 2's lines 5–7's, 1,024 B a cycle, 30 frames of 34 B, and every unit takes what its number
+processor 2's lines 5–7's, 1,024 B a cycle, 29 frames of 34 B, and every unit takes what its number
 names and drops the rest. Little goes down: the heartbeat once a second, commands and the settings
 at the start; firmware goes to all at once anyway. Line 8 has a sender of its own.
 
@@ -271,8 +279,8 @@ with the command's number back. One register is written in 8 B, more in 34 B.
 | code | kind | B | way | by the kind |
 |---|---|---|---|---|
 | 0x01 | *discover* | 8 | down | zeros |
-| 0x81 | *discover*'s answer | 34 | up | the UID, 12 B (RM0481, 67.1), then zeros |
-| 0x02 | *assign* | 34 | down | the UID, 12 B, and the new number |
+| 0x81 | *discover*'s answer | 34 | up | the UID, 12 B (RM0481, 67.1), the line, written by Mamka, then zeros |
+| 0x02 | *assign* | 34 | down | the UID, 12 B, the new number and the slot on its line, 1–4 |
 | 0x82 | *assign*'s answer | 8 | up | the result |
 | 0x03 | read | 8 | down | the chip, the first register, the count, 25 at most |
 | 0x83 | its answer | 34 | up | the chip, the register, the count and 25 B of values |
@@ -295,9 +303,12 @@ with the command's number back. One register is written in 8 B, more in 34 B.
 | 0x23 | the microphones, 1 ms | 198 | up | the same |
 | 0x30 | a block of firmware | 519 | down | see [Updating firmware](#updating-firmware) |
 
-- **The result** in the answers: 0 done; otherwise an error's code, 1 the chip did not answer, 2
-  no such chip, 3 no such register, 4 the unit refuses for its state. *Get ready*'s answer: 0
-  ready, 1 an ADS1298 does not answer, 2 an IMU missing against its table, 3 settings missing.
+- **The result** in the answers: 0 done; otherwise an error's code, 1 the chip did not answer, 2 no
+  such chip, 3 no such register, 4 the unit refuses for its state, as a write of CONFIG1 or RESP in
+  the active mode, which would reset the chip's digital filter (SBAS459K, 9.3.2.3). A read that
+  fails answers in its 34 B with the count 0 and the result's code in the first value byte. *Get
+  ready*'s answer: 0 ready, 1 an ADS1298 does not answer, 2 an IMU missing against its table, 3
+  settings missing.
 - **The chips:** 0x00 the unit itself, 0x01 the first ADS1298, 0x02 the sound (Nataša's register
   0x00, the microphones), 0x03 the motors, 0x04 the BMS (Mamka's processor 2), 0x05 Míša's sphere,
   0x06 a module's second ADS1298, 0x0F every IMU, 0x10… one IMU. An LSM6DSV16X's registers
@@ -326,11 +337,12 @@ with the command's number back. One register is written in 8 B, more in 34 B.
 
 **The answer to a write is its result,** no registers read back: whoever wants to check reads them
 (0x03). In the active mode the answer goes in the free part of the unit's slot, a cycle later at the
-earliest; with the diagnostics it still fits, 70 B being free after a module's frame of data. In
-the service mode it follows the question at once. To a write for the whole system each unit answers
-in its own slot; in the service mode, with no slots, a write to more than one unit gets no answer,
-and Mamka asks each unit by itself. What a unit sends by itself, as Míša's sphere, is an answer to a
-read sent unasked.
+earliest, and never in the diagnostics' cycle: data, diagnostics and an answer with the idle between
+them would fill a module's slot to its last character, so the answer waits a cycle. In the service
+mode it follows the question at once. To a write for the whole system each unit answers in its own
+slot; in the service mode, with no slots, a write to more than one unit gets no answer, and Mamka
+asks each unit by itself. What a unit sends by itself, as Míša's sphere, is an answer to a read sent
+unasked.
 
 ## The registers
 
@@ -338,7 +350,7 @@ read sent unasked.
 
 | registers | what |
 |---|---|
-| 0x00–0x3F | the unit's settings, held in RAM and sent at every start: 0x00 the bias, 0 off and 1 on, whether this unit's first chip drives the bias electrode (PD_RLD, see [Rubaška](../rubaska/SOFTWARE.md#the-ads129xs-settings)); 0x01 the IMU mode, 0 eight samples at 960 Hz summed into the step, the main mode, 1 the chip's own 120 Hz, the fallback; 0x02 a module's status LED, 1 blinking for the map's application to find it (see [Baťa](../bata/SOFTWARE.md#the-map)), 0 back to the firmware's own, neither kept by Baťa nor sent at the start; 0x03 the strip's ground layer, 0 on ground and 1 driven at the body's common mode (see [Rubaška](../rubaska/HARDWARE.md#the-strips-ground-layer)); on Mamka's processors their state and their commands instead |
+| 0x00–0x3F | the unit's settings, held in RAM and sent at every start: 0x00 the bias, 0 off and 1 on, whether this unit's first chip drives the bias electrode (PD_RLD, see [Rubaška](../rubaska/SOFTWARE.md#the-ads129xs-settings)); 0x01 the IMU mode, 0 eight samples at 960 Hz summed into the step, the main mode, 1 the chip's own 120 Hz, the fallback; 0x02 a module's status LED, 1 blinking for the map's application to find it (see [Baťa](../bata/SOFTWARE.md#the-map)), 0 back to the firmware's own, neither kept by Baťa nor sent at the start; 0x03 the strip's ground layer, 0 on ground and 1 driven at the body's common mode (see [Rubaška](../rubaska/HARDWARE.md#the-strips-ground-layer)); 0x04 the lead-off check, 1 one check in the next diagnostics period of 32 cycles, its bits in that period's diagnostics, 0 again once done, not kept (see [Rubaška](../rubaska/SOFTWARE.md#an-electrode-coming-off)); 0x30–0x33 the bus test's counters, read only, not settings (see [the bus test](#before-the-first-start)); on Mamka's processors their state and their commands instead |
 | 0x40–0x7F | the unit's table, read only (below) |
 | 0x80–0xBF | the firmware's update (see [Updating firmware](#updating-firmware)) |
 | 0xC0–0xFF | Mamka's events, the GPS and the UTC label, on her processors only (see [Mamka](../mamka/SOFTWARE.md#mamkas-own-registers)) |
@@ -346,7 +358,7 @@ read sent unasked.
 Everything else is a chip's own register, the gain, the lead-off, the channels on, or no setting
 at all: the timings, the heartbeat's 1, 3 and 1 s and the sleep after ~10 s, are fixed in
 the firmware, the number is given by *assign*, the IMU bytes' places by the frame's number.
-Nataša's and Míša's maps are on their pages; Mamka's two processors, 0xF1 and 0xF2, are units of
+Nataša's and Míša's maps are on their pages; Mamka's two processors, 0x21 and 0x41, are units of
 this kind too (see [Mamka](../mamka/SOFTWARE.md#mamkas-own-registers)).
 
 **The unit's table,** from register 0x40 of chip 0x00, read only, read 25 B at a time: its layout
@@ -401,19 +413,25 @@ answer, a question of 8 B and its answer of 34 B in ~22 µs.
   input high (the receiver's fail-safe, SLLSEY3E) and waits, silent. Mamka runs from her
   oscillator.
 - ***Discover*** (0x01) to every unit (0): the body's lines share one sender, and a unit with no
-  number knows no line yet. Every unit with no number answers once, 0x81 with its whole UID, on
-  its own line's return pair, so the receiver it comes in on tells Mamka the line. It waits first
-  by CRC-16/CCITT-FALSE over its 96-bit UID × 10 µs, 0–655 ms, and listens before it talks: its
-  echo hears the return pair, so an edge while it waits starts the wait again, and a collision
-  shows as a bad CRC, after which it waits anew, by CRC-16 over the UID and the attempt's number.
-  700 ms of silence closes the round; Mamka asks once more, and a second silence of 700 ms says
-  the lines are complete, all at once, in a few seconds. A unit that holds a number stays silent.
-- ***Assign*** (0x02), the UID and the new number: a unit with no number knows no line, so the
-  UID alone decides, and the unit with it takes the number and answers from it. The whole UID
+  number knows no line yet. Every unit with no number answers once, 0x81 with its whole UID, on its
+  own line's return pair, so the receiver it comes in on tells Mamka the line; she writes it into
+  the byte after the UID and makes the CRC again, so Baťa has it too. It waits first by
+  CRC-16/CCITT-FALSE over its 96-bit UID × 10 µs, 0–655 ms, and listens before it talks: its echo
+  hears the return pair, so an edge while it waits starts the wait again, and a collision shows as a
+  bad CRC, after which it waits anew, by CRC-16 over the UID and the attempt's number. 700 ms of
+  silence closes the round; Mamka asks once more, and a second silence of 700 ms says the lines are
+  complete, all at once, in a few seconds. A unit that holds a number stays silent.
+- ***Assign*** (0x02), the UID, the new number and the slot: a unit with no number knows no
+  line, so the UID alone decides, and the unit with it takes the number and the slot and answers
+  from them. The number is the map's (see [Baťa](../bata/SOFTWARE.md#the-map)); the slot Mamka
+  deals on that line, in any order, a slot being only a time. The whole UID
   cannot clash, where a tag of 16 bits could.
 - **The table** is then read from each unit, from register 0x40 of its chip 0x00, two or three
   reads.
-- **Line 8's units** have their numbers fixed, 0x81 and 0x82, so they stay silent at *discover*,
+- **The order:** each processor runs her lines' bring-up herself, by Baťa's map: *discover* in its
+  two rounds, then *assign* unit by unit, then the tables; an *assign* given again with the same
+  UID and number changes nothing and answers again.
+- **Line 8's units** have their numbers fixed, 0xA1 and 0xC1, so they stay silent at *discover*,
   and Mamka reads their tables by number.
 - **Where a unit sits** its line tells by the piece of the suit, each of Mamka's headers being its
   line's (see [Mamka](../mamka/HARDWARE.md#lines)); the order on a line no unit can tell. For
@@ -426,14 +444,16 @@ answer, a question of 8 B and its answer of 34 B in ~22 µs.
   the STM32H5 waking from Stop (RM0481 Rev 5, table 625): Mamka raises the clock's DE again, sends a
   byte and waits ~10 ms. It wakes on its HSI and takes the clock again as after a reset (see
   [the clock tree](#the-clock-tree)); how the byte at the line's rate wakes it is open (see
-  [Open questions](#open-questions)). A suit left hanging long is switched off by
-  [Budilnik](../mamka/HARDWARE.md#budilnik).
+  [Open questions](#open-questions)). A suit left hanging long is switched off whole, the
+  BMS shut down (see [on and off](../mamka/HARDWARE.md#on-and-off)).
 - **A unit reset while the suit runs,** or one plugged in, forgets its number and joins at the
-  next bring-up: it takes the clock, stays silent with no number, and Mamka sees its slot empty.
-- **Each processor brings up her own lines,** processor 1 lines 1–4 and processor 2 lines 5–8,
-  once their converters show their PGOOD: processor 2 switches every line's converter and reads
-  every PGOOD, processor 1 reads "the limbs powered" on a wire of its own (see
-  [Mamka](../mamka/SOFTWARE.md#the-wires-between-the-processors)).
+  next bring-up: it takes the clock, stays silent with no number, and Mamka sees its slot empty;
+  Baťa tells the wearer on the headband and restarts the lines (power command 3) when the wearer
+  allows.
+- **Each processor brings up her own lines,** processor 1 lines 1–4 and processor 2 lines 5–8, once
+  their converters show their PGOOD: processor 2 switches every line's converter, when Baťa asks for
+  the suit (her power command 6), and reads every PGOOD, processor 1 reads "the limbs powered" on a
+  wire of its own (see [Mamka](../mamka/SOFTWARE.md#the-wires-between-the-processors)).
 - **Again:** Baťa asks processor 2 for the lines' power off and on (her power command 3); the
   PGOODs fall and rise, and each processor brings up her lines again by herself.
 
@@ -445,17 +465,19 @@ answer, each processor's lines' answers coming in side by side.
 **The bus test** (0x16) runs first, and may be left running for minutes while the wearer moves,
 bends and jumps, a tool for the prototype, for trying cables and connectors. Its frame of 34 B
 carries the test's running number in bytes 2–3 and 28 B of PRBS-9 in bytes 4–31: frame n of a test
-carries the sequence's bytes 28n to 28n + 27, running on from frame to frame and repeating every
-511 B. Down, the unit compares the bytes with the sequence and counts the errors; up, it sends the
-same back and Mamka counts. The result per unit and direction Mamka reads from the unit's
-counters. The PRBS is PRBS-9 of ITU-T O.150, x⁹ + x⁵ + 1, as Osmocom's libosmocore implements it
-(the Recommendation's own text not read). While measuring, the diagnostics watch the cables, so no
-test runs then.
+carries the sequence's bytes 28n to 28n + 27, running on from frame to frame and repeating every 511
+B. Down, the unit compares the bytes with the sequence and counts the errors; up, it sends the same
+back and Mamka counts. The result per unit and direction Mamka reads from the unit's counters, chip
+0x00 registers 0x30–0x33: the test's frames received (u16) and the bytes in error (u16), cleared
+when a test begins. The PRBS is PRBS-9 of ITU-T O.150, x⁹ + x⁵ + 1, as Osmocom's libosmocore
+implements it (the Recommendation's own text not read). While measuring, the diagnostics watch the
+cables, so no test runs then.
 
 ***Get ready*** (0x10) goes to each unit by itself, well under a millisecond for the whole body.
 The unit sets its ADS1298, holds START low, turns off its other interrupts and waits only for
 *start*; it answers 0x90 with its result. With no *start* within 1 s it gives up waiting, and
-Mamka calls *get ready* again.
+Mamka calls *get ready* again. The waiting loop feeds the IWDG itself, the one task due while it
+waits, so the 1 s outlasts the watchdog's ~100 ms (see [Watchdogs](#watchdogs)).
 
 ### Starting a measurement
 
@@ -498,29 +520,32 @@ clock period, about 0.5 µs. That is still 0.1 % of the sample period (521 µs);
 a phase error of ~0.2°.
 
 **Aligning to the ADS clock edge.** Every line takes its clock from one source through the same
-buffers (three SN74LVC126A on Mamka, straight from the oscillator), so the suit clock is the same
-on every unit apart from the drivers' and the cable's spread. The ADS clock's dividers, though,
-come up in a different phase on each unit, so they are cleared at the start: on the start command
-the unit clears its divider and starts a timer counting suit-clock ticks. After a fixed number of
-ticks the timer takes START high in the middle of the ADS clock's low half. The datasheet does
-not say which CLK edge reads START, nor give any setup time. In the middle of the low half START
-is about a quarter period (~130 ns) from both edges, so every ADS reads it on the same edge,
-whichever it is. What remains is the spread in the command's arrival rounded to suit-clock
-ticks, on the order of 100–200 ns. The timer is only needed at the start and is free the rest of
-the time.
+buffers (three SN74LVC126A on Mamka, straight from the oscillator), so the suit clock is the same on
+every unit apart from the drivers' and the cable's spread. The ADS clock's dividers, though, come up
+in a different phase on each unit, so they are cleared at the start: on the start command the unit
+clears its divider and starts a timer counting suit-clock ticks. After 9,830 ticks, 1.0 ms counted
+from the frame's last stop bit, time enough to check the frame and its CRC, the timer takes START
+high in the middle of the ADS clock's next low half; the same count restarts REF's timer, so the
+IMUs' samples share one phase too (see [Rubaška](../rubaska/SOFTWARE.md#the-imus-settings)). The
+datasheet does not say which CLK edge reads START, nor give any setup time. In the middle of the low
+half START is about a quarter period (~130 ns) from both edges, so every ADS reads it on the same
+edge, whichever it is. What remains is the spread in the command's arrival rounded to suit-clock
+ticks, on the order of 100–200 ns. The timer is only needed at the start and is free the rest of the
+time.
 
 **Later,** *stop* (0x12) and *start* leave START alone: they only mark, by the cycle's number
 they carry, from which cycle the data count.
 
 ## Errors
 
-Every frame has a CRC, and every unit's echo watches its own sending. **The data have no
-repeat:** a frame that fails its CRC at Mamka's input is not passed on, its place on the SPI
-stays zeros, and the cycle has a gap there; Baťa's filters and the model take a gap, and the
-frames' numbers show it. The diagnostics count what goes wrong: a sensor's error, a frame from
-Mamka with a bad CRC, an electrode off, once every 32 cycles. **The sound alone is repeated**
-(0x13), its lost packet being 1 ms of silence (see
-[Nataša](../natasa/SOFTWARE.md#sound-across-the-suit)).
+Every frame has a CRC, and every unit's echo watches its own sending. **The data have no repeat:** a
+frame that fails its CRC at Mamka's input is not passed on, its place on the SPI stays zeros, its
+kind 0 marking it, and the cycle has a gap there: Baťa holds the unit's last sample before any
+filter and, past ~2 cycles running, marks its envelopes absent (see
+[Baťa](../bata/SIGNALS.md#the-emg-channel)); the frames' numbers show it. The diagnostics count what
+goes wrong: a sensor's error, a frame from Mamka with a bad CRC, once every 32 cycles; an electrode
+off shows in its own channel. **The sound alone is repeated** (0x13), its lost packet being 1 ms of
+silence (see [Nataša](../natasa/SOFTWARE.md#sound-across-the-suit)).
 
 ## Watchdogs
 
@@ -612,7 +637,7 @@ and 34 B for the rest, with no header:
   so 192 B on each SPI, 138 µs at 11.1 MHz, 27 % (53 % at 3,840). On her SPIs also go the
   events she makes of Nataša's frames and Míša's sphere as it came; the sound both ways goes on the
   I2S.
-- **Down,** in the same places: the frames for her lines and for herself, 0xF1 or 0xF2, which she
+- **Down,** in the same places: the frames for her lines and for herself, 0x21 or 0x41, which she
   keeps instead of sending them on. A frame for the whole system Baťa sends on every SPI, the first
   *start* too, which each processor holds until the moment the START wire gives (see
   [Mamka](../mamka/SOFTWARE.md#the-wires-between-the-processors)). The SPIs have no addresses, the
@@ -623,7 +648,7 @@ and 34 B for the rest, with no header:
 - **In the service mode** Baťa sets a transfer's length by what he sends down, in places of 34 B,
   a firmware frame in 16; Mamka's answers fill the places up, and she keeps "data ready" up while
   more wait.
-- **A sample reaches Baťa** ~0.47 ms after DRDY: the last frame of data in at 247 µs, then the
+- **A sample reaches Baťa** ~0.48 ms after DRDY: the last frame of data in at 249 µs, then the
   transfer of 227 µs.
   Baťa puts both processors' frames of one cycle together by the frames' number.
 
@@ -649,7 +674,7 @@ Mbaud: the flash sets the pace. The program flash takes 10,000 cycles (DS14540 R
 |---|---|
 | 0x80 | the command: 1 *begin* (erases the other bank), 2 *check and restart*, 3 *confirm*, 4 *abort* |
 | 0x81 | the firmware's kind (see [the unit's table](#the-registers)) |
-| 0x82–0x85 | the image's length |
+| 0x82–0x85 | the image's length, the CRC-32 at its end included |
 | 0x86–0x87 | the version |
 | 0x88 | the state, read only: 0 idle, 1 erasing, 2 receiving, 3 the CRC wrong, 4 on trial, 5 the last update failed |
 | 0x89 | the map's window: which 256 blocks 0x90–0xAF show, 0 the blocks 0–255, 1 the blocks 256–511, and on; 0 after *begin* |
@@ -664,7 +689,9 @@ once, to every unit of a kind; no unit answers a block.
 
 1. ***Begin:*** Mamka writes every unit (0), chip 0x00: the firmware's kind, the image's length
    and version, and the command 1. The units of that kind erase their other bank and clear their
-   map of the blocks received. An explicit *begin*, not "the first block erases the bank": a
+   map of the blocks received, which takes up to 320 ms (DS14540, table 49), with no answer to
+   wait for: Mamka reads each unit's 0x88 until it shows 2, receiving, before the blocks go. An
+   explicit *begin*, not "the first block erases the bank": a
    first block lost in the broadcast would leave the bank unerased, and sent again it would erase
    all that came meanwhile.
 2. **The blocks,** each with its number and 512 B of the image, written into the other bank and
@@ -682,7 +709,9 @@ once, to every unit of a kind; no unit answers a block.
    3 once the unit reports its new version, so a script on Baťa can test it first and a version
    that talks but measures wrongly is never confirmed. Unconfirmed within **30 s**, or reset
    before it got its confirm, the unit goes back to the old one by itself, and its state at 0x88
-   shows 5, the last update failed. *Abort* (4) forgets the update.
+   shows 5, the last update failed. After its restart the unit has no number, and Baťa gives it
+   again (*discover*, *assign*); nothing is powered off before the confirm, which comes in the
+   service mode only. *Abort* (4) forgets the update.
 
 - **The CRC-32** is the one zlib computes: polynomial 0x04C11DB7, reflected input and output,
   initial value and final XOR 0xFFFFFFFF. The CRC unit does it with its default polynomial and
@@ -793,12 +822,12 @@ else does, so that a listener knows the suit is still there.
 
 | `type` | packet | data | `sub` |
 |---|---|---|---|
-| 1 | snapshot | the joints' 127 B and the contacts' 4 B | its place in the cycle |
+| 1 | snapshot | the joints' 127 B and the contacts' 4 B | the 120 Hz step's number from the first *start*, mod 256, so a lost or doubled snapshot shows |
 | 2 | meta | one of the eight meta packets below | which of the eight, 1–8 |
-| 3 | ECG | the ECG separated from the EMG, **1 B a sample** a channel: the first sample's number (2 B), the count (1 B), the channels (1 B), then the bytes, channel by channel; 480 SPS by default (see [Baťa](../bata/SIGNALS.md#the-ecg-and-the-breath)) | the decimation, 1–32 |
+| 3 | ECG | the ECG separated from the EMG, **2 B a sample** a channel, i16 little-endian, 1 µV a step (±32.8 mV), as the profession's systems keep 16 bits or more: the first sample's number (2 B), the count (1 B), the channels (1 B), then the bytes, channel by channel; 480 SPS by default (see [Baťa](../bata/SIGNALS.md#the-ecg-and-the-breath)) | the decimation, 1–32 |
 | 4 | sphere | Míša's sphere, 112 B; beside a snapshot it fits only the 512 class (136 + 116 B against the 248 of 256) | |
-| 5 | event | 8 B: a running count of events (1 B), what (1 B: a button, a BMS alarm, an electrode off, start, stop, a sound Soňa heard, *halted* by [Storož](../bata/SOFTWARE.md#storož) with his reason in *which*), which (1 B), 5 B by kind; the event's time is the frame's sample | |
-| 6 | vitals | 8 B once a second: the heart rate (bpm), its variability (RMSSD, ms), the breathing rate, the module temperature (°C, the trunk modules' processors, not the skin), the ECG's quality and the breath's source, 3 B zeros (see [Baťa](../bata/SIGNALS.md#the-ecg-and-the-breath)) | |
+| 5 | event | 8 B: a running count of events (1 B), what (1 B: 1 a button pressed, 2 released, 3 a BMS alarm, 4 an electrode off, 5 start, 6 stop, 7 a sound Soňa heard, 8 *halted* by [Storož](../bata/SOFTWARE.md#storož), 9 running again), which (1 B: the button 0–15, the alarm's bit, the place 1–22, Storož's reason, else 0), 5 B by kind (3 the pack's voltage, u16 in 10 mV, and its current, i16 in 10 mA; 4 the pairs' mask, u16; 5 and 6 the cycle, u32; 7 YAMNet's class, u16, and its confidence, u8; else zeros); the event's time is the frame's sample | |
+| 6 | vitals | 8 B once a second: the heart rate (bpm), its variability (RMSSD, ms), the breathing rate, the module temperature (°C, the trunk modules' processors, not the skin), the ECG's quality in bits 7–4, 0–15, and the breath's source in bits 3–0 (0 none, 1 the EMG, 2 the trunk IMUs, 3 both agreeing, 4 unsure), 3 B zeros (see [Baťa](../bata/SIGNALS.md#the-ecg-and-the-breath)) | |
 | 7–255 | reserved | | |
 
 **The meta packets,** one in each frame beyond the snapshots, so at 128 frames a second the set
@@ -977,15 +1006,18 @@ processor's table is on its page ([the module and the glove](../rubaska/SOFTWARE
   too, where the sound's packets come a thousand times a second: two frames back to back would
   arrive as one of the wrong length and be dropped. A sending channel that ends a
   block takes one; the sound's circular channels take theirs at each half, to hand it on.
-- **During *get ready*** every interrupt is masked (PRIMASK) and the start is polled, as above.
+- **During *get ready*** every interrupt is masked (PRIMASK) and the start is polled, as above,
+  the polling loop feeding the IWDG.
 - **The masters keep no cycle of their own** on lines 1–7: the units keep it from DRDY, and Mamka
   follows the frames coming in. On line 8
   every unit keeps it on its timer, and Mamka's heartbeat corrects it (see [Line 8](#line-8)).
 
 ## Open questions
 
-- the two chips' reads at 19.66 MHz, 22 µs for the pair, which the ADS1298's DVDD of 3.3 V allows
-  (SCLK period at least 50 ns at 2.7–3.6 V, SBAS459K, 7.6), the slots' 1 µs guards and the time a
+- the two chips' reads at 19.66 MHz, 24 µs for the pair, which the ADS1298's DVDD of 3.3 V allows
+  (SCLK period at least 50 ns at 2.7–3.6 V, SBAS459K, 7.6), DOUT's tDOPD of 17 ns against the half
+  period's 25.4 ns and tsu(MI)'s 3.5 ns leaving ~4.9 ns for the path, read as the reads' errors at
+  the board's hot end, the slots' 1 µs guards and the time a
   unit takes to build its frame after the reads, seen on the first board,
 - the ADS1298: its datasheet does not say which CLK edge reads START (SBAS459K, 9.4.1.1); confirm
   by measurement, and every chip's first DRDY together,
@@ -998,6 +1030,10 @@ processor's table is on its page ([the module and the glove](../rubaska/SOFTWARE
 - the contact points: how well the model learns them, tried on recordings,
 - processor 2's two SPIs at 11.1 MHz through the ROCK's UM3204s, read back on the first board:
   the clock out and the data back pass the translator each, whether the RK3588 must sample
-  later (`rx-sample-delay-ns` of its SPI) is seen there,
+  later (`rx-sample-delay-ns` of its SPI) is seen there, and SPI1's to processor 1 at 37.5 MHz the
+  same, its tv(SO) up to 11.5 ns against a half period of 13.3 ns (DS14540, table 109), ~1.8 ns
+  left, 30 MHz, the next even divider, being too slow at 3,840 SPS (284 µs against 260.4); PA4
+  and PA5, TT pins (VDD + 0.3 V), against the ROCK's 3.3 V with her VDD ~3.16 V behind the π
+  filter and SCK's ringing at 37.5 MHz, measured, else SCK on PB3 (AF5, FT),
 - the first *start* across the START wire: the head's and the trunk's first DRDY against a
   limb's, on a scope.

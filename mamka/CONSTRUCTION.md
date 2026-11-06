@@ -14,15 +14,14 @@ SoC's boss, where her connectors and tall parts go, and what she must keep clear
 ## The stack
 
 The ROCK 5T, Mamka over it and under it Terem, or a plain aluminium plate in Terem's place where
-there are no Hailos, make one stack, ~110 × 82 × 68 mm with Terem, held by four screws, inside
-Mrazík, the closed aluminium block that cools it (see
-[Babuška](../babuska/CONSTRUCTION.md#mrazík)). Its heights come from Radxa's 3D model of the
-ROCK 5T V1.2 (read for the bounds of every face): the ports along the board's far edge stand up
-to 16.4 mm over its top, the 40-pin header 7.5 mm, the SoC 1.75 mm, the tallest other part
-8.5 mm; under the board the M.2 sockets reach 4.225 mm and nothing over Terem more than ~2 mm but
-two inductors of 2.8 mm, under windows in Terem; Terem with the Hailos' heatsink hangs ~30 mm
-under it (see [Terem](../terem/CONSTRUCTION.md#the-board)). The plate's thickness is set when
-Mrazík is drawn.
+there are no Hailos, make one stack, ~110 × 82 × 48 mm with Terem, held by four screws, inside
+Mrazík, the closed aluminium block that cools it (see [Babuška](../babuska/CONSTRUCTION.md#mrazík)).
+Its heights come from Radxa's 3D model of the ROCK 5T V1.2 (read for the bounds of every face): the
+ports along the board's far edge stand up to 16.4 mm over its top, the 40-pin header 7.5 mm, the SoC
+1.75 mm, the tallest other part 8.5 mm; under the board the M.2 sockets reach 4.225 mm and nothing
+over Terem more than ~2 mm but two inductors of 2.8 mm, under windows in Terem; Terem with the
+Hailos ~10 mm under it, the modules on pads against Mrazík's wall (see
+[Terem](../terem/CONSTRUCTION.md#the-board)). The plate's thickness is set when Mrazík is drawn.
 
 - **The SoC is cooled by a boss** of Mrazík's top wall through a window in Mamka over it,
   ~30 × 30 mm (the RK3588 is 23 × 23 mm), on a pad. The top wall clears Mamka's tallest parts,
@@ -67,15 +66,15 @@ Mrazík is drawn.
 - **The converters** sit on one side of the board with copper poured under them, away from the
   clock and the processors (see [hardware](HARDWARE.md#filtering)).
 - **The eFuses** sit beside the battery input and its bank, in the path battery → fuse → input bank
-  → eFuse → DC cable, by TI's rules (SLVSFC9C 8.4.1): 100 nF or more from IN to GND at the pins,
-  the loop as small as a converter's input loop; R(ILM), C(dVdt), C(ITIMER) and the dividers on
-  EN/UVLO, OVLO and PGTH each at its pin, the other end straight to the eFuse's GND; the ILM trace
-  short, under 50 pF and away from the converters' SW nodes, since it sets the breaker; the
-  eFuse's ground an island of its own, joined to the power ground at one point; IN and OUT,
-  which carry its heat, on wide copper on both outer layers with thermal vias; at least 1 µF at
-  OUT. The power path, IN to OUT, carries at least twice the full load: the ROCK's 17 W at the
-  pack's 10 V end is 1.7 A, so 3.4 A, at least 2 mm wide at 2 oz (IPC-2221's chart gives ~3 A for
-  1.5 mm at 1 oz and 10 K of rise; an estimate).
+  → eFuse → DC cable, by TI's rules (SLVSFC9C 8.4.1): 100 nF or more from IN to GND at the pins, the
+  loop as small as a converter's input loop; R(ILM), C(dVdt), C(ITIMER), EN/UVLO's RC and the
+  dividers on OVLO and PGTH each at its pin, the other end straight to the eFuse's GND; the ILM
+  trace short, under 50 pF and away from the converters' SW nodes, since it sets the breaker; the
+  eFuse's ground an island of its own, joined to the power ground at one point; IN and OUT, which
+  carry its heat, on wide copper on both outer layers with thermal vias; at least 1 µF at OUT. The
+  power path, IN to OUT, carries at least twice the full load: the ROCK's 17 W at the pack's 10 V
+  end is 1.7 A, so 3.4 A, at least 2 mm wide at 2 oz (IPC-2221's chart gives ~3 A for 1.5 mm at 1 oz
+  and 10 K of rise; an estimate).
 - **The fan header,** the DC cables to the ROCKs' jacks, the jack at the far corner from the
   header, Terem's flat cable down the side (see [hardware](HARDWARE.md#the-computers-supply))
   and the battery's terminals come off her edges too.

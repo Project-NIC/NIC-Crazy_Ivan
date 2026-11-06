@@ -35,8 +35,8 @@ already.
    mobile**, its detection and its recognition (the recognition ~16 MB, PaddleOCR's documentation),
    on Baťa's processor: one picture at a request needs no NPU. For small markings Pomoščnik takes a
    still at the camera's full resolution instead of the 640 × 480 stream, which the IC-U2BP4 gives
-   only as MJPEG (YUY2 at 1080p runs at 5 fps): a switch of the UVC format, the stream stopping for
-   it, and one JPEG decode, the one decode he does; a marking at arm's length is 2–4 pixels tall
+   as YUY2 at 5 frames a second (MJPEG at 30), enough for one still and nothing to decode: a switch
+   of the UVC format, the stream stopping for it; a marking at arm's length is 2–4 pixels tall
    even so, so the part is held close or a macro clip goes on the camera. Should it be slow, the
    detection, all convolutions, goes to the RK3588's NPU through Teflon.
 3. **The search:** the number looked up on the internet, through a connection the backpack does

@@ -56,8 +56,8 @@ Each entry says what it was and why it went, so that nobody digs it up without k
 - **EN from the slot's 3.3 V, with a one-way KILL transistor.** The first design: 10 kΩ from
   the edge's 3.3 V to EN, 100 kΩ to ground, and a 2N7002 on EN that a ROCK pin could pull down,
   so that a module could never run without a live slot. The device tree does the same with no
-  parts: Terem's converter is a GPIO regulator whose supply is the slot rail, and the PCIe
-  driver enables it and times PERST# itself. The transistor went.
+  parts: Terem's converter is the port's own GPIO regulator, on only while the PCIe driver brings
+  the port up, PERST# timed by it. The transistor went.
 - **EN of both converters from Mamka.** She would have to know when the ROCK's PCIe is up and
   when its driver wants the module, which only the ROCK knows; and the ROCK has the pins.
 - **PGOOD through the slot itself.** The M.2 edge has no spare pin the ROCK reads: pins 10
@@ -71,6 +71,10 @@ Each entry says what it was and why it went, so that nobody digs it up without k
 - **A heatsink held to the ROCK's corner holes,** the first plan for the Hailos: a plate over
   both modules on spacers to the stack's four screws. The holes lie at the ROCK's corners, 49 and
   57 mm apart, three of them far from Terem, so the plate would be a bracket made to measure.
-  The ICK S 45 × 45 × 20 screws to Terem itself (see [construction](CONSTRUCTION.md)).
+  The ICK S 45 × 45 × 20 then screwed to Terem itself, until it went too (below).
 - **A heatsink glued across both modules,** on Fischer's adhesive foil: no holes, but neither
-  module would then come out alone. Two screws with springs hold it instead.
+  module would then come out alone. Two screws with springs held it instead, until it went.
+- **The Fischer ICK S 45 × 45 × 20 over both Hailos** (to 5 Nov 2026): aluminium pins, 4.4 K/W in
+  still air. Inside the closed block it would sit in the block's own warm air, ~22 K over it at
+  2.5 W a module and ~73 K at 8.25 W. The modules lie on pads against the block's wall instead
+  (see [construction](CONSTRUCTION.md#the-connectors-and-the-mounting)).

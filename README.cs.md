@@ -90,11 +90,11 @@ ruská, psaná latinkou po česku:
 | **Umnica** | chytrá dcera | Hailo-10H, která za tátu přemýšlí |
 | **Terem** | horní komnata dcer | deska ve dvou slotech M.2 ROCKu 5T: obě Umnice, každá s vlastním zdrojem |
 | **Babuška** | babička | baterie: drží spižírnu a všichni jedí od ní |
-| **Ključnica** | klíčnice | BMS: drží klíče od babiččiny spižírny |
-| **Kormilica** | kojná | Mamčina napájecí část: její vlastní napájení, měniče linek, eFuse počítačů |
+| **Ključnica** | klíčnice | BMS: drží klíče od babiččiny spižírny a jejím tlačítkem se oblek zapíná a vypíná |
+| **Kormilica** | kojná | napájení obleku na Mamce: měniče linek a 6 V, které krmí děti |
 | **Borovičok** | stařeček hříbeček, babiččin muž | počítač B, je-li chtěn: plný počítač vedle Bati přes Ethernet, s brýlemi a programy |
 | **Ďaďa Sem** | strýček Sam, strýc z Ameriky | kamery, které vidí všechno: dvě USB kamery do Bati, čte je jeho druhá Umnica, v osazení small a normal jeho vlastní NPU |
-| **Budilnik** | budík | startovací tlačítko a jeho zámek: jeden stisk probudí domácnost, a když všichni skončí, nechá dům zhasnout |
+| **Budilnik** | budík | hláškou do sluchátek probudí toho, kdo nechal oblek být, a když se nikdo neozve, uloží domácnost spát |
 | **Storož** (Tron) | noční hlídač | Baťův zastavovací démon: při fatální chybě zastaví služby domácnosti, nechá otevřený terminál a řekne proč |
 | **Kommunalka** | komunální byt | batoh: celá rodina v něm bydlí a sdílí jednu kuchyni, Babušku |
 | **Chodiki** | nástěnné hodiny se závažími | hodiny obleku, podle kterých žije celá domácnost |

@@ -23,6 +23,11 @@ to hold now is only the interfaces: what the model takes, what goes out, and in 
 280 channels at 1,920 SPS, 24 bits, 39.74 nV a step at a gain of 12 on every ADS1298 (±333 mV
 over 24 bits).
 
+- **A lost frame,** its place on the SPI zeros and its kind 0: the unit's last sample is held
+  before any filter, a flat step rather than a jump of the electrodes' offset, tens of mV, into
+  the 10 Hz high-pass, which would ring ~50–100 ms; past ~2 samples running the unit's envelopes
+  are marked absent, and the IMU step its frame carried (the frame's number mod 16) absent, so
+  the model takes nothing made up (see [Porjadok](../porjadok/SOFTWARE.md#errors)).
 - **The band:** a high-pass at ~10 Hz takes the electrodes' drift and most of the movement
   artefact; the upper edge is the chips' own, ~503 Hz at 1,920 SPS, 0.262 of the rate (SBAS459K,
   Electrical Characteristics), the 10–500 Hz band SENIAM recommends for surface EMG. The movement
@@ -31,14 +36,16 @@ over 24 bits).
   stays, and 20 Hz is tried on the first recordings, one number here.
 - **The mains at 50 Hz** is not notched: a fixed notch takes EMG with it. The right-leg drive and
   the chips' CMRR, −105 dB at least on the ADS1298 (SBAS459K), leave little, and what is left is
-  estimated as a slowly varying sinusoid at 50 Hz and its first harmonics, tracked from quiet
-  stretches, and subtracted. Whether it is needed at all the first recordings will show.
-- **No lead-off tone** under the recording: the chips' AC lead-off, ~0.25 µA an input, runs only
-  as a check in the service mode and when Baťa asks between two recordings (see
+  tracked by an adaptive notch, a PLL ~0.5 Hz wide that follows the mains' frequency too, at 50 Hz
+  and its first harmonics, and subtracted. Whether it is needed at all the first recordings will
+  show.
+- **No lead-off tone** under the recording: the chips' AC lead-off, a tone at 480 Hz, runs only
+  as a check Baťa asks for, at putting-on and between two recordings, never while recording (see
   [Rubaška](../rubaska/SOFTWARE.md#an-electrode-coming-off)); the samples of a check's 32
   cycles are not recorded.
-- **The radar's pattern** on the head's electrodes, aligned to each radar frame by the stamped
-  arrival of a sphere made with the radar (its code 2 or 3), 10 frames a second, is averaged over
+- **The radar's pattern** on the head's electrodes, aligned to each radar frame by Míša's own
+  start of it on SYNC_IN, or by a GPIO pulse of the radar while the demo runs free, not by a
+  sphere's arrival, 10 frames a second, is averaged over
   hundreds of frames and subtracted (see [Míša](../misa/HARDWARE.md#radar-and-the-emg)).
 - **The envelope:** for every channel the log of the RMS over each step of 16 samples (1/120 s),
   so the EMG arrives at the model at the IMUs' rate. Log, because muscle activity spans two
@@ -57,17 +64,19 @@ EMG and kept as a measurement of its own.
   per channel with its own amplitude and delay, since every electrode sees the heart from
   somewhere else. The template is subtracted at every beat; what is left is EMG, what was taken
   is the ECG.
-- **Out:** the ECG of the three trunk modules' first channels, the chest's, the neck's and the
-  lower back's, 1 B a sample at 480 SPS, the packet of type 3 with a decimation of 4. A doctor
-  reads a rhythm from that; the picture of the
-  current through the chest is for later, from a recording with all channels.
+- **Out:** the ECG of the three trunk modules' first channels, the chest's, the neck's and the lower
+  back's, made from the raw samples band-passed at 0.5–40 Hz, the template used only for the
+  subtraction, so that the P and T waves and an ectopic beat stay, 2 B a sample, 1 µV a step, at 480
+  SPS, the packet of type 3 with a decimation of 4. A doctor reads a rhythm from that; the picture
+  of the current through the chest is for later, from a recording with all channels.
 - **The breath:** from the slow envelope of the diaphragm's and the lower abdomen's channels,
   which rise and fall with every breath, and from the trunk IMUs, which tilt a little with it.
   The two agree or the breath is marked unsure.
 - **Vitals,** the packet of type 6, 8 B once a second: the heart rate (u8, beats a minute), its
   variability (u8, the RMS of successive differences in ms, RMSSD), the breathing rate (u8, breaths
   a minute, 0 unsure), the module temperature from the trunk modules' processors, their dies, not
-  the skin (i8, °C), the ECG's quality 0–15 and the breath's source (u8), 3 B zeros.
+  the skin (i8, °C), the ECG's quality 0–15 in bits 7–4 and the breath's source in bits 3–0 (0 none,
+  1 the EMG, 2 the trunk IMUs, 3 both agreeing, 4 unsure), 3 B zeros.
 
 ## The electrodes' quality
 
@@ -107,7 +116,10 @@ Each IMU's step is its turn Δθ over 1/120 s with the coning term and its mean 
 ## The model
 
 The model takes features at the IMUs' rate, not the raw EMG: 1.61 MB/s of raw samples into a
-network would cost what it does not need, and the envelopes carry the muscles' activity.
+network would cost what it does not need, and the envelopes carry the muscles' activity. Its output
+is its own, not the snapshot's joints, which are the pose the IMUs measure; its input is normalised
+channel by channel, it is trained with dropout over the channels, and the IMU steps are turned into
+each bone's frame.
 
 - **In, every step of 1/120 s:** 280 EMG envelopes (log-RMS of the step) and 108 IMU steps of 6
   values, **928 values a step**; a window of **32 steps**, 267 ms, 29,696 values. Absent IMUs and

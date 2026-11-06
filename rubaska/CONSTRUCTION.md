@@ -19,15 +19,19 @@ how they ride the body. A module of the body or the head has its 32 electrodes a
 electrode, 33; the neck's 16 and a bias, 17; 512 on a suit of 16, 580 with the gloves' and the
 socks' 17 each (see [Right-leg drive](HARDWARE.md#right-leg-drive)).
 
-- **The head and the neck are joined like a turtleneck,** two pieces of the suit: the headband
-  above, the neck's unit below, fabric between them over the back of the head and behind the ears.
+- **The head and the neck are joined like a turtleneck,** one piece of the suit on three plugs
+  (see [Babuška](../babuska/CONSTRUCTION.md#the-backpack)): the headband above, the neck's unit
+  below, fabric between them over the back of the head and behind the ears.
   The face, the chin and the throat stay free. The fabric holds the band and the neck's unit in
   place without a strap; no electrode in the hair, the strip above the ears on an edge shaved at
   most, as under a bowl cut (see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-electrodes-rules)).
 - **The glove is tight,** elastic in the middle, its seams sitting in the spaces between the
   fingers so that it hardly moves.
 
-**Material.** The electrodes are stainless-steel studs, kept moist.
+**Material.** The first choice is a stud of conductive silicone in a ring of dissipative silicone
+that keeps the skin's own moisture from drying, both from one maker (the owner, 5 Nov 2026, a
+proposal for the beta); stainless-steel studs and sintered Ag/AgCl are tried beside it on the first
+arm. Nothing absorbent touches the skin.
 
 - The grade is **316L**, the steel of body jewellery. 316Ti is not needed: its titanium protects
   the steel at high temperatures (welding), not on the skin.
@@ -44,7 +48,8 @@ socks' 17 each (see [Right-leg drive](HARDWARE.md#right-leg-drive)).
   current of ±1 nA from 0 to 70 °C, so a 1 MΩ contact shifts the input by 1 mV, and the input
   range is ±VREF / gain, ±333 mV at our gain of 12 on the 4 V reference. The input filter would
   not: with 1 MΩ contacts its corner falls to ~360 Hz, inside the band.
-- **Moist, not dry.** A ring around each electrode holds the skin's moisture under it. Bare metal on
+- **Moist, not dry.** A ring around each electrode keeps the skin's own moisture under it from
+  drying; it absorbs nothing, for hygiene. Bare metal on
   dry skin is far off: 2.68 MΩ·cm² at 10 Hz for 304 steel, 2.06 for titanium, measured on people
   (Goyal et al. 2022, PMC9656728), so ~5 MΩ under an 8 mm stud and ~10 MΩ under a 6 mm one, scaled
   by the area (an inference); in the same paper an ECG through bare 6 cm² electrodes could not be
@@ -53,7 +58,9 @@ socks' 17 each (see [Right-leg drive](HARDWARE.md#right-leg-drive)).
   no group figure is given). Moist skin is another matter: a first try on the
   owner's hand, slightly sweaty, read a lead on the order of 2 kΩ (how it was read is not recorded).
   Tens of kilohms stay the working figure, on the safe side, until the bench measures it. The ring
-  is of dissipative material, not plain plastic, which would charge by friction. Moisture also lets
+  is of dissipative silicone, ~1 GΩ, the stud's skin-safe base mixed to the dissipative range
+  (10⁴–10¹¹ Ω by ANSI/ESD S541, from memory, to be checked), not plain plastic, which would charge
+  by friction. Moisture also lets
   charge from friction decay faster.
 - **8 mm studs where there is room, 6 mm on the forearm, the hand and the foot,** each in a ring at
   least
@@ -62,7 +69,8 @@ socks' 17 each (see [Right-leg drive](HARDWARE.md#right-leg-drive)).
   with the electrodes' places (see [Bogatyr](../bogatyr/CONSTRUCTION.md)); the small muscles'
   pairs, 2–3 cm apart, are the tightest.
 - 316L contains nickel; anyone allergic to nickel tries it on the skin first.
-- **Conductive silicone is the third candidate,** carbon-filled, ~5 Ω·cm: nothing in it corrodes and
+- **Conductive silicone is the first choice,** the cheapest, carbon-filled, ~5 Ω·cm, silver in the
+  mix a choice: nothing in it corrodes and
   it is washed with the suit; its few ohms are nothing against the skin's tens of kilohms. Dry,
   carbon rubber touches the skin worse than metal: 15 mm discs on a forearm at ~1 N gave about three
   times the impedance of steel or gold for half an hour, textured ones about five (Kusche, Kaufmann
@@ -128,22 +136,22 @@ on the torso and on the limbs alike.
   cone unrolled: its angle is the difference of the girths at its two edges over its width, its
   outer radius the larger girth over that angle; it then lies on the body without wrinkling or
   pulling sideways.
-- **The polyimide does not stretch; an elastic gap in the fabric does.** The strip only wraps
-  round the body, a static bend, which polyimide bears well. A band of it is **two or three short
-  strips** a module, ~20 cm at most (the owner), meeting at a gap of elastic fabric that takes
-  the wearer's size and the swell of a working muscle: after contractions an arm measured
-  0.4–1.0 cm more (Journal of Sports Science and Medicine 2008, 7, table 2), and the arm flexed
-  against relaxed 33.4 → 35.3 cm in men and 29.3 → 29.8 cm in women (Frontiers in Nutrition
-  2025, DOI 10.3389/fnut.2025.1534453, 139 players; flexed at the biceps' peak, so an upper
-  figure). On the limbs the gap lies beside the bone the IMU wants, never over it, since the
-  IMU's five-wire strip must not cross the one place made to stretch: beside the ulna's edge on
-  the forearm, over the flexors, beside the tibia on the calf, on the posterior midline, on the
-  outer side of the upper arm beside the deltoid's insertion and beside the iliotibial tract on
-  the thigh (see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-imus)), so that the inner side carries
-  electrodes too; by anatomy, to be checked against the atlas. Where a
-  gap wants another place, the module moves, settled when the band is drawn. The module sits on
-  the outer side, where nothing rubs it. The torso's areas, over the shoulder above all, which
-  turns in three axes, take what their layout asks for.
+- **The polyimide does not stretch; an elastic gap in the fabric does.** The strip only wraps round
+  the body, a static bend, which polyimide bears well. A band of it is **at most two short strips**
+  to a module's connector, from its opposite sides, the gap off the module's side, ~20 cm at most
+  (the owner), meeting at a gap of elastic fabric that takes the wearer's size and the swell of a
+  working muscle: after contractions an arm measured 0.4–1.0 cm more (Journal of Sports Science and
+  Medicine 2008, 7, table 2), and the arm flexed against relaxed 33.4 → 35.3 cm in men and 29.3 →
+  29.8 cm in women (Frontiers in Nutrition 2025, DOI 10.3389/fnut.2025.1534453, 139 players; flexed
+  at the biceps' peak, so an upper figure). On the limbs the gap lies beside the bone the IMU wants,
+  never over it, since the IMU's five-wire strip must not cross the one place made to stretch:
+  beside the ulna's edge on the forearm, over the flexors, beside the tibia on the calf, on the
+  posterior midline, on the outer side of the upper arm beside the deltoid's insertion and beside
+  the iliotibial tract on the thigh (see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-imus)), so that
+  the inner side carries electrodes too; by anatomy, to be checked against the atlas. Where a gap
+  wants another place, the module moves, settled when the band is drawn. The module sits on the
+  outer side, where nothing rubs it. The torso's areas, over the shoulder above all, which turns in
+  three axes, take what their layout asks for.
 - **The pads** at their places (see [Bogatyr](../bogatyr/CONSTRUCTION.md)). The strip ends in a
   stiffened tail, in the module's lever connector of 36 ways on the first arm and soldered to the
   board in a series (see [hardware](HARDWARE.md#sensing-module)); JLCPCB makes flexible circuits
@@ -172,7 +180,13 @@ on the torso and on the limbs alike.
   voltage it makes is that current times the contact; at tens of kilohms instead of a megohm
   it is ten to twenty times smaller, and so is the mains that unequal contacts turn into a
   difference.
-- The strip is sewn into the band under the dissipative layer, so that nothing rubs it.
+- The strip is sewn into the band under the dissipative layer, so that nothing rubs it, in sewn
+  channels, the needle through copper-free holes only; the strips and their islands lie in pockets
+  that move to new fabric when it wears out first.
+- **Where a strip bends with the body,** on the hand, at the ankle, over the shoulder blade, it is
+  judged by the bend that moves, not the static one: two layers there, rolled-annealed copper, no
+  via and no stiffener's edge in the bend; the ankle crossed below or behind the outer malleolus,
+  and every such place bend-tested.
 
 **The stud on the strip.** The stud is pressed through the strip at its pad and holds it by
 pressure; a rivet through a flexible circuit's pads, held by its clamping force, is used in
@@ -186,8 +200,9 @@ wearables (a wearable neurostimulator, US patent application 2024/0039190).
   steel in sweat would make a cell; sealed, it stays dry and the strip can be washed. Which
   sealant, and how many washes it bears, the sample shows.
 
-**Fabric.** The base is cotton, no synthetics or plastic; cotton sits near the middle of the
-triboelectric series, synthetics at its ends.
+**Fabric.** What touches the strips and the rings is cotton or dissipative; the elastic, the
+compression, the zip and the hook-and-loop cannot be cotton. The base is cotton; cotton sits near
+the middle of the triboelectric series, synthetics at its ends.
 
 - A conductive suit would short the electrodes or carry crosstalk between them. A
   **static-dissipative** fabric is used instead. ANSI/ESD S541 calls a material conductive
@@ -208,11 +223,13 @@ under the clothes. The harness is rinsed in clean water with everything on it; t
 into the washing machine. Taking the cables and the units off and putting them back for every
 wash would wear them out sooner than wearing the suit does.
 
-- **The units stay on.** Each sits in a 3D-printed shell with a red star, potted whole in Dow
-  SYLGARD 527, a silicone dielectric gel, its connectors mated, so a connector opens only at
-  assembly and repair. For a repair the gel comes out, Dow's OS fluids helping, and the place is
-  cleaned, dried and patched with more gel (Dow, SYLGARD 527). The gel is soft, so the shell
-  holds it (our inference); Dow gives it no IP rating.
+- **The units stay on.** Each sits in a 3D-printed shell with a red star, the project's logo (the
+  owner), potted whole in Dow SYLGARD 527, a silicone dielectric gel, its connectors mated, so a
+  connector opens only at assembly and repair. For a repair the gel comes out, Dow's OS fluids
+  helping, and the place is cleaned, dried and patched with more gel (Dow, SYLGARD 527). The gel is
+  soft, so the shell holds it (our inference); Dow gives it no IP rating. The shells are printed by
+  FDM, not in resin, whose residue, as a flux's, keeps a platinum-cured silicone from curing; the
+  boards are washed; a conformal coat covers the analog inputs, against the gel's vapour at 1 GΩ.
 - **Contact spray** goes only where there is no gel, on the Weipu connectors in their shells and
   Mamka's IDC: sulfur, amines, tin compounds and oils can stop a platinum-cured silicone from
   curing (general knowledge; Dow's list not read).
@@ -224,8 +241,12 @@ wash would wear them out sooner than wearing the suit does.
   turns less than one on its own, the shift the pairs must bear. Nothing is left over the groin or
   the larynx. A bought compression overall serves as the pattern only, being synthetic; the harness
   is of the suit's cotton with some stretch.
-- **It zips at the back,** with a long cord on the zip's pull, as on a wetsuit, so the wearer
-  closes it alone.
+- **Two pieces, joined at the waist, the top opening at the front,** down the chest and the belly,
+  where no pair of electrodes goes (see
+  [Bogatyr](../bogatyr/CONSTRUCTION.md#the-electrodes-rules)), and so Strejda Al over it: a top and
+  trousers, so that the toilet asks no undressing whole, the closure a zip or hook-and-loop chosen
+  with the harness's construction (a proposal, 5–6 Nov 2026); a full putting-on and taking-off
+  timed on the first suit.
 - **Over it goes Strejda Al** (after South Park's Big Gay Al and his tight outfits), a tight
   compression overall, one of the clothes: it presses the bands to the body, keeps the
   electrodes' pressure and moisture, and goes into the washing machine with the rest.
@@ -235,6 +256,9 @@ wash would wear them out sooner than wearing the suit does.
   lowers a dry contact's impedance most up to ~5 N an electrode and little beyond (Kusche et al.
   2018, 15 mm discs, 1–20 N, at 24–391 kHz), but 5 N on a 15 mm disc is ~28 kPa (our arithmetic),
   much to wear for hours; the strap's force and what is bearable are measured on the first arm.
+  The ring carries the load, flush with the stud, the stud proud of it a few tenths of a millimetre,
+  the suit pressing ~30–40 mmHg as compression garments do; the straps clear of the peroneal nerve
+  at the fibula's head and the ulnar nerve at the elbow.
 
 The cable and its connectors are described under
 [Porjadok](../porjadok/HARDWARE.md#cable-and-connectors-in-the-suit).
@@ -266,10 +290,10 @@ its IMUs are laid out under [Bogatyr](../bogatyr/CONSTRUCTION.md#the-gloves).
 - **The fallback** is the IMU boards on Kyocera AVX IDCs with PTFE wires of 28 AWG along the
   sides of the fingers (see [the IMU board](HARDWARE.md#the-imu-board)), should the meander
   fail its bending test.
-- **Across the wrist** goes the arm's line alone, its flat cable sewn in meanders over the wrist's
-  back to the board's Picoflex header; the glove comes off the cable and its strips only for a
-  repair, as a module does. The glove is cut with the sleeve, one piece of the harness (see
-  [Harness and washing](#harness-and-washing)).
+- **Across the wrist** goes the arm's line alone, its flat cable sewn in a loose loop over the
+  wrist's ulnar side to the board's Picoflex header; the glove comes off the cable and its strips
+  only for a repair, as a module does. The glove is cut with the sleeve, one piece of the harness
+  (see [Harness and washing](#harness-and-washing)).
 
 ## The sock
 
@@ -287,7 +311,7 @@ settled, since each version is a circuit made and thrown away.
 ## Open questions
 
 - the band's strip on a sample: bent, tapped and rubbed while recording, on a dummy body of
-  resistors first, its fit on the limb as a piece of a cone, the elastic gap over the bone, and
+  resistors first, its fit on the limb as a piece of a cone, the elastic gap beside the bone, and
   the girths that set two or three short strips; the swell of a working muscle on the first arm,
   and meanders moulded in silicone only if it wants them,
 - the bench, in this order: the dummy body's resistors alone, the P and N sides matched and then one
@@ -315,13 +339,17 @@ settled, since each version is a circuit made and thrown away.
   the straps, followed by the lead-off check over the first 15 minutes (dry metal halved its
   impedance in 5 minutes and settled in ~15, Kusche et al. 2018) and then measured on the bench as
   above; whether the tone can tell the wearer when the contact is ready,
-- the electrodes on a sample: 316L discs, titanium discs, sintered Ag/AgCl and conductive
-  silicone side by side on one arm: the contact, the noise, the skin, and the offset with its
-  drift, and the washing, at 60 °C in a bag with the laundry, fifty times; Ag/AgCl goes in only
-  if the steel drifts too far,
+- the electrodes on a sample: 316L discs, titanium discs, sintered Ag/AgCl and conductive silicone
+  side by side on one arm: the contact, the noise, the skin, and the offset with its drift, and the
+  washing, fifty times in the suit's one regime, the machine with no spin, then dripped dry, the
+  rings replaceable; a pair dry against the same sprayed wet; a full day on the skin; Ag/AgCl goes
+  in only if the steel drifts too far,
 - the girths under each band, and the studs' and rings' sizes they allow,
 - the backpack's straps over the shoulders' units: they must run beside the electrodes or be
   padded,
+- body hair: the bands' path trimmed against untrimmed, on the first arm;
+- a module's face on the skin under the compression, ~0.3 W a module and ~0.35 W the glove, against
+  ~43 °C for 10 minutes and more (IEC 60601-1, from memory, to read),
 - a prototype of the harness, cut from an overall; how much stretch the cotton may carry,
 - the glove: the finger strips' meanders in a bending test, their shape and life, gripping and
   washing; the risk the soldered islands carry, one IMU lost costing a piece of strip; the

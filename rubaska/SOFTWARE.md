@@ -51,9 +51,14 @@ by the ID register, and one table of values serves every chip, the bias's bits a
   CONFIG3 back once in every 32 cycles and puts RLD_STAT and whether its PD_RLD (bit 2) matches its
   setting in the diagnostics (see [Porjadok](../porjadok/SOFTWARE.md#the-diagnostics)); Baťa passes
   them on in the electrodes' meta packet. **The drive measured:** at the start and every 30 minutes
-  the driving module sets RLD_MEAS (CONFIG3 bit 4) and its first chip's channel 8 to MUX 010, reads
+  the driving module sets RLD_MEAS (CONFIG3 bit 4), its first chip's channel 8 to MUX 010 at gain 1
+  (CH8SET 0x12) and channel 8 out of the bias's sum (RLD_SENSP and RLD_SENSN 0x7F), reads
   RLDOUT against RLDREF, its own mid-supply, for 32 samples, and puts the channel back (SBAS459K
   9.3.1.7.2, figure 34); the channel's samples meanwhile are marked as a gap.
+- **The unit's own bits:** PD_RLD, RLD_LOFF_SENS and LOFF_SENSP and LOFF_SENSN are the unit's,
+  set over whatever Baťa writes; its read-back after a write skips RLD_STAT and LOFF_STATP and
+  LOFF_STATN (12h, 13h), which the chip sets itself; a write of CONFIG1 or RESP in the active mode
+  is refused (result 4), since it resets the digital filter (SBAS459K, 9.3.2.3).
 - **The strip's ground layers,** register 0x03 of chip 0x00: 1, the default, driven at the
   common mode of the first chip's RLDINV, PA2 high; 0 on ground, the TLV9001S shut down by PA2
   low (see [hardware](HARDWARE.md#the-strips-ground-layer)). After a reset PA2 is low, the layers
@@ -76,7 +81,7 @@ change.
 | 0x04 | LOFF | **0x01**; **0x03** for the bias check at start | FLEAD_OFF 01, the AC lead-off at fDR / 4, 480 Hz at 1,920 SPS (960 Hz at 3,840), which excites only while a check runs (LOFF_SENSP and LOFF_SENSN); the threshold bits 95 / 5 % for the bias's comparator; FLEAD_OFF 11, DC, only for the check at start; 00 is not allowed with any LOFF_SENS bit on (9.6.1.5) |
 | 0x05–0x0C | CH1SET–CH8SET | **0x60** | on, gain 12 (110, the ADS1298's code; 0x50 would be gain 8), MUX 000 the electrode, on every chip; the bias has a lead of its own (9.6.1.6) |
 | 0x0D, 0x0E | RLD_SENSP, RLD_SENSN | **0xFF** on every module's first chip, **0x00** on the second | the sum of the first chip's sixteen inputs on RLDINV, for the bias drive on the driving module and for the strip's driver on every module (9.6.1.7) |
-| 0x0F, 0x10 | LOFF_SENSP, LOFF_SENSN | **0x00**; **0xFF** both while a check runs | no excitation while the suit is active; for a check, in the service mode or when Baťa asks, every P and N input together for one diagnostics period, as the datasheet pairs them, the P pulled up and the N pulled down so that the currents cancel in the body (see [An electrode coming off](#an-electrode-coming-off)) |
+| 0x0F, 0x10 | LOFF_SENSP, LOFF_SENSN | **0x00**; **0xFF** both while a check runs | no excitation but in a check, and 0x00 through the bias check at start too, so no DC flows through the studs; a check when Baťa asks, never while recording, every P and N input together for one diagnostics period, as the datasheet pairs them, the P pulled up and the N pulled down so that the currents cancel in the body (see [An electrode coming off](#an-electrode-coming-off)) |
 | 0x11 | LOFF_FLIP | **0x00** | the current's polarity as the datasheet has it |
 | 0x12, 0x13 | LOFF_STATP, LOFF_STATN | read only | the comparators' bits, for a DC lead-off; in the AC check the tone tells, and they are not used |
 | 0x14 | GPIO | **0x0F**, the reset value | GPIO1–4 as inputs; on the board they are tied to DGND |
@@ -122,33 +127,41 @@ WAKEUP (see [Porjadok](../porjadok/SOFTWARE.md#bring-up)).
 ## An electrode coming off
 
 The ADS1298 itself can tell an electrode that has come off (SBAS459K, 9.3.1.7.4), and we use it
-**by its AC lead-off, as a check on demand, never while the suit is active:**
+**by its AC lead-off, as a check on demand, never while recording:**
 
-- **What the excitation is.** The chip's AC lead-off switches each excited input between AVDD and
-  AVSS at fDR / 4, 480 Hz at 1,920 SPS, through ~10 MΩ (figure 39: 3.3 MΩ and 12 pF a side;
-  "pullup resistor lead-off detection, 10 MΩ", Electrical Characteristics; 9.3.1.7.4.2, "pullup
-  and pulldown resistors at the input with a fixed frequency"): ~±0.25 µA an input, our reading
-  of the figure, read on the first module. That is not a small tone: ~0.25 µA × (the contact +
-  4.99 kΩ) a side, ~27 mV pp across a pair at a 50 kΩ contact, half the ±333 mV at a gain of 12,
-  ~3.5 mV pp at the 2 kΩ measured on a sweaty hand; a dry contact runs the channel to the rails,
-  which tells the same. So it does not run under the recording.
-- **The check:** LOFF_SENSP = LOFF_SENSN = 0xFF for one diagnostics period of 32 cycles, every P
-  and N input together, the P pulled up and the N pulled down as the datasheet pairs them, so
-  that the currents cancel in the body and nothing returns through the bias lead; the P inputs
-  alone, 280 of them, would send ~70 µA through the one bias electrode, ~7 V across its 100 kΩ,
-  past the amplifier's 75 µA of drive (Electrical Characteristics, the RLD amplifier at full
-  swing). The unit sums each channel's 32 samples of the period against the tone's pattern, four
-  samples a period, locked to the samples; an amplitude over the threshold, found by testing,
-  or a channel at a rail marks the pair off, and its amplitude below is the contact's own
-  measure, the pair's two contacts summed. Then LOFF_SENSP = LOFF_SENSN = 0x00 again. The bits go
-  in the diagnostics, 1 for a pair on the skin, both bytes the same, and stay as the last check
-  left them (see [Porjadok](../porjadok/SOFTWARE.md#the-diagnostics)); which side came off the
-  DC comparators cannot say either without DC, so the pair is the unit.
-- **When:** in the service mode at putting-on, repeated every few seconds until every pair is on,
-  the map's page showing it (see [Baťa](../bata/SOFTWARE.md#the-map)); in the
-  contact tests; and when Baťa asks between two recordings. While the suit is active an
-  electrode that comes off shows in its channel itself: the input floats, the channel runs to a
-  rail or carries the mains at full swing, and Baťa marks it absent from the channel (see
+- **What the excitation is.** The chip's AC lead-off switches each excited input up and down at
+  fDR / 4, 480 Hz at 1,920 SPS (9.3.1.7.4.2). LOFF's bit 4, VLEAD_OFF_EN, chooses the source (the
+  LOFF register): 0 the current sources, their size by ILEAD_OFF, 6 nA at 00; 1 the pull-up and
+  pull-down resistors, ~10 MΩ from the rails (figure 39: 3.3 MΩ and 12 pF a side, switched only
+  with VLEAD_OFF_EN; "pullup resistor lead-off detection, 10 MΩ", Electrical Characteristics),
+  ~±0.25 µA an input. **LOFF is 0x01, so most likely the 6 nA sources:** our reading of the
+  register and the figure, the datasheet's words on the AC mode naming only the resistors; which
+  it is, is read on the first module. At 6 nA the tone is ~0.7 mV pp a side and ~1.3 mV pp
+  across a pair at a 50 kΩ contact, P and N pulled opposite ways, the size of an EMG; through the
+  resistors (0x11, not used) it would be ~55 mV pp, ~8 % of the channel's 666 mV at a gain of 12.
+  Either way a tone in the band the model reads, so it does not run under the recording.
+- **The check:** LOFF_SENSP = LOFF_SENSN = 0xFF for one diagnostics period of 32 cycles, every P and
+  N input together, the P pulled up and the N pulled down as the datasheet pairs them, so that the
+  currents cancel in the body and nothing returns through the bias lead; the P inputs alone, 280 of
+  them, would send their currents through the one bias electrode, ~1.7 µA at 6 nA and, through the
+  resistors, ~70 µA, ~7 V across its 100 kΩ, past the amplifier's 75 µA of drive (Electrical
+  Characteristics, the RLD amplifier at full swing). The unit leaves out the first four samples
+  after the switch and sums each channel's other 28 of the period against the tone's pattern, four
+  samples a period, locked to the samples; an amplitude over the threshold, found by testing, or a
+  channel at a rail marks the pair off, and its amplitude below is the contact's own measure, the
+  pair's two contacts summed. Then LOFF_SENSP = LOFF_SENSN = 0x00 again. The bits go in the
+  diagnostics, 1 for a pair on the skin, both bytes the same, and stay as the last check left them
+  (see [Porjadok](../porjadok/SOFTWARE.md#the-diagnostics)); which side came off, the comparators
+  cannot tell without DC, so the pair is the unit.
+- **When:** in the active mode, the chips converting, when Baťa asks by chip 0x00's register 0x04
+  (see [Porjadok](../porjadok/SOFTWARE.md#the-registers)), never while recording: at putting-on,
+  right after the first *start*, repeated every few seconds until every pair is on, the map's page
+  showing it and Nataša giving one short pulse when the last pair is on, the contact ready (see
+  [Baťa](../bata/SOFTWARE.md#the-map)); in the contact tests; and between two recordings. The check
+  takes the next diagnostics period of 32 cycles, its bits in that period's diagnostics, and Baťa
+  leaves those cycles out of the model and of any recording. While recording an electrode that comes
+  off shows in its channel itself: the input floats, the channel runs to a rail or carries the mains
+  at full swing, and Baťa marks it absent from the channel (see
   [Baťa](../bata/SIGNALS.md#the-electrodes-quality)).
 
 While the suit runs no lead-off current flows through the electrode and the skin, neither DC nor
@@ -188,21 +201,22 @@ reset values, only the field is given, and the write is a read-modify-write.
 | 0x06 | ODR_TRIG_CFG | **0x14**, 40 samples a REF period at 24 Hz; **0x20**, 64 at 15 Hz | the samples a period, in twos (9.4; AN5763, 3.3) |
 | 0x10, 0x11 | CTRL1, CTRL2 | **0x30**, then **0x39** | first the ODR-triggered mode with both sensors still powered down (OP_MODE 011), then the 800 Hz setting (ODR 1001), **960 Hz** under REF, written after REF has started (9.14, 9.15; AN5763, 3.3, table 15); **0x06** for the 120 Hz mode, the high-performance mode at the chip's own 120 Hz (tables 52 and 55) |
 | 0x13 | CTRL4 | **0x01** | INT2_IN_LH: REF's rising edge (9.17) |
-| 0x0D | INT1_CTRL | **0x02** on a module, **0x00** on the glove and the sock | INT1_DRDY_G, the gyro's data ready as an in-band interrupt, INT1 itself open on the board (9.11); on the glove and the sock none, a branch switched away being unable to raise one: Staršaja reads by her schedule from REF |
+| 0x0D | INT1_CTRL | **0x00** | no in-band interrupt on any unit, INT1 itself open on the board (9.11): every IMU is read by the schedule from REF, one way for the module, the glove and the sock, a branch switched away being unable to raise one anyway |
 
 - **What is read:** 12 B from 0x22, OUTX_L_G to OUTZ_H_A, the gyro's three axes and then the
   accelerometer's, little-endian, low byte first, in two's complement (DS13510, 9.30–9.35), at
   every sample, 960 a second per IMU, 46 kB/s for four on the two buses, ~3 % of I3C SDR; the
   temperature at 0x20–0x21 now and then into the diagnostics, °C = OUT_TEMP / 256 + 25 (table 6;
-  its offset ±15 °C). The FIFO is not used: every sample is fetched as it comes, on the IBI on a
-  module, by the schedule from REF on the glove and the sock.
+  its offset ±15 °C). The FIFO is not used: every sample is fetched as it comes, by the schedule
+  from REF on every unit.
 - **The sum,** what the 12 B per step carry, strapdown integration as Movella's MTw does it on
   the sensor at 1,000 Hz (its white paper, *Strap-Down Integration*): the turn over the step,
   Δθ = Σ ωᵢ Δt + ½ Σ (θᵢ₋₁ × θᵢ), the eight rate samples summed with the two-sample coning
   term, which the plain sum of rates leaves out when the piece turns about two axes at once;
   and the mean specific force over the step, Σ aᵢ / 8, no sculling term, since nobody
   integrates velocity. Both go out as three i16 each in the raw scale of ±2000 °/s and ±16 g
-  (70 mdps and 0.488 mg a bit, DS13510 table 3), Δθ divided by the step, so a reader may take
+  (70 mdps and 0.488 mg a bit, DS13510 table 3), Δθ divided by the step and rounded with its
+  error carried into the next step, so that the integral stays exact, so a reader may take
   them as a 120 Hz sample of the gyro and the accelerometer and be right to first order. A cross
   product and two sums a sample, a few dozen instructions, in the module's own time; eight a
   step, so the mean is a shift.
@@ -218,7 +232,14 @@ reset values, only the field is given, and the write is a read-modify-write.
   once every IMU on its wire is set, and CTRL1 and CTRL2 at 0x39. The data are trusted four REF
   periods later, when the chip has locked, 167 ms at 24 Hz and 267 ms at 15 Hz (3.3), which
   covers the gyro's 30 ms of turn-on (DS13510, table 4). Until REF starts the firmware holds it
-  low (see [hardware](HARDWARE.md#the-imu-board)).
+  low (see [hardware](HARDWARE.md#the-imu-board)). A change of the IMU mode (chip 0x00 register
+  0x01) goes the same way, the sensors powered down first (3.3).
+- **REF in one phase on every unit:** at the first *start* REF's timer, TIM1, is restarted by the
+  same count of suit-clock ticks that raises START (see
+  [Porjadok](../porjadok/SOFTWARE.md#starting-a-measurement)), its first edge on cycle 0 of every
+  unit alike, within the ~0.2 µs the start's arrival spreads, its period of 80 cycles five steps
+  of 16. Step k is then the eight samples of cycles 16k to 16k + 15 on every unit. The IMUs lock
+  again within four periods, and the steps of the first 320 cycles are marked as not trusted.
 - **A choice, not a datasheet value:** the filters at ~100 Hz under the sum. In noise the two
   modes come out alike, the chip's filter or the sum of eight; the sum keeps the turn right in
   a fast swing, where a step of 8.3 ms taken as one rotation is off by up to ~0.05° a step at
@@ -244,8 +265,8 @@ fourth slot:
   chip, ones for the second's eight, the IMUs' temperatures by turns, six a frame, the 24 in four.
 - **Staršaja runs a module's firmware** for her line and her chip: she gets *get ready* and
   *start* as every unit, keeps the cycle from her ADS1298's DRDY and reads it as a module reads
-  its first chip. Her line is a module's too, one sender and two receivers, the master on
-  USART1's RX and the echo on the LPUART's (see [hardware](HARDWARE.md#the-glove)).
+  its first chip. Her line and her pins are a module's too (see
+  [hardware](HARDWARE.md#the-glove)), her six SELs the only pins of her own.
 - **Her IMUs,** on her two I3Cs, each I3C's SDA switched among six branches of two IMUs by three
   TS3USB3031 side by side, one SEL0 and SEL1 a chip for both I3Cs, so the two buses move
   together (see [hardware](HARDWARE.md#the-glove)). A chip not in use sits on its park, USB1, and
@@ -283,11 +304,8 @@ By the suit's clock tree (see [Porjadok](../porjadok/SOFTWARE.md#the-clock-tree)
 **After a reset** the module takes the suit clock before it sets anything, and the line runs at
 its rate from the start (see [Porjadok](../porjadok/SOFTWARE.md#the-clock-tree)).
 
-**The glove's Staršaja** sets her clocks as the module, SPI1 for her one chip too: her LPUART1,
-the echo's receiver, on PLL3 Q, BRR = 2,560 for the line's 19,660,800 Bd; her I3Cs as the
-module's; her TIM2 does what the module's TIM3 does, PSC = 0, ARR = 24, CH2 the CLK at CCR2 = 12
-and CH1 START high at count 18, and her TIM5 counts the ticks with PSC = 4 (see
-[hardware](HARDWARE.md#the-glove)).
+**The glove's Staršaja** sets her clocks and timers as the module does, SPI1 for her one chip
+too (see [hardware](HARDWARE.md#the-glove)).
 
 ## DMA
 
@@ -296,7 +314,7 @@ channels:
 
 | channel | request (REQSEL) | what | priority | how |
 |---|---|---|---|---|
-| GPDMA1 0 | 27, uart4_rx | UART4 RX: Mamka's frames, 512 B a cycle at most | 3 | circular |
+| GPDMA1 0 | 27, uart4_rx | UART4 RX: Mamka's frames, a buffer of 2 × 1,024 B, a cycle's 1,024 B and a firmware frame's 519 B | 3 | circular |
 | GPDMA1 1 | 21, usart1_rx | USART1 RX: the echo of the module's own sending | 3 | circular |
 | GPDMA1 2 | 6, spi1_rx | SPI1 RX: a chip's 27 B in frames of 8 bits, a linked list of two nodes: the status word aside, the channels into the frame; the second chip's read the same, started by the first's end with PA15 low, into bytes 28–51 of the frame of 58 B | 3 | two blocks at each DRDY |
 | GPDMA1 4 | 122, i3c1_tc_dma | I3C1's control words, a frame of two reads | 1 | one block a sample |
@@ -310,9 +328,9 @@ Free: GPDMA1 3 and 6–7, GPDMA2 2–3 and 6–7. The SPI runs full duplex, so i
 read with zeros; the CRC of the frame is the core's (see
 [Porjadok](../porjadok/SOFTWARE.md#the-gpdma)).
 
-**The glove's Staršaja** takes a module's nine, the master's usart1_rx and the echo's lpuart1_rx
-in UART4's and USART1's places and her one chip's read one block; her two I3Cs' four as a
-module's, a frame of two reads a position, the switches set by the core between positions.
+**The glove's Staršaja** takes a module's nine as they are, her one chip's read one block; her two
+I3Cs' four as a module's, a frame of two reads a position, the switches set by the core between
+positions.
 
 ## Interrupts
 
@@ -329,8 +347,7 @@ vector table's (RM0481 Rev 5, table 153). **The module:**
 | 6 | I3C1 (123, 124), I3C2 (131, 132), event and error | the IMUs' frames and in-band interrupts |
 | 8 | ADC1 (37), FLASH (6) | the temperature and the 3.3 V, the firmware update |
 
-**The glove's Staršaja** the same, her USART1 at 2 for Mamka's frames and for the end of
-sending, the echo in the LPUART's buffer compared; her TIM1 at 6 with the I3Cs, REF's samples
+**The glove's Staršaja** the same as a module; her TIM1 at 6 with the I3Cs, REF's samples
 timed and each round of reads started, the next position set as a position's reads end, the
 step closed at its eighth sample.
 
@@ -348,6 +365,11 @@ ES0621 Rev 3; the STM32H523 exists only as revision A.
 
 ## Open questions
 
+- the IMUs' FIFO read once a step, eight samples, against a read a sample: ~25 % less bus time
+  and eight times fewer interrupts on the glove, if the FIFO runs in the ODR-triggered mode
+  (AN5763, 3.3), tried on the first module,
+- INT2 as REF's input while I3C runs, CTRL5's INT_EN_I3C: asked of ST or tried on the first
+  module,
 - the lead-off check: what the AC excitation switches, resistors from the rails as figure 39
   draws it or the current sources, and its current, measured on the first module; the tone's
   threshold and what a poor contact looks like against an open one; the steel's offset beside

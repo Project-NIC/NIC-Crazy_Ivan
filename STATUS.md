@@ -108,8 +108,8 @@ part has been bought. What is here is of four kinds, and each page says which:
 - three SPIs to Baťa: processor 1's at 37.5 MHz, processor 2's two at 11.1 MHz behind the ROCK's
   translators, the frames as they came in places by the unit's kind, 58 or 34 B; four wires between
   the processors, her own registers, the BMS a chip of processor 2 ([Mamka](mamka/SOFTWARE.md));
-  every line's converter on an EN and a PGOOD of its own, every EN through an RC that rides through
-  her reset ([Mamka](mamka/HARDWARE.md#budilnik)),
+  every line's converter on an EN and a PGOOD of its own, the suit switched on by the BMS's button
+  and off by its *Shutdown*, the computers up with the pack ([Mamka](mamka/HARDWARE.md#on-and-off)),
 - **Bogatyr,** the layout on the body: 280 channels on twenty units, every channel differential;
   the rules any layout keeps (near the heart short, across the spine only diagonally, nothing in
   the hair, nothing where the body is pressed); **the electrodes' places not laid out,** asked of
@@ -137,7 +137,7 @@ part has been bought. What is here is of four kinds, and each page says which:
 - Terem for 2280 cards, the Hailo-10H with 8 GB, its board an L under the ROCK, read from Radxa's
   3D model, with windows over the ROCK's tallest parts ([Terem](terem/CONSTRUCTION.md#the-board)),
 - the names by family ties: Borovičok, Staršaja every sensing unit's main
-  processor, Kormilica Mamka's power section ([NAMES](NAMES.md)),
+  processor, Kormilica the suit's power on Mamka ([NAMES](NAMES.md)),
 - the codecs and the simulator for all of it ([software](software/protocol/README.md)).
 
 ## What is closed

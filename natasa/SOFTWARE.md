@@ -11,7 +11,7 @@ Bluetooth headphones, the buttons and the motors, Míša beside her.
 
 ---
 
-Nataša is a unit like any other, 0x81, line 8's first: the same frames of 34 B and 8 B, the same
+Nataša is a unit like any other, 0xA1, line 8's first: the same frames of 34 B and 8 B, the same
 kinds and the same answers (see [Porjadok](../porjadok/SOFTWARE.md)). Her own chips are 0x02, the
 sound, and 0x03, the motors. She is optional: any Bluetooth headphones or hands-free take her
 place (see [Bluetooth headphones](#bluetooth-headphones)), and line 8 runs without her.
@@ -76,6 +76,7 @@ none (see [hardware](HARDWARE.md#microphones)):
 | register | what |
 |---|---|
 | 0x00 | the microphones: 0 off, as after a reset, 1 on; Baťa writes it (see [Baťa](../bata/SOFTWARE.md#the-system)) |
+| 0x01 | the headphones' stream: 0 off, as after a reset, 1 on; Baťa writes it, and Mamka sends the packets 0x22 only while it is 1 |
 
 - **Her I2S clocks** run while the headphones' stream comes or the microphones are on, the DAC
   and the microphones sharing them; with neither, they stop and are held low, and the
@@ -148,7 +149,7 @@ the strength and the brake are Nataša's, and she answers to a map of registers 
 | 0x04–0x07 | the right, the same |
 | 0x08–0x0B | the forehead, the same |
 | 0x0C–0x0F | the nape, the same |
-| 0x10–0x13 | the settings: the warning's distance (0.1 m, 0 off), its speed (0.2 m/s, 0 off), the press confirmation's pattern (0 off) and its strength; built in from reset as 1.0 m, 2.0 m/s, pattern 5 and a middle strength, so the warning works before Baťa has written anything, and Baťa may change them |
+| 0x10–0x13 | the settings: the warning's distance (0.1 m, 0 off), its speed (0.2 m/s, 0 off), the press confirmation's pattern (0 off) and its strength; built in from reset as 1.0 m, 2.0 m/s, pattern 1, a tap, and a middle strength, so the warning and the press's tap work before Baťa has written anything, and Baťa may change them; the warning itself plays pattern 5, which no press takes |
 | 0x20–0x5F | patterns 8–15, 8 B each: up to 8 steps, a step's length in 10 ms, on and off in turn from on, a 0 after the last |
 
 Nataša carries out a frame whole, so one frame sets all four motors, 16 of its 25 values. A
@@ -166,11 +167,11 @@ every write.
   at the end of every "on" are the firmware's and not in the registers.
 - **Starts are spread:** when more than two motors are to run, Nataša starts them 50 ms apart,
   so their starting currents never add up on line 8's converter.
-- **The warning** is Nataša's own, from the sphere as it passes (see [Míša](#míša-beside-her)):
-  when a field of the middle row in the three columns ahead is nearer than the set distance or
-  coming faster than the set speed, she plays pattern 5 on the forehead until it passes and sets
-  bit 1 of her state, and processor 2 sends the event. It works with Baťa hung, and with Baťa
-  halted at boot, the settings being built in (1.0 m, 2.0 m/s, pattern 5) until he writes them.
+- **The warning** is Nataša's own, from the sphere as it passes (see [Míša](#míša-beside-her)): when
+  a field of the middle row in the three columns ahead is nearer than the set distance or coming
+  faster than the set speed, she plays pattern 5 on the forehead until it passes and sets bit 1 of
+  her state, and processor 2 sends the event. It works with Baťa hung, and with Baťa halted at boot,
+  the settings being built in (1.0 m, 2.0 m/s, a press confirmed by pattern 1) until he writes them.
 - **A short press and a hold** on each button. What they do is set on the computer, so it can
   change; a first assignment:
 
@@ -187,7 +188,7 @@ every write.
 
 ## Míša beside her
 
-[Míša](../misa/README.md) is a unit of his own, 0x82, line 8's second, in slot 2, with his own tap
+[Míša](../misa/README.md) is a unit of his own, 0xC1, line 8's second, in slot 2, with his own tap
 and drivers; Nataša does not pass his frames, and either may be missing. **She reads his
 sphere as it passes** on the return pair, which every unit on the line hears: the middle row, for
 the warning, so she warns by herself with Baťa hung. Without a sphere for 4 frames, 400 ms, she

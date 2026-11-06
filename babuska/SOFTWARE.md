@@ -12,7 +12,8 @@
 ---
 
 The BMS, [Ključnica](HARDWARE.md#the-bms), keeps these settings itself; Mamka reads it over Modbus
-(see [Mamka](../mamka/SOFTWARE.md#the-battery)) and passes the state of charge on to Baťa.
+(see [Mamka](../mamka/SOFTWARE.md#the-battery)) and passes the state of charge on to Baťa, and at
+the end of a stop writes its *Shutdown*, 0x1604 (see [on and off](../mamka/HARDWARE.md#on-and-off)).
 
 ## The BMS's settings
 

@@ -39,6 +39,10 @@ class TestCommands(unittest.TestCase):
         b = stp.blink(0x05, True, 9)
         self.assertEqual(b[:6], bytes([0x05, stp.K_WRITE, 9, stp.CHIP_UNIT, stp.REG_LED, 1]))
 
+    def test_lead_off_check(self):
+        b = stp.lead_off_check(0, 7)
+        self.assertEqual(b[:6], bytes([0, stp.K_WRITE, 7, stp.CHIP_UNIT, stp.REG_CHECK, 1]))
+
     def test_read_and_its_answer(self):
         q = stp.read(0x11, stp.CHIP_ADS, 0x01, 3, number=9)
         self.assertEqual(q, stp.Frame(0x11, 0x03, 9, bytes([1, 1, 3])).pack())
@@ -74,13 +78,20 @@ class TestCommands(unittest.TestCase):
         uid = bytes(range(12))
         a = stp.Frame.unpack(stp.discover_answer(uid))
         self.assertEqual((a.unit, a.kind, a.body[:12], a.body[12:]), (0, 0x81, uid, bytes(16)))
-        frame = stp.assign(uid, 0x12)
+        lined = stp.Frame.unpack(stp.with_line(stp.discover_answer(uid), 3))
+        self.assertEqual((lined.body[:12], lined.body[12]), (uid, 3))
+        frame = stp.assign(uid, 0x62, 2)
         self.assertEqual(frame[0], 0)
-        self.assertEqual(stp.parse_assign(frame), (uid, 0x12))
-        done = stp.Frame.unpack(stp.result(stp.Frame.unpack(frame), unit=0x12))
-        self.assertEqual((done.unit, done.kind, done.body[0]), (0x12, 0x82, 0))
+        self.assertEqual(stp.parse_assign(frame), (uid, 0x62, 2))
+        done = stp.Frame.unpack(stp.result(stp.Frame.unpack(frame), unit=0x62))
+        self.assertEqual((done.unit, done.kind, done.body[0]), (0x62, 0x82, 0))
+        self.assertEqual((stp.P1, stp.P2, stp.NATASA, stp.MISA), (0x21, 0x41, 0xA1, 0xC1))
+        self.assertEqual(stp.address(stp.T_GLOVE, 2), 0xE2)
+        self.assertIn(0xE2, stp.SENSING)
         with self.assertRaises(ValueError):
-            stp.assign(uid, 0x81)                                     # Nataša's is fixed
+            stp.assign(uid, stp.NATASA, 1)                            # Nataša's is fixed
+        with self.assertRaises(ValueError):
+            stp.assign(uid, 0x80, 1)                                  # every unit of a type
         self.assertLess(stp.wait_us(uid), 655_360)
         self.assertNotEqual(stp.wait_us(uid), stp.wait_us(uid, 1))
 
@@ -181,7 +192,7 @@ class TestData(unittest.TestCase):
 
     def test_natasa(self):
         b = stp.natasa_data(31, 0x00F0, stp.NATASA_MISA)
-        self.assertEqual(b[:7], bytes([0x81, 0x20, 31, 0, 0xF0, 0, 1]))
+        self.assertEqual(b[:7], bytes([stp.NATASA, 0x20, 31, 0, 0xF0, 0, 1]))
         self.assertEqual(stp.parse_natasa_data(b), (31, 0xF0, 1))
 
 
@@ -322,7 +333,7 @@ class TestLine8(unittest.TestCase):
         samples = [(i, -i) for i in range(48)]
         down = stp.sound(stp.K_SOUND_DOWN, 0x1234, samples)
         self.assertEqual(len(down), 198)
-        self.assertEqual(down[:6], bytes([0x81, 0x22, 0x34, 0x12, 0, 0]))
+        self.assertEqual(down[:6], bytes([stp.NATASA, 0x22, 0x34, 0x12, 0, 0]))
         self.assertEqual(stp.parse_sound(down), (0x22, 0x1234, samples))
         self.assertEqual(stp.sound(stp.K_SOUND_UP, 5, samples)[1], 0x23)
 
@@ -359,7 +370,7 @@ class TestLine8(unittest.TestCase):
 class TestMamka(unittest.TestCase):
     def test_event_gps_utc_battery(self):
         e = stp.Registers.unpack(stp.event(stp.EV_PRESSED, 3, 123456))
-        self.assertEqual((e.unit, e.kind, e.number, e.reg), (0xF2, 0x83, 123456 & 0xFFFF, 0xC0))
+        self.assertEqual((e.unit, e.kind, e.number, e.reg), (stp.P2, 0x83, 123456 & 0xFFFF, 0xC0))
         self.assertEqual(e.values, struct.pack("<BBI", 1, 3, 123456))
         self.assertEqual(len(stp.Registers.unpack(stp.gps(1, 2, 3, 4, 5, 0)).values), 12)
         self.assertEqual(stp.Registers.unpack(stp.utc(9, 10, )).reg, 0xE0)

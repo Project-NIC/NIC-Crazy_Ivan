@@ -125,14 +125,14 @@ right the line's, the top the IMUs'.
 - The line transmits on USART1, its DE driven by the USART itself, and reads itself back on
   USART1's RX: the echo. It receives from the master on UART4. Both reach 20 Mbaud with DMA
   (section 3.35.1).
-- SPI1 takes frames of 4 to 32 bits (table 10); a chip's reading of 216 bits is read in frames of
-  8 bits, the GPDMA moving the 27 bytes as they come (see
+- SPI1 takes frames of 4 to 32 bits (table 10); a chip's reading of 216 bits is read in frames of 8
+  bits, the GPDMA moving the 27 bytes as they come (see
   [Porjadok](../porjadok/SOFTWARE.md#how-a-unit-builds-the-frame)). The two chips sit on it in
   cascade, DIN, DOUT and SCLK shared and a chip select each, the deselected chip's DOUT
-  high-impedance (SBAS459K, 9.4.2.1): the first on the SPI's NSS, the second on PA15, read one
-  after the other, 22 µs together. A daisy chain shares DIN only where every device holds the
-  same settings, and then "the individual devices cannot be programmed" (9.4.2.2); the two
-  differ in their settings.
+  high-impedance (SBAS459K, 9.4.2.1): the first on the SPI's NSS, the second on PA15, read one after
+  the other, 24 µs together, the first's CS held 2.03 µs after its last clock (tSCCS, 7.6). A daisy
+  chain shares DIN only where every device holds the same settings, and then "the individual devices
+  cannot be programmed" (9.4.2.2); the two differ in their settings.
 - The HSE in bypass takes a digital clock of 4 to 50 MHz (table 38).
 - PC13 to PC15 hang on the backup domain's power switch: 2 MHz and 30 pF at most, and no
   current to source, so not for the LED (table 13, note 2).
@@ -142,8 +142,8 @@ right the line's, the top the IMUs'.
   second chip deselected until the firmware takes the pin, as a select should be, rising with the
   chip's own 3.3 V, not before it (our reading of 11.1); PA2 comes up analog, and its pull-down
   of 4.7 kΩ holds the TLV9001S shut down against the pull-up the chip has inside on SHDN
-  (SBOS833R, 8.5, its value not given; a low under 0.2 V above V−, 7.5), the strip's ground layer
-  on ground; the pull-up's current is read on a sample and the resistor lowered if it must.
+  (SBOS833R, 8.5; its current at a low 150 nA, 7.10, ~0.7 mV across the 4.7 kΩ; a low under
+  0.2 V above V−, 7.10), the strip's ground layer on ground.
 - The chips' PWDN and CLKSEL pins are not driven: they are tied through resistors of 10 kΩ or
   more, as the datasheets ask for their mode pins, PWDN high and CLKSEL low for the external
   clock.
@@ -164,6 +164,12 @@ right the line's, the top the IMUs'.
 - **The cable** of a bus has five wires: SCL, SDA, +3.3 V, ground and REF. The data are
   small, 12 B per IMU 960 times a second, 23 kB/s a bus, so the bus can run well below the
   12.5 MHz of I3C SDR, which helps over a cable.
+- **A pull-up of 2.2 kΩ on each bus's SDA** at the processor, as on the glove: I3C drives push-pull
+  but runs the address's arbitration and the ACKs open-drain, and the pin's own pull-up, ~40 kΩ,
+  would leave a rise of ~2 µs against SCLL_OD's few hundred ns (the review's arithmetic, 5 Nov
+  2026; the IMU boards carry none). 2.2 kΩ is the start, 1.8 or 1.2 kΩ if the scope wants a
+  quicker rise (the owner): 1.2 kΩ is 2.75 mA at 3.3 V, under the 4 mA an IMU holds at 0.2 V
+  (DS13510 Rev 4, table 4).
 - **The IMUs' rate** is held by REF, on a wire of its own into each IMU's INT2 (see
   [The IMU](#the-imu)). I3C has a clock over the bus too (synchronous timing control,
   SETXTIME), and ST's documents disagree on whether the STM32H5's controller has it: AN5879
@@ -358,12 +364,13 @@ here, the glove's too. It carries only what ST asks and two parts for the addres
 - **The pins** (DS13510 Rev 4, table 2): 1 SDO/SA0 by the 0 Ω to ground or VDDIO, the address
   0x6A or 0x6B; 2 SDx and 3 SCx to ground, the analog hub and Qvar unused ("connect to Vdd_IO or
   GND"); 4 INT1 open; 5 VDDIO and 8 VDD 100 nF each, the sheet's "recommended 100 nF"; 6 and 7
-  ground; 9 INT2 through the 1 kΩ to REF; 10 OCS_Aux and 11 SDO_Aux open, as the sheet allows; 12
+  ground; 9 INT2 through the 10 kΩ to REF; 10 OCS_Aux and 11 SDO_Aux open, as the sheet allows; 12
   CS to VDDIO, I²C and I3C, so that noise cannot turn the chip to SPI; 13 SCL and 14 SDA the bus,
   no pull-ups on the board.
-- **The 1 kΩ on INT2:** from power-on the chip holds INT2 as an output forced to ground (DS13510,
+- **The 10 kΩ on INT2:** from power-on the chip holds INT2 as an output forced to ground (DS13510,
   table 23) until it is set as the trigger's input. REF is shared and driven by the processor, so
-  an IMU reset while REF runs would fight the driver; 1 kΩ holds that to 3.3 mA, and the
+  an IMU reset while REF runs would fight the driver; 10 kΩ holds that to 0.33 mA, 8 mA for the
+  glove's 24 where 1 kΩ would let 79 mA, and the
   firmware keeps REF low until every IMU on it is set. Our reading of the sheet, checked on the
   first board.
 - **No filter on the supply:** 100 nF at each supply pin, as ST asks (table 2, note 2), and one
@@ -420,25 +427,23 @@ channels (RLD_SENSP, RLD_SENSN) and drives the body inverted, towards (AVDD + AV
   hand, 5 Nov 2026, the way not recorded; 50 kΩ stays the working figure for the inputs until
   measured) and ~95 Hz at the datasheet's 51 kΩ; with the layers on ground every input's lead joins
   them, 560 × (20 + ~86) pF ≈ 59 nF before the strips' own capacitance to the skin, the pole at
-  ~20–25 Hz. The two poles set the phase margin: ~35–40° with the layers driven, ~20° on ground, on
-  the same model with 4.99 kΩ and the datasheet's 1.5 nF, as before, ~15° in every case but the
-  moist one's 30°, the loop's pole at 106 Hz then meeting the body's (computed, the leads an
-  estimate; see [The strip's ground layer](#the-strips-ground-layer)). The capacitor is tuned on a
-  sample, module by module, between 22 nF (a gain of ~10 at 50 Hz, less margin) and 100 nF (~2,
-  more); TI's forum warns the amplifier off large capacitive loads (E2E, *bias shield drive*, as the
-  search summarised it).
-- **The 100 kΩ** is there for a fault's sake, the datasheet's own "patient protection resistor"
-  of figure 42; the drive's currents are nanoamps to a microamp (the inputs' bias currents, ±1
-  nA each at most, 560 of them), tens of millivolts across it at the worst, nothing against the
-  chips' common-mode range. The lead-off check excites every P and N input together, so its
-  currents cancel in the body and none returns through this lead; the P inputs alone would send
-  ~70 µA through it, ~7 V (see [software](SOFTWARE.md#an-electrode-coming-off)). It also parts
-  the amplifier's output from the capacitance of the lead and the body, against which an op-amp
-  tends to ring, and it takes static. The amplifier itself
-  gives 490 µA into a short to ground and 810 µA into one to the supply at a 5 V AVDD, and has
-  100 kHz of gain-bandwidth (SBAS459K, Electrical Characteristics, the RLD amplifier), its own
-  pole far above the loop's crossover. The datasheet leaves the loop's stability to the system
-  (9.3.1.7.6).
+  ~20–25 Hz. The two poles set the phase margin: ~35–40° with the layers driven, ~20° on ground
+  (computed, the leads an estimate; see [The strip's ground layer](#the-strips-ground-layer)). The
+  capacitor is tuned on a sample, module by module, between 22 nF (a gain of ~10 at 50 Hz, less
+  margin) and 100 nF (~2, more); TI's forum warns the amplifier off large capacitive loads (E2E,
+  *bias shield drive*, as the search summarised it).
+- **The 100 kΩ** is there for a fault's sake, the datasheet's own "patient protection resistor" of
+  figure 42; the drive's currents are nanoamps to a microamp (the inputs' bias currents, ±1 nA each
+  at most, 560 of them), tens of millivolts across it at the worst, nothing against the chips'
+  common-mode range. The lead-off check excites every P and N input together, so its currents cancel
+  in the body and none returns through this lead; the P inputs alone would send ~1.7 µA through it
+  at 6 nA and, through the resistors, ~70 µA, ~7 V (see
+  [software](SOFTWARE.md#an-electrode-coming-off)). It also parts the amplifier's output from the
+  capacitance of the lead and the body, against which an op-amp tends to ring, and it takes static.
+  The amplifier itself gives 490 µA into a short to ground and 810 µA into one to the supply at a 5
+  V AVDD, and has 100 kHz of gain-bandwidth (SBAS459K, Electrical Characteristics, the RLD
+  amplifier), its own pole far above the loop's crossover. The datasheet leaves the loop's stability
+  to the system (9.3.1.7.6).
 - **Faults:** from outside the suit hardly any, see below. Inside, with one driver no direct
   current flows whatever its amplifier does: an output stuck at a rail takes the body to that
   rail, the inputs have 1 GΩ and their protection diodes open only ~0.6 V beyond the supply
@@ -447,8 +452,8 @@ channels (RLD_SENSP, RLD_SENSN) and drives the body inverted, towards (AVDD + AV
   which the gain of ~73 turns into outputs stuck at opposite rails, 5 V across two leads and two
   contacts, ~25 µA, under the 50 µA of direct current that IEC 60601-1 allows between two
   patient connections under a single fault (10 µA normally; the standard's table as Wall
-  Industries' guide gives it, the standard itself not read); through 4.99 kΩ it would have been
-  ~0.36 mA. The cable's 6 V shorted onto the lead returns through the inputs' diodes with only
+  Industries' guide gives it, the standard itself not read).
+  The cable's 6 V shorted onto the lead returns through the inputs' diodes with only
   the ~0.4 V over the supply, a few microamps; nothing above 6 V reaches the suit, the pack's
   14.6 V staying in the backpack. Two drivers are a firmware fault, and three things catch it:
   every module's PD_RLD read back with CONFIG3 once in 32 cycles, so Baťa sees two set (see
@@ -516,21 +521,21 @@ be measured on the sample.
   every module, nothing to switch when Baťa moves the drive. To check on the sample: that a
   powered-down RLDOUT is high-impedance, so the loop's 1 MΩ does not load RLDINV, which the
   datasheet does not say.
-- **The driver:** a **TLV9001S** (SOT-23-6, SBOS833R: 60 µA; shut down by SHDN, 0.5 µA, its
-  output 10 GΩ ∥ 2 pF) as the follower on RLDINV, then a series resistor to the ground layers'
-  way and a pull-down from that way to ground, ~3 kΩ and ~300 kΩ, 0603, changed with a soldering
-  iron: together the attenuator for 0.99 and, with the layers' capacitance, a low-pass while the
-  driver is on, and the plain ground while it is off, the coupled nanoamps making microvolts
-  across 300 kΩ, a thousandth of that on the leads. Metting van Rijn's rules (eqns 5–9): a guard
-  at a gain under 1 is stable for any electrode, and flat when its time constant is about twice
-  the electrode's and the lead's, 2 × 50 kΩ × 86 pF ≈ 9 µs, a low-pass at ~18 kHz; the layers'
-  capacitance is measured on the sample and the resistor chosen for it. A driver cut off above
-  ~1 MHz leaves the bias loop's stability alone, one at 10–100 kHz adds phase to it, so the two
-  are tried side by side. SHDN on PA2 with its own pull-down of 4.7 kΩ against the chip's
-  internal pull-up (SBOS833R, 8.5), the layers on ground from reset
-  until the firmware drives them: register 0x03 of chip 0x00, 1 by default, set by Baťa in the
-  service mode, so the two levels are compared on the arm by a register (see
-  [software](SOFTWARE.md#the-ads129xs-settings)).
+- **The driver:** a **TLV9001S** (SOT-23-6, SBOS833R: 60 µA; shut down by SHDN, 0.5 µA, its output
+  10 GΩ ∥ 2 pF) as the follower on RLDINV, then a series resistor to the ground layers' way and a
+  pull-down from that way to ground, ~3 kΩ and ~300 kΩ, 0603, changed with a soldering iron:
+  together the attenuator for 0.99 and, with the layers' capacitance, a low-pass while the driver is
+  on, and the plain ground while it is off, the coupled nanoamps making microvolts across 300 kΩ, a
+  thousandth of that on the leads; a 0 Ω place across the 300 kΩ puts the layers hard on ground for
+  (a) and (c), whose followers have no other way to ground on the strip. Metting van Rijn's rules
+  (eqns 5–9): a guard at a gain under 1 is stable for any electrode, and flat when its time constant
+  is about twice the electrode's and the lead's, 2 × 50 kΩ × 86 pF ≈ 9 µs, a low-pass at ~18 kHz;
+  the layers' capacitance is measured on the sample and the resistor chosen for it. A driver cut off
+  above ~1 MHz leaves the bias loop's stability alone, one at 10–100 kHz adds phase to it, so the
+  two are tried side by side. SHDN on PA2 with its own pull-down of 4.7 kΩ against the chip's
+  internal pull-up (SBOS833R, 8.5), the layers on ground from reset until the firmware drives them:
+  register 0x03 of chip 0x00, 1 by default, set by Baťa in the service mode, so the two levels are
+  compared on the arm by a register (see [software](SOFTWARE.md#the-ads129xs-settings)).
 - **The followers** live on the strip alone: the first strip is drawn with a follower's place at
   every stud, bridged by a 0 Ω part, likely never fitted, and a +5 V trace from the connector's
   +5 V way, fed through 10 Ω from the module's analog rail, **the trace laid only on a strip that
@@ -590,10 +595,9 @@ under [software](SOFTWARE.md#the-glove); where its electrodes and its IMUs sit o
   seen when it is drawn.
 - **Its Staršaja,** the elder, is the module's own part, the **STM32H523CCU6 in UFQFPN48,** so
   that one processor serves the module and the glove, and she reads every IMU of the hand herself.
-  Her 35 I/Os (DS14540 Rev 3, table 2) go round one way: the line keeps a module's one sender and
-  two receivers, the master on USART1's RX and the echo on the LPUART's, which receives at the
-  line's rate; her TIM2 makes the ADS1298's CLK and START and TIM5 counts the ticks; six plain GPIOs
-  set the switches; 29 I/Os in all, below. Beside her the line's drivers, a module's three, two
+  Her 35 I/Os (DS14540 Rev 3, table 2) go round one way: the module's pin map, its line, its
+  ADS1298's CLK and START and its DMA as they are, and six of its free pins setting the switches;
+  29 I/Os in all, below. Beside her the line's drivers, a module's three, two
   THVD1452 and a THVD1450 (see [Porjadok](../porjadok/HARDWARE.md#drivers-on-a-unit)), and her LDOs,
   a TPS7A2033 and an LP2985-5.0 as on a module (see [power](#power)).
 - **Her two I3Cs read every IMU of the hand,** I3C1 on PB6 and PB7, I3C2 on PB5 and PB4, as a
@@ -612,7 +616,9 @@ under [software](SOFTWARE.md#the-glove); where its electrodes and its IMUs sit o
   (DRL, 1.6 × 1.6 mm; JLCPCB C2872902; ±24 mA at 3 V, tpd 4.7 ns at most into 50 pF, SCES519O, 5.3
   and 5.8), each beside its zone's connector, three on each I3C's SCL: a zone's SCL, four IMUs' pins
   and a finger's strip, is ~80 pF, its edge ~11 ns at 24 mA (an estimate). A branch not selected
-  sees SCL with its SDA held high by its own pull-up, so no START. Each branch's SDA has 4.7 kΩ at
+  sees SCL with its SDA held high by its own pull-up, so no START. The gates' inputs float from
+  reset until Staršaja drives them, so each I3C's SCL has a pull-up before them; each output a
+  place for 22–33 Ω; the gate's delay counted in SDA_HD. Each branch's SDA has 4.7 kΩ at
   the IMUs' side, so that it idles high when switched away, and each common SDA 2.2 kΩ, 1.5 kΩ
   together: the open-drain rise ~127 ns against SCLL_OD's 344 ns (AN5879 Rev 7, 9.5.3), the IMU
   sinking 2.2 mA of the 4 mA it holds at 0.2 V (DS13510 Rev 4, table 4). Fourteen pull-ups.
@@ -661,79 +667,23 @@ under [software](SOFTWARE.md#the-glove); where its electrodes and its IMUs sit o
   strips only for a repair, as a module does (see
   [Porjadok](../porjadok/HARDWARE.md#cable-and-connectors-in-the-suit)).
 
-**Staršaja's pins** in the glove, from the module's (see [Sensing module](#sensing-module)): the
-second chip's two pins free, the master's receiver on USART1 and the echo's on the LPUART, the
-ADS1298's CLK and START on TIM2, RESET, SHDN and the LED moved, and six of the free pins the
-switches' SEL0 and SEL1, chosen when she is drawn; the signals and their alternate functions from
-ST's STM32_open_pin_data (STM32H523CCUx and GPIO modes v1_0, 29 Oct 2026), to be read against
-DS14540's tables 14 and 15 when she is drawn:
+**Staršaja's pins** in the glove are the module's, pin for pin (see
+[Sensing module](#sensing-module)), so that every unit has one pin map and one DMA table (6 Nov
+2026): the second chip's CS on PA15 and DRDY on PB10 are hers to spare, and six of the module's
+free pins set the three switches, plain outputs:
 
-| pin | name | use | AF |
-|---|---|---|---|
-| 1 | VBAT | to VDD | |
-| 2 | PC13 | free | |
-| 3, 4 | PC14, PC15 | free | |
-| 5 | PH0-OSC_IN | the suit clock, 9.8304 MHz, into the HSE in bypass | |
-| 6 | PH1-OSC_OUT | free | |
-| 7 | NRST | to the SWD connector | |
-| 8, 9 | VSSA, VDDA | | |
-| 10 | PA0 | free | |
-| 11 | PA1 | ADS1298 CLK: TIM2_CH2 | AF1 |
-| 12 | PA2 | free | |
-| 13 | PA3 | the strip's ground layer's driver, TLV9001S SHDN, with a pull-down of 4.7 kΩ, as the module's PA2 | GPIO |
-| 14 | PA4 | the ADS1298's CS: SPI1_NSS | AF5 |
-| 15 | PA5 | ADS1298 SCLK: SPI1_SCK | AF5 |
-| 16 | PA6 | ADS1298 DOUT: SPI1_MISO | AF5 |
-| 17 | PA7 | ADS1298 DIN: SPI1_MOSI | AF5 |
-| 18 | PB0 | ADS1298 RESET | GPIO |
-| 19 | PB1 | free | |
-| 20 | PB2 | the ADS1298's DRDY, on EXTI2 | GPIO |
-| 21 | PB10 | free | |
-| 22 | VCAP | 2.2 µF | |
-| 23, 24 | VSS, VDD | | |
-| 25 | PB12 | free | |
-| 26 | PB13 | free | |
-| 27 | PB14 | the status LED | GPIO |
-| 28 | PB15 | the line, receive from the master: USART1_RX | AF4 |
-| 29 | PA8 | the IMUs' REF, the whole board's: TIM1_CH1 | AF1 |
-| 30 | PA9 | the line, transmit: USART1_TX | AF7 |
-| 31 | PA10 | the echo: LPUART1_RX | AF3 |
-| 32 | PA11 | free | |
-| 33 | PA12 | the line, the driver's DE: USART1_DE | AF7 |
-| 34 | PA13 | SWDIO | AF0 |
-| 35, 36 | VSS, VDD | | |
-| 37 | PA14 | SWCLK | AF0 |
-| 38 | PA15 | ADS1298 START: TIM2_CH1, with a pull-down of 10 kΩ | AF1 |
-| 39 | PB3 | SWO | AF0 |
-| 40 | PB4 | I3C2_SDA | AF10 |
-| 41 | PB5 | I3C2_SCL | AF10 |
-| 42 | PB6 | I3C1_SCL | AF3 |
-| 43 | PB7 | I3C1_SDA | AF3 |
-| 44 | BOOT0 | to ground through 10 kΩ | |
-| 45 | PB8 | free | |
-| 46 | VCAP | 2.2 µF | |
-| 47, 48 | VSS, VDD | | |
-| pad | the exposed pad | to ground (section 6.5, note 3) | |
+| pin | name | use |
+|---|---|---|
+| 11 | PA1 | chip A's SEL0 |
+| 13 | PA3 | chip A's SEL1 |
+| 21 | PB10 | chip B's SEL0 |
+| 26 | PB13 | chip B's SEL1 |
+| 27 | PB14 | chip C's SEL0 |
+| 45 | PB8 | chip C's SEL1 |
 
-- **The line as a module's,** one sender and two receivers: she sends on USART1's TX and takes the
-  master's frames on its RX, PB15, and reads her own sending back on the LPUART's RX, PA10, at the
-  line's 19.66 MBd: ten kernel clocks a bit, of the 3 to 4,096 allowed (RM0481 Rev 5, 57.4.8), BRR
-  2,560, and a tolerance of 3.90 % (table 640) for what is her own signal, and she listens before
-  she talks on the echo's receiver as a module does. SWD and SWO stay. Twelve I/Os are free, PA0,
-  PA2, PA11, PB1, PB8, PB10, PB12, PB13, PC13, PC14, PC15 and PH1: six take the three switches'
-  SEL0 and SEL1, chosen when the board is drawn, and six stay free.
-- **PA15 as START** is JTDI after reset, pulled up (RM0481 Rev 5, GPIOx_MODER reset values), so
-  START carries a pull-down of 10 kΩ, which holds it low from power-up to *start*, as the chip
-  wants it, until the firmware drives it; SHDN sits on PA3, not on a pin of the backup domain,
-  since its 4.7 kΩ pull-down must sink the TLV9001S's internal pull-up and PC13–PC15 may source
-  or sink little (DS14540, table 13, note 2), and comes up with the TLV9001S shut down, the
-  strip's ground layer on ground.
-- **LPUART1** takes PLL3 Q as the USARTs, 196.608 MHz (LPUART1SEL = 010, RCC_CCIPR3, 11.8.42), up
-  to 200 MHz in VOS1 as theirs (DS14540 Rev 3, table 20), receive only, its FIFO of 8 B and its
-  DMA the USARTs' (DS14540, table 9). **TIM2 and TIM5:** TIM2 makes the ADS1298's CLK on its CH2
-  and START on its CH1, the module's TIM3 PWM moved, and TIM5, 32 bits like TIM2 (DS14540, 3.31.2),
-  counts the suit clock's ticks from the start command to START and from DRDY to the slot, with no
-  pin. PH1, free, is a plain GPIO with the HSE in bypass (RM0481 Rev 5, 13.3.12).
+PA15 is not a SEL: JTDI's pull-up after reset (RM0481 Rev 5, GPIOx_MODER reset values) would lift
+a SEL against the switch's own pull-downs and take its chip out of the park; it stays free with
+PB15, PC13–PC15 and PH1. 29 of the 35 I/Os are used, the module's 25 less two and the six SELs.
 
 **The glove's current,** an estimate on the 4 V rail, counted as the modules are, on the safe
 side:
@@ -747,7 +697,7 @@ side:
 | the line's drivers, two THVD1452 and a THVD1450, their receivers on | ~3 × 2.4–3 mA, ~8 mA | SLLSEY3E, ICC |
 | status LED | ~2 mA | estimate |
 | the driver while it sends | ~37 mA, ~8 % of the time | estimate |
-| **the glove, 4 V** | **~0.087 A on average, ~0.16 A at worst** | |
+| **the glove, 4 V** | **~0.085 A on average, ~0.15 A at worst** | |
 | the ADS1298's analog side and the TLV9001S, on 6 V | 3.1 mA and 60 µA | SBAS459K; SBOS833R |
 
 ### The sock
@@ -761,7 +711,7 @@ the ankle, and its IMU strips go down to the foot, **up to eight IMUs** to start
 24 places, in Staršaja's zones as the glove's, its table telling how many.
 Where they sit is under [Bogatyr](../bogatyr/CONSTRUCTION.md#the-socks); the strips and the
 layers under [construction](CONSTRUCTION.md#the-sock). Its current, counted as the glove's above
-with eight IMUs, **~0.075 A on average, ~0.15 A at worst** on 4 V (an estimate).
+with eight IMUs, **~0.075 A on average, ~0.14 A at worst** on 4 V (an estimate).
 
 ## Power
 
@@ -788,14 +738,15 @@ A sensing module takes the suit's two rails, 4 V and 6 V (see
   at the worst corner (see [Porjadok](../porjadok/HARDWARE.md#end-to-end)).
 - **At the inputs,** where the cable arrives, an RC each, no polymer: a **22 µF 25 V X5R 1206**
   (Samsung CL31A226KAHNNNE, JLCPCB C12891, Basic) behind **0.5 Ω**, two 1 Ω 0603 side by side,
-  beside the 10 µF. It damps the cable: a module plugged into a live line peaks at ≤ 4.52 V on 4 V,
-  under the TPS7A2033's 6.5 V (SBVS338H, 5.1), and at ≤ 6.94 V on 6 V, under the LP2985's 16 V
-  (SLVS522S), computed for a line of 0.2–1.0 µH and 0.08–0.35 Ω (the 3M 3811 ~0.44 µH/m, an
-  estimate). An input holds ~26 µF, which each line's converter charges at start (see
-  [Mamka](../mamka/HARDWARE.md#converters)); the driver's ~37 mA for ~30 µs, a frame of 58 B, takes
-  ~42 mV from it. The 6 V branch draws a steady ~7 mA, so its RC stores nothing worth speaking of:
-  it damps the cable and the π filter behind it. The glove and the sock take the same RC at their
-  inputs.
+  beside the 10 µF; on the 6 V a 10 µF in its place, the suit's one 6 V converter otherwise past the
+  ~300 µF TI's guidance allows (the peak below to recompute). It damps the cable: a module plugged
+  into a live line peaks at ≤ 4.52 V on 4 V, under the TPS7A2033's 6.5 V (SBVS338H, 5.1), and at ≤
+  6.94 V on 6 V, under the LP2985's 16 V (SLVS522S), computed for a line of 0.2–1.0 µH and 0.08–0.35
+  Ω (the 3M 3811 ~0.44 µH/m, an estimate). An input holds ~26 µF, which each line's converter
+  charges at start (see [Mamka](../mamka/HARDWARE.md#converters)); the driver's ~37 mA for ~30 µs, a
+  frame of 58 B, takes ~42 mV from it. The 6 V branch draws a steady ~7 mA, so its RC stores nothing
+  worth speaking of: it damps the cable and the π filter behind it. The glove and the sock take the
+  same RC at their inputs.
 
 **Budget of one module**
 
@@ -875,10 +826,10 @@ section 11, Power Supply Recommendations):
   goes to any of the 16 channels; PA2, PA15 and PB10, given on 29 Oct 2026 as plain GPIO and
   EXTI10, to be checked the same way; the clock tree (see [software](SOFTWARE.md#clocks)) and
   the DMA table (see [software](SOFTWARE.md#dma)), checked on the first board,
-- the two chips in cascade on one SPI: the second's select on PA15, both reads within 22 µs, the
+- the two chips in cascade on one SPI: the second's select on PA15, both reads within 24 µs, the
   second chip's DRDY against the first's, on the first board,
 - the LSM6DSV16X held by REF: the 800 Hz setting at 960 Hz, REF at 24 against 15 Hz, the lock
-  and the samples' place against the cycle; the 1 kΩ on INT2 against an IMU reset while REF
+  and the samples' place against the cycle; the 10 kΩ on INT2 against an IMU reset while REF
   runs; on the first board,
 - I3C over a cable: try the length and the rate on a sample,
 - the input circuit: confirm the values on a sample,

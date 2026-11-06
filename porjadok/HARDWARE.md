@@ -14,8 +14,8 @@ its connectors, the drivers on a unit, and the boards.
 ## Power
 
 The suit's power is *Pitanije*, a Russian word that means both food and a power supply: from
-[Babuška](../babuska/README.md) through [Ključnica](../babuska/HARDWARE.md#the-bms) and Mamka's
-converters down to the LDOs on every module.
+[Babuška](../babuska/README.md) through [Ključnica](../babuska/HARDWARE.md#the-bms), the fuses and
+Mamka's converters down to the LDOs on every module, with every protection on the way.
 
 The suit runs from a LiFePO4 battery of 12.8 V nominal, charged between 20 and 80%.
 [Mamka](../mamka/HARDWARE.md#converters) makes two supply rails from it with LMR43610 buck
@@ -40,9 +40,9 @@ processor at its datasheet maximum and the line driver sending:
   [Rubaška](../rubaska/HARDWARE.md#power)); its core at 49.152 MHz saves an estimated ~14 mA
   more (see [software](SOFTWARE.md#the-clock-tree)), not taken off here.
 - **On a line only one driver sends at a time,** so an arm's line, three modules and the glove at
-  ~0.087 A on average and ~0.16 A at worst (see [Rubaška](../rubaska/HARDWARE.md#the-glove)), takes
+  ~0.085 A on average and ~0.15 A at worst (see [Rubaška](../rubaska/HARDWARE.md#the-glove)), takes
   ~0.29 A on the 4 V rail on average and ~0.45 A at worst, the most any line of the body draws; a
-  leg's, three modules and the sock at ~0.075 A and ~0.15 A, ~0.28 A and ~0.45 A.
+  leg's, three modules and the sock at ~0.075 A and ~0.14 A, ~0.28 A and ~0.45 A.
 - The digital rail at 4 V costs ~0.3 W across the suit against 3.7 V and buys the margin the
   LDOs and the head's motors need (see [WHY](WHY.md)). The analog rail is 6 V, the 5 V LDO's
   output plus 1 V, the input at which the LP2985-5.0's sheet gives its figures, its 70 dB of
@@ -56,7 +56,8 @@ and data to Mamka's children, the [Rebjata](../rubaska/HARDWARE.md#sensing-modul
 Nataša and Míša.
 
 Eight lines leave Mamka, **a line a piece of the suit,** at most four units a line, so that the suit
-comes apart in its pieces with no connector along it: each piece's cable goes straight to the
+comes apart in its pieces with no connector along it but line 7's branch at the neck's foot (see
+[Babuška](../babuska/CONSTRUCTION.md#the-backpack)): each piece's cable goes straight to the
 backpack, an arm's over its shoulder and down the arm, the units chained along it. Fully populated,
 that is 35 ADS1298, two on every module but the neck's, which has one, and one on each glove and
 sock, 280 channels; 64 IMU places in the modules, two gloves of 24 IMUs and two socks of 8 to start,
@@ -143,9 +144,10 @@ with a Molex **Picoflex PF-50** receptacle pressed onto it where each unit taps 
 - **Sewn in, in meanders:** the cables are sewn into the suit along wavy paths, which take the
   stretch, and a pull has to tear the seams before it reaches the wires.
 - **Where the suit parts:** at the backpack, each piece's line through a connector of its own
-  (see [Babuška](../babuska/CONSTRUCTION.md#the-backpack)), and nowhere else. The glove's board on
-  the back of the hand sits on its arm's line as a module does, the line's cable sewn on over the
-  wrist to it.
+  (see [Babuška](../babuska/CONSTRUCTION.md#the-backpack)), and at the neck's foot, line 7's
+  branch to the neck's module, so that the headband with the turtleneck comes off as one piece.
+  The glove's board on the back of the hand sits on its arm's line as a module does, the line's
+  cable sewn on over the wrist to it.
 - At these rates the stub from a tap to the unit's driver stays a few centimetres long, so each
   unit sits right at its tap.
 
@@ -239,10 +241,12 @@ on an idle bus (SLLSEY3E: open, short and idle), so the echo reads a clean high 
 frames; a receiver fail-safe on an open input alone would read noise there (see
 [Rubaška](../rubaska/WHY.md#the-sensing-module)).
 
-Every pair is terminated at both ends with 120 Ω, checked on the cable: at Mamka, and at
-the last unit by a solder jumper that every unit has, closed on the last one. A driver then
-sees the two in parallel, ~60 Ω, close to the 54 Ω the datasheets test with (see
-[Mamka](../mamka/HARDWARE.md#lines)).
+Every pair is terminated with 120 Ω, checked on the cable, at the cable's far end by a small
+terminator board in its last IDC socket, no unit carrying one: a potted unit's jumper cannot be
+moved, and a spare must fit any place. The pairs the units drive are terminated at Mamka too, so a
+unit's driver sees the two in parallel, ~60 Ω, close to the 54 Ω the datasheets test with; the
+pairs Mamka alone drives, the data down and the clock, only at the far end, which saves her
+~0.15–0.2 A and ~0.5 W inside Mrazík (an estimate; see [Mamka](../mamka/HARDWARE.md#lines)).
 
 All the drivers run from 3 to 5.5 V at up to 50 Mbit/s; on a unit they run from 3.3 V (see
 [power](#power)). We considered M-LVDS too, but stayed with classic

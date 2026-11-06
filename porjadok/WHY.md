@@ -104,8 +104,8 @@ thing waits in reserve, it says so.
 What was tried for the frames and the modes and left:
 
 - **The frame of 40 B with an info byte to each channel,** the ADS1299's status word
-  regrouped into every frame. The lead-off bits go in the diagnostics, 120 times a second, which
-  is soon enough for an electrode come off.
+  regrouped into every frame. No byte a channel is needed: an electrode come off shows in its
+  own channel, and the lead-off check's bits go in the diagnostics.
 - **A control frame of 6 B and containers of eleven types.** Two frames, 34 B and 8 B, now
   carry the data and the whole setting both ways, a command, a chip and its registers; firmware
   has a frame of its own, 519 B.
@@ -197,9 +197,9 @@ What was tried for the frames and the modes and left:
   register of its own like any other, the LSM6DSV16X by FUNC_CFG_ACCESS (DS13510 Rev 4, 9.1), and
   the unit's own chip has one space of registers in ranges, so a read is the chip, the register
   and the count in 8 B.
-- **The address by nibbles,** the line and the unit on it (23–24 Oct 2026). A unit's number is
-  given by *assign*, 1–0x7F, the system's parts keeping theirs fixed; whether a number splits
-  into a line and a unit is open.
+- **The address by nibbles,** the line and the unit on it (23–24 Oct 2026). A number tied to a
+  line breaks when a unit moves; the type and the unit's own number took its place, the line
+  Mamka's to know and the slot hers to deal (5 Nov 2026).
 - **Line 8's cycle kept by Nataša's timer** (to 25 Oct 2026). Nataša is optional, Bluetooth
   headphones taking her place; every unit on line 8 keeps the cycle on its own timer from the
   suit clock, Mamka's heartbeat the correction, and one unit alone runs its slot by itself.

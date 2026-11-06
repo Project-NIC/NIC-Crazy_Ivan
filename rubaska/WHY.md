@@ -105,6 +105,10 @@ thing waits in reserve, it says so.
   Bratiški then on USART2, USART3, UART4 and UART5, the echo kept, 33 of its 35 I/Os, so one
   processor serves the module and the glove (the owner's wish; see
   [hardware](HARDWARE.md#the-glove)).
+- **The glove's own pin map** (to 6 Nov 2026): the master's receiver on USART1's RX at PB15, the
+  echo on LPUART1, the ADS1298's CLK and START on TIM2, left from the four processors on the
+  fingers that took the module's UARTs. With them gone the glove takes the module's map pin for
+  pin, one firmware's pins and one DMA table, and START's pull-down against JTDI went with it.
 - **The AM26LV32E, a quad receiver, on the glove and on Míša** (to 5 Nov 2026), taking the pair
   from the master, the echo and the clock in one package where a module has a THVD1452 and a
   THVD1450 for them, a package and a dollar saved. Its fail-safe holds on an open input alone
@@ -151,13 +155,14 @@ thing waits in reserve, it says so.
   al., Clin Neurophysiol 116, 2005, fig. 2, a pointer on OpenBCI's forum), so the 316L studs would
   drift; the AC lead-off at fDR / 4 leaves no DC through them. The register was then written
   0x00, FLEAD_OFF 00, which the datasheet forbids with lead-off on.
-- **The AC lead-off running under the recording, the P inputs and the N inputs by turns** (5
-  Nov 2026, for a day), its tone at 480 Hz taken out by Baťa and its amplitude the contact's
-  measure, reckoned at the 6 nA of the DC mode's current sources. The chip's AC excitation
-  switches the input between the rails through ~10 MΩ (SBAS459K, figure 39), ~±0.25 µA, forty
-  times that: ~27 mV pp across a pair at a 50 kΩ contact, half the range at a gain of 12, and
-  one side at a time sends 280 inputs' currents through the one bias electrode, ~70 µA, past the
-  drive's 75 µA. Now a check on demand with P and N together, nothing under the recording (see
+- **The AC lead-off running under the recording, the P inputs and the N inputs by turns** (5 Nov
+  2026, for a day), its tone at 480 Hz taken out by Baťa and its amplitude the contact's measure,
+  reckoned at the 6 nA of the DC mode's current sources. Through the chip's resistors (VLEAD_OFF_EN
+  1; SBAS459K, figure 39) the excitation is ~±0.25 µA, forty times that: ~27 mV pp across a pair at
+  a 50 kΩ contact, ~4 % of the range at a gain of 12, and one side at a time sends 280 inputs'
+  currents through the one bias electrode, ~70 µA, past the drive's 75 µA; with the 6 nA sources,
+  which LOFF 0x01 most likely takes, a tone of ~0.7 mV pp under every channel, the size of an EMG,
+  all the time. Now a check on demand with P and N together, nothing under the recording (see
   [software](SOFTWARE.md#an-electrode-coming-off)).
 - **Microamp lead-off currents** (6 or 24 µA, the ADS1299's). Through a 50 kΩ contact they make
   0.3 or 1.2 V, most of the input range at a gain of 12 or far beyond it. The ADS1298's are 6 to

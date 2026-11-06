@@ -96,11 +96,11 @@ names are Russian, written in Latin letters the Czech way:
 | **Umnica** | the clever daughter | the Hailo-10H, who does the thinking for dad |
 | **Terem** | the daughters' upper chamber | the board in the ROCK 5T's two M.2 slots: both Umnicas with a supply each |
 | **Babuška** | grandma | the battery: she keeps the pantry, and everyone eats from her |
-| **Ključnica** | the housekeeper with the keys | the BMS: she holds the keys to Babuška's pantry |
-| **Kormilica** | the wet nurse | Mamka's power section: her supply, the lines' converters, the computers' eFuses |
+| **Ključnica** | the housekeeper with the keys | the BMS: she holds the keys to Babuška's pantry, and her button switches the suit on and off |
+| **Kormilica** | the wet nurse | the suit's power on Mamka: the lines' converters and the 6 V that feed the children |
 | **Borovičok** | the old mushroom man, Babuška's husband | computer B, if wanted: a full computer beside Baťa over Ethernet, with the glasses and the programs |
 | **Ďaďa Sem** | Uncle Sam, the uncle from America | the cameras that watch everything: two USB cameras into Baťa, read by his second Umnica, in the small and normal fittings by his own NPU |
-| **Budilnik** | the alarm clock | the start button and its latch: one press wakes the household, and when everyone has shut down it lets the house go dark |
+| **Budilnik** | the alarm clock | wakes a wearer who has left the suit alone with a line in the headphones, and if nobody answers puts the household to bed |
 | **Storož** (Tron) | the night watchman | Baťa's halt daemon: on a fatal fault he stops the household's services, keeps the terminal open and says why |
 | **Kommunalka** | a communal flat | the backpack: the whole family lives in it and shares one kitchen, Babuška |
 | **Chodiki** | the wall clock with weights | the suit's clock, which the whole household lives by |
@@ -109,7 +109,7 @@ On the body, the suit is **Rubaška**, the shirt you are born in, on **Kaščej*
 everything sits on it is **Bogatyr**, Kaščej dressed in the meat. Mamka's own children, the
 **Rebjata** (the sensing modules), hang on the **Pupovina**, the umbilical cord: the eight lines,
 one a piece of the suit, that bring power, the clock and data to them, to the gloves and to Nataša
-and Míša. Every sensing unit's main processor is a **Staršaja**, the elder; the glove, **Vešč**,
+and Míša. Every sensing unit's main processor is a **Staršaja**, the elder; in the glove, **Vešč**,
 and the sock, **Nosok**, she reads every IMU of the hand or the foot herself.
 The household's rules are the **Porjadok**, and its power, from Babuška down, the **Pitanije**.
 

@@ -16,9 +16,10 @@ the computers, and the heat and the air through it.
 The backpack is *Kommunalka*, Russian for a communal flat: the whole family lives in it and
 shares one kitchen, Babuška.
 
-Babuška, [Mamka](../mamka/README.md), [Terem](../terem/README.md) and [Baťa](../bata/README.md)
-ride in a bought backpack with a hard shell, the kind made of two halves that open apart when it
-is unzipped.
+Babuška, [Mamka](../mamka/README.md), [Terem](../terem/README.md) and [Baťa](../bata/README.md) ride
+in a bought backpack with a hard shell, its back panel held off the back on a mesh or over a channel
+along the spine (see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-electrodes-rules)), the kind made of
+two halves that open apart when it is unzipped.
 
 - **A 3D-printed insert** holds everything in its place: the battery at the bottom, above it
   [Mrazík](#mrazík), the closed block round the stack of Baťa with Mamka over him and Terem or a
@@ -59,9 +60,19 @@ dimensions are set when it is drawn.
   between the fins. Bosses reach the chips over pads, the boards sit on standoffs, and the lid
   is pressed by ~8 screws round its edge. The bottom is a plastic part with a soft seal round the
   cables: the block stands on its edge with the ports down.
+- **The block is the stack's frame** (the owner, 5 Nov 2026): Mamka screwed into it, the ROCK, its
+  own heatsink taken off, pressed onto the SoC's boss over a pad and screwed down hard, Terem
+  clicked on and screwed into the block, the Hailos or an SSD in, then the back laid on over
+  thermal pads and closed on a soft rubber seal. **Nothing inside cools in still air:** whatever
+  warms, the SoC, the Hailos, an SSD, the converters, lies against the aluminium through a soft
+  silicone pad of ~1 mm. Mamka either over pillars of the block under her warm parts, through
+  insulating pads, the pillars milled, pressed or screwed in, or in channels the fan's air runs
+  through, she then lacquered and sealed round her edge; which, when the block is drawn.
 - **The SoC** is cooled by a boss through a window in Mamka over it, ~30 × 30 mm (the RK3588 is
   23 × 23 mm). The top wall clears Mamka's tallest parts, 10.2 mm, so the boss is ~36 mm long: at
   25 × 25 mm of aluminium (~200 W/m·K) ~0.3 K/W, ~5 K at 17 W, an estimate before the pads.
+- **The antennas outside:** Wi-Fi and Bluetooth do not leave a closed aluminium block, so their
+  antennas sit outside it, on SMA bulkheads in its wall.
 - **The fans sit outside on the fins,** so they need no sealing. Mamka drives Baťa's as she
   drives the backpack's fan, by processor 2's PWM with the speed read back (see
   [Mamka](../mamka/HARDWARE.md#what-is-on-it)); Borovičok's, a two-wire 5 V fan, runs from his
@@ -92,13 +103,12 @@ Worked out from the parts' own figures; with the ROCK 5T it is still open:
 
 - **The way out:** every watt inside leaves through [Mrazík](#mrazík)'s walls to their fins, and
   no air of the backpack touches the boards. The SoC gives its heat to the top wall's boss
-  through Mamka's window (see [Mamka](../mamka/CONSTRUCTION.md#the-stack)); the Hailos lie under
-  one heatsink, a Fischer ICK S 45 × 45 × 20, on Terem's side (see
-  [Terem](../terem/CONSTRUCTION.md#the-connectors-and-the-mounting)), its way to the wall under
-  Terem settled when Mrazík is drawn.
+  through Mamka's window (see [Mamka](../mamka/CONSTRUCTION.md#the-stack)); the Hailos lie on
+  pads against the block's wall on Terem's side (see
+  [Terem](../terem/CONSTRUCTION.md#the-connectors-and-the-mounting)).
 - **What the makers say:** for the AI HAT+ 2, the Hailo-10H on a Raspberry Pi, a heatsink is
-  advised for a continuous load, and the suit's load is continuous: both modules get one, the
-  shared heatsink on Terem.
+  advised for a continuous load, and the suit's load is continuous: both modules get one: Mrazík's
+  wall through the pads.
 - **The air:** Mrazík stands upright on its edge, parallel to the back, in a channel that the
   insert forms around it. The backpack's fan draws in low at the side, above the wall between the
   battery and the electronics, and blows up the channel; the air leaves at the top under the
@@ -128,7 +138,8 @@ Worked out from the parts' own figures; with the ROCK 5T it is still open:
   [the battery](HARDWARE.md#the-battery)). The SoC lies on top and the two modules under the
   board, so the channel has to reach both of Mrazík's faces.
 - **Sun:** a light-coloured shell. In the sun a dark one could come near the 40 °C and 50 °C the
-  BMS allows for charging and discharging.
+  BMS allows for charging and discharging, our margins under the 55 °C and 60 °C of EVE's sheet
+  (RD-C40-S01-LF rev. A, see [software](SOFTWARE.md#the-bmss-settings)).
 - **Dust and rain:** the intake behind fine mesh, the outlet under an overhang; Mrazík itself is
   IP55.
 
@@ -140,8 +151,8 @@ Worked out from the parts' own figures; with the ROCK 5T it is still open:
 - the backpack's heat with the ROCK 5T: the channel around both of Mrazík's faces,
 - Mrazík: its dimensions, its walls and fins, the bosses and their pads, the lid's seal and the
   plastic bottom's round the cables, drawn from Radxa's 3D model V1.2 and Mamka's and Terem's
-  boards; the SoC's temperature through its boss at full load, measured; the Hailos' heatsink's
-  way to the wall under Terem, or a boss of that wall over pads as the SoC's; whether the
+  boards; the SoC's temperature through its boss at full load, measured; the Hailos' temperature
+  on their pads against the wall; whether the
   backpack's fan does for Baťa's block or the block takes a fan of its own on a second PWM of
   processor 2; condensation after switching off and at a cold start, tried,
 - the pieces' connectors, the Weipu SP21: their contacts against our 28 AWG wire, which contact

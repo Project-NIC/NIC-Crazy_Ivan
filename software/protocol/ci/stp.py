@@ -45,9 +45,18 @@ LENGTH = {
 # --- the units' numbers, the chips, the results ---------------------------------------------------
 
 EVERY = 0x00                           # every unit; also a unit's own number before *assign*
-P1, P2 = 0xF1, 0xF2                    # Mamka's two processors
-NATASA, MISA = 0x81, 0x82              # line 8's, fixed
-SENSING = range(0x01, 0x80)            # given at the start by *assign*
+T_P1, T_P2, T_TWO, T_ONE, T_NATASA, T_MISA, T_GLOVE = range(1, 8)  # the number's type, 7-5
+
+
+def address(kind_of_unit: int, n: int) -> int:
+    """A unit's number: its type in bits 7-5, its number of that type, 1-31, in 4-0; 0 is every
+    unit of the type."""
+    return kind_of_unit << 5 | n
+
+
+P1, P2 = address(T_P1, 1), address(T_P2, 1)              # Mamka's two processors, 0x21 and 0x41
+NATASA, MISA = address(T_NATASA, 1), address(T_MISA, 1)  # line 8's, fixed, 0xA1 and 0xC1
+SENSING = frozenset(address(t, n) for t in (T_TWO, T_ONE, T_GLOVE) for n in range(1, 32))  # by *assign*
 
 CHIP_UNIT, CHIP_ADS, CHIP_SOUND, CHIP_MOTORS, CHIP_BMS, CHIP_SPHERE, CHIP_ADS2 = range(7)
 CHIP_EVERY_IMU, CHIP_IMU = 0x0F, 0x10  # 0x10... the IMUs in the order of the unit's table
@@ -146,18 +155,27 @@ def discover_answer(uid: bytes, number: int = 0) -> bytes:
     return Frame(EVERY, K_DISCOVER | ANSWER, number, uid).pack()
 
 
-def assign(uid: bytes, new: int, number: int = 0) -> bytes:
-    """To every unit, the UID and the new number: the unit with that UID takes it."""
-    if len(uid) != UID_LEN or new not in SENSING:
-        raise ValueError("a UID of 12 B and a number 1-0x7F")
-    return Frame(EVERY, K_ASSIGN, number, uid + bytes([new])).pack()
+def with_line(frame: bytes, line: int) -> bytes:
+    """Mamka's touch on a *discover* answer: the line it came in on, written after the UID, and
+    the CRC made again."""
+    f = Frame.unpack(frame)
+    if f.kind != K_DISCOVER | ANSWER or not 1 <= line <= 7:
+        raise ValueError("a discover answer and a line 1-7")
+    return Frame(f.unit, f.kind, f.number, f.body[:UID_LEN] + bytes([line])).pack()
 
 
-def parse_assign(frame: bytes) -> tuple[bytes, int]:
+def assign(uid: bytes, new: int, slot: int, number: int = 0) -> bytes:
+    """To every unit, the UID, the new number and the slot: the unit with that UID takes them."""
+    if len(uid) != UID_LEN or new not in SENSING or not 1 <= slot <= 4:
+        raise ValueError("a UID of 12 B, a sensing unit's number and a slot 1-4")
+    return Frame(EVERY, K_ASSIGN, number, uid + bytes([new, slot])).pack()
+
+
+def parse_assign(frame: bytes) -> tuple[bytes, int, int]:
     f = Frame.unpack(frame)
     if f.kind != K_ASSIGN:
         raise ValueError("not assign")
-    return f.body[:UID_LEN], f.body[UID_LEN]
+    return f.body[:UID_LEN], f.body[UID_LEN], f.body[UID_LEN + 1]
 
 
 def result(to: Frame, code: int = DONE, unit: int | None = None) -> bytes:
@@ -451,7 +469,8 @@ def temp_c(out_temp: int) -> float:
 
 def which_imus(cycle: int, imus: int) -> range:
     """The six IMUs whose temperatures this diagnostics carries, by turns by the frame's number:
-    the glove's 24 in four diagnostics. Six from the first in turn is the code's choice."""
+    the glove's 24 in four diagnostics, from 6 × ((cycle // 32) mod ⌈n / 6⌉) on (Porjadok,
+    SOFTWARE)."""
     turns = max(1, -(-imus // IMU_TEMPS))
     first = IMU_TEMPS * ((cycle // PERIOD) % turns)
     return range(first, min(first + IMU_TEMPS, imus))
@@ -476,8 +495,9 @@ def tone(samples: list[int], first: int = 0) -> float:
 
 
 def on_skin(tones: list[float], threshold: float) -> int:
-    """One chip's eight P or eight N inputs from their channels' tones in the period that excited
-    them: 1 on the skin where the tone stays under the threshold, found by testing."""
+    """One chip's eight pairs from their channels' tones in a check's period, every P and N
+    input excited together: 1 on the skin where the tone stays under the threshold, found by
+    testing. A channel at a rail, which marks its pair off too, is left to the firmware."""
     bits = 0
     for i, a in enumerate(tones[:8]):
         if a < threshold:
@@ -547,6 +567,7 @@ def chip_bits(chips: int, ok: list[bool]) -> int:
 REG_BIAS, REG_IMU_MODE = 0x00, 0x01            # the settings, 0x00-0x3F
 REG_LED = 0x02                                 # a module's status LED, 1 blinking; not kept
 REG_SHIELD = 0x03                              # the strip's ground layer: 0 on ground, 1 driven
+REG_CHECK = 0x04                               # the lead-off check: 1 one in the next period
 REG_TABLE = 0x40                               # the unit's table, read only, 0x40-0x7F
 REG_FIRMWARE = 0x80                            # the firmware's update, 0x80-0xBF
 REG_EVENTS = 0xC0                              # Mamka's, 0xC0-0xFF
@@ -558,6 +579,12 @@ def blink(unit: int, on: bool, number: int = 0) -> bytes:
     """The map's application finding a module: its status LED blinking, or back to the
     firmware's own."""
     return write(unit, CHIP_UNIT, REG_LED, int(on), number)
+
+
+def lead_off_check(unit: int = 0, number: int = 0) -> bytes:
+    """Baťa asking for the lead-off check, never while recording: one in the next diagnostics
+    period of 32 cycles, its bits in that period's diagnostics; unit 0 every unit."""
+    return write(unit, CHIP_UNIT, REG_CHECK, 1, number)
 
 FW_MODULE, FW_GLOVE, FW_NATASA, FW_MISA, FW_P1, FW_P2 = range(1, 7)
 PART_ADS1298, PART_LSM6DSV16X, PART_SOUND, PART_MOTORS, PART_SPHERE = range(1, 6)
@@ -898,7 +925,7 @@ def pattern_define(n: int, steps: list[int], number: int = 0) -> bytes:
 
 # --- Mamka's own registers ------------------------------------------------------------------------
 
-EV_PRESSED, EV_RELEASED, EV_BUDILNIK, EV_BMS_ALARM, EV_WARNING_ON, EV_WARNING_OFF, \
+EV_PRESSED, EV_RELEASED, _EV_FREE, EV_BMS_ALARM, EV_WARNING_ON, EV_WARNING_OFF, \
     EV_SILENT = range(1, 8)
 REG_POWER, REG_REASON, REG_FAN = 0x10, 0x11, 0x12      # processor 2's writes
 REG_GPS, REG_UTC = 0xD0, 0xE0
@@ -924,8 +951,8 @@ def utc(cycle: int, second: int) -> bytes:
 
 
 def power(command: int, number: int = 0) -> bytes:
-    """Processor 2's power command, register 0x10: 1 off in order, 2 the computers off, 3 the
-    lines off and on, 4 Baťa halted, 5 running again."""
+    """Processor 2's power command, register 0x10: 1 off in order, the BMS shut down, 2 free,
+    3 the lines off and on, 4 Baťa halted, 5 running again, 6 the suit on."""
     return write(P2, CHIP_UNIT, REG_POWER, command, number)
 
 

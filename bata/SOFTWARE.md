@@ -20,6 +20,10 @@ services, Storož, the assistants' programs and the Hailo's driver. Armbian brin
 boot loader and support, and its build takes patches of one's own, so the kernel is ours (see
 [the kernel](#the-kernel)); systemd, which Storož works through, is Debian's.
 
+- **The ground it stands on:** the eMMC, 8 GB of RAM at least (no ROCK 5T of 2 GB), a fallback
+  kernel in the boot menu, journald capped, the map's JSON written atomically, a new file renamed
+  over the old. On a shared network the suit's services listen on Ethernet and Baťa's own access
+  point only, nftables closing the rest, SSH by keys only.
 - **Nothing runs by itself.** No updates in the background: APT's two timers, `apt-daily.timer`
   and `apt-daily-upgrade.timer`, are masked and unattended-upgrades is not installed (Debian
   ships it switched off anyway). Nothing else the suit does not use is installed. Baťa does the
@@ -31,12 +35,14 @@ boot loader and support, and its build takes patches of one's own, so the kernel
 - **Borovičok** runs the same Debian with a desktop (see
   [hardware](HARDWARE.md#borovičok)), and the same kernel.
 - **The microphones only while someone listens:** one unit, `microphones.service`, with
-  `StopWhenUnneeded=yes`, writes 1 to register 0x00 of Nataša's sound chip when it starts and 0
-  when it stops (see [Nataša](../natasa/SOFTWARE.md#sound-across-the-suit)), through Mamka as
-  Storož writes to her. Every service that listens binds to it, `BindsTo=` and `After=`: Soňa,
-  Taťána, Nikita in his listening mode and Pomoščnik. systemd starts it with the first of them
-  and stops it after the last, so the headband's *quiet*, which stops Soňa, also stops the
-  microphones when nobody else listens.
+  `StopWhenUnneeded=yes`, writes 1 to register 0x00 of Nataša's sound chip when it starts and 0 when
+  it stops, and `headphones.service` does the same with register 0x01, bound by every service that
+  plays, so the headphones' stream is said to start and stop and never guessed from silence (see
+  [Nataša](../natasa/SOFTWARE.md#sound-across-the-suit)), through Mamka as Storož writes to her.
+  Every service that listens binds to it, `BindsTo=` and `After=`: Soňa, Taťána, Nikita in his
+  listening mode and Pomoščnik. systemd starts it with the first of them and stops it after the
+  last, so the headband's *quiet*, which stops Soňa, also stops the microphones when nobody else
+  listens.
 
 **Baťa does little to the data.** He checks each frame's CRC, computes the envelopes and the
 IMUs' quaternions of the step (see [signals](SIGNALS.md)), ~10 MFLOP/s, and hands the model its
@@ -108,11 +114,11 @@ fault instead of a recovery branch for each; our Tron, the program that fights f
   would stop the watchman and the SSH session that said it.
 - **Baťa always starts halted:** the default target is `storoz.target`, and Storož looks for the
   mark a clean shutdown leaves, a file written as the system goes down. Found, he removes it and
-  isolates `suit.target`; missing, he stays halted with the reason 10, an unclean start: the
-  watchdog, a kernel panic or the power lost. The watchdog's driver tells no boot status
-  (`dw_wdt.c`), so the mark is what tells the three from a clean start. Started again while the
-  suit runs, after a crash of his own or his `WatchdogSec`, he finds `suit.target` active and
-  carries on; the mark decides only when neither target is up.
+  isolates `suit.target`, which asks Mamka for the suit (her power command 6); missing, he stays
+  halted with the reason 10, an unclean start: the watchdog, a kernel panic or the power lost. The
+  watchdog's driver tells no boot status (`dw_wdt.c`), so the mark is what tells the three from a
+  clean start. Started again while the suit runs, after a crash of his own or his `WatchdogSec`, he
+  finds `suit.target` active and carries on; the mark decides only when neither target is up.
 - **Watchdogs:** the RK3588's own, `watchdog@feaf0000` (`rockchip,rk3588-wdt`, `snps,dw-wdt`,
   enabled in mainline's `rk3588-base.dtsi`), driven by systemd, `RuntimeWatchdogSec=30s`: systemd
   pings it at least every half of it, so a hung kernel or a hung systemd reboots the board, the
@@ -129,10 +135,12 @@ fault instead of a recovery branch for each; our Tron, the program that fights f
 - **Fatal:** an Umnica gone or her converter tripped (after the one `bind` retry of
   [the kernel](#the-kernel)), the SPIs' stream silent, Mamka silent, a temperature over its
   limit, a BMS alarm of the protective kind (a cell under or over its voltage, over temperature,
-  a short, over-current on discharge), the disk full while recording, a service that keeps
-  dying, and a halt by hand. **Not fatal,** handled where it happens and logged: a damaged frame
+  a short, over-current on discharge), two modules driving the bias, a service that keeps
+  dying, and a halt by hand; the second Umnica in the brutal fitting is not fatal, the cameras
+  moving to the RK3588's NPU. **Not fatal,** handled where it happens and logged: a damaged frame
   (a gap), a unit gone from a line (the data go on with a hole), the glove missing, a sensor
-  off, a lost UDP frame; a low state of charge, which halts nobody in the street: a warning on
+  off, a lost UDP frame; the disk full, which stops the recording and not the suit; a low state of
+  charge, which halts nobody in the street: a warning on
   the headband at a first threshold and the power's command 1, the suit shut down in order, at
   a second, both set on Baťa, Mamka's own threshold on the pack's voltage behind them (see
   [Mamka](../mamka/SOFTWARE.md#mamkas-own-registers)).
@@ -142,13 +150,27 @@ fault instead of a recovery branch for each; our Tron, the program that fights f
   `which`) to every subscriber, Borovičok first, and to Mamka the power's command 4 with the reason
   (her processor 2, chip 0x00, register 0x10, see
   [Mamka](../mamka/SOFTWARE.md#mamkas-own-registers)), who plays a pattern on the headband; the
-  lines, the headband and Budilnik run on without Baťa. No reboot, no automatic retry: a person
+  lines, the headband and Mamka run on without Baťa. No reboot, no automatic retry: a person
   comes over SSH or from Borovičok, reads the journal, clears the cause and says `storoz resume`,
-  which isolates `suit.target` again and writes the command 5.
+  which isolates `suit.target` again and writes the command 5; for the reasons 8–10 a long press
+  of Nataša's button resumes too.
+- **The Mamka link,** one small daemon outside `suit.target`, `IgnoreOnIsolate=yes`, owns the
+  spidevs and every frame to and from Mamka; Storož, the services and the status page speak
+  through it, so command 4 and the events still reach her while `storoz.target` holds. Storož
+  keeps the subscribers' list, and the status page stays up.
 - **Reasons** (1 B): 1 an Umnica gone, 2 an Umnica's converter (PGOOD low), 3 the SPIs' stream
-  silent, 4 Mamka silent, 5 over temperature, 6 a protective BMS alarm, 7 the disk full, 8 a
-  service that
-  keeps dying, 9 by hand, 10 an unclean start.
+  silent, 4 Mamka silent, 5 over temperature, 6 a protective BMS alarm, 7 free, 8 a service that
+  keeps dying, 9 by hand, 10 an unclean start, 11 two modules driving the bias.
+
+## Budilnik
+
+*Budilnik*, Russian for the alarm clock, wakes a wearer who has left the suit alone, and if nobody
+answers it puts the household to bed. A service of Baťa's: with every IMU at rest, no button
+pressed on Nataša and no subscriber, it plays a line in the headphones after a first time, and
+after a second asks Mamka for the suit shut down in order (the power's command 1, see
+[Mamka](../mamka/HARDWARE.md#on-and-off)). A movement or a press starts the count again. The
+times, the lines and the voice are settings, as many lines as anyone wants: our own, in Russian,
+recorded or synthesized on Baťa.
 
 ## Cores on the ROCK 5T
 
@@ -167,6 +189,12 @@ fault instead of a recovery branch for each; our Tron, the program that fights f
   to the RK3588's NPU and "what is it" online.
 - cpu6 and cpu7 are set aside (`isolcpus`, interrupts moved to the small cores, threads pinned
   with `SCHED_FIFO`).
+- **The three SPIs read at once:** processor 1's on SPI1 and processor 2's on SPI0 and SPI3 are
+  three controllers, each with its own DMA, so a thread for each, pinned to cpu7, or `spi_async`,
+  ends a cycle's transfers ~227 µs after "data ready", against 503 µs one after another; the "data
+  ready" pins' and the controllers' interrupts on cpu7; spidev's buffer raised from its 4,096 B
+  (`spidev.bufsiz`) to 64 KB, ~60 of processor 1's cycles, so a late wake catches up in one
+  transfer.
 - The clock is set per cluster: cpu0–3, cpu4–5 and cpu6–7 each have their own. cpu6–7 run at a
   fixed frequency so the response does not wander; the profiles hold cpu4–5 lower or let them go.
 - The device tree gives every core a deep idle state (`CPU_SLEEP`, `rk3588-base.dtsi`); on the
@@ -179,8 +207,9 @@ From a sample to the output:
 
 | stretch | time |
 |---|---|
-| sample to Mamka's processors, by the unit's slot | 52–247 µs; a cycle's frames of data are complete at 247 µs |
-| Mamka's processors to Baťa, the frames as they came in places by the unit's kind | processor 1's 1,064 B in 227 µs at 37.5 MHz, processor 2's 384 B over her two SPIs in 138 µs at 11.1 MHz; ~0.47 ms from DRDY in all |
+| sample to Mamka's processors, by the unit's slot | 54–249 µs; a cycle's frames of data are complete at 249 µs |
+| Mamka's processors to Baťa, the frames as they came in places by the unit's kind | processor 1's 1,064 B in 227 µs at 37.5 MHz, processor 2's 384 B over her two SPIs in 138 µs at 11.1 MHz, the three read at once; ~0.48 ms from DRDY in all |
+| a step's IMU data, carried in the frames 0–11 | ~6 ms, the step's last bytes in its twelfth frame |
 | Linux waking on the "data ready" pin | tens of µs, sometimes more; to be measured |
 | the step's envelope and the model's window | 8.3 ms for the step; the window of 267 ms is history, not delay (see [signals](SIGNALS.md)) |
 | inference on the Hailo-10H | to be measured |
@@ -228,6 +257,9 @@ The Hailo only runs models; HailoRT has no functions for training. Models are co
 with the Hailo Dataflow Compiler on a PC: for the Hailo-10H its version 5.x, on x86 Ubuntu
 22.04 or 24.04 (hailo_model_zoo, GETTING_STARTED), with 16 GB of RAM or more.
 
+- **A layout is judged on three putting-ons at least,** the spread between them given beside its
+  score, so that one good fit is not taken for a good layout.
+
 The goal is a suit that learns on its own: put it on and wear it for a week, at work, in town,
 out picking mushrooms, charging the batteries as needed. Once it has learned, a small piece of
 code runs on one core. The plan:
@@ -239,7 +271,8 @@ code runs on one core. The plan:
   the Hailo. A small last part learns on a free core of Baťa, for this person and this fit of
   the suit, and afterwards runs on one core.
 - **The general part** is trained on a PC from recordings and compiled for the Hailo.
-- **Recordings** are made only when asked, and then perhaps only parts, in BDF (see
+- **Recordings** are made only when asked, and then perhaps only parts, in BDF, the events as BDF+
+  annotations so that the profession's software reads them (see
   [Porjadok](../porjadok/SOFTWARE.md#ci-btp)): all the EMG, 280 channels of 24 bits at 1,920 SPS,
   is 1.61 MB/s, ~5.8 GB an hour, and a part a fraction of it. The large ones go to Borovičok's
   NVMe SSD, since Baťa's PCIe goes to the Hailos in the normal and brutal fittings.
@@ -276,14 +309,14 @@ in its graphics, opened in the browser of a phone or of Borovičok.
   Nataša and Míša by their numbers. A module replaced, a new
   UID on a line where one of the map is missing, takes the missing one's place, and the
   application only confirms it.
-- **What it asks:** the order on a line, at the first fitting or when two modules of one line
-  change at once. The module's status LED blinks (register 0x02, see
+- **What it asks:** the order on a line, at the first fitting or when two modules of one line change
+  at once. The module's status LED blinks (register 0x02, see
   [Porjadok](../porjadok/SOFTWARE.md#the-registers)) and the application asks which place it is,
-  offering the line's free places. A unit of the map missing at a bring-up stays in it, shown as
-  missing, until the person forgets it.
+  offering the line's free places; the map gives it its number, its type's next free one. A unit of
+  the map missing at a bring-up stays in it, shown as missing, until the person forgets it.
 - **What it shows,** one page, a table by line: the place, the UID's last four hex digits, the
   kind, the firmware's version, present or missing; for a module whether it drives the bias and
-  its strip's ground layer; while measuring, from the diagnostics, the electrodes off, the
+  its strip's ground layer; from the diagnostics, the electrodes off by the last check, the
   temperature, the lowest 3.3 V and the last reset's cause; and Storož's state, running or
   halted and why, with no button: resuming stays over SSH.
 - **What it sets:** which module drives the bias, the strips' ground layers on ground or driven,
@@ -326,6 +359,10 @@ starting point that then adapts to each next one.
 
 ## Open questions
 
+- the ROCK's header 3.3 V off at a poweroff, the RK806 the system-power-controller (likely):
+  else the clean-shutdown mark and "pin 1 has fallen" mislead, and every start is reason 10,
+- the USB-C device role behind the ISOUSB211: Rd on CC and VBUS from the host's side, from
+  SLLSFC5D when drawn,
 - the system measured: its RAM and its boot time; Armbian gives no figure for its minimal image,
 - the kernel: ours on mainline, against Rockchip's, which idled ~2 W lower than mainline 6.8.1 on
   a ROCK 5B (Thomas Kaiser, 2024); the overlay's DisplayPort on USB-C tried with the glasses,

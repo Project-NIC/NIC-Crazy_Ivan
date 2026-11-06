@@ -23,7 +23,7 @@ class TestSimulator(unittest.TestCase):
         self.assertEqual((len(suit.of(1)), len(suit.of(2))), (16, 6))
         self.assertEqual([u.slot for u in suit.of(1) if u.line == 3], [1, 2, 3, 4])
         self.assertEqual((suit.unit("glove L").slot, suit.unit("sock R").slot), (4, 4))
-        self.assertEqual([u.number for u in suit.of(2)][-2:], [0x81, 0x82])
+        self.assertEqual([u.number for u in suit.of(2)][-2:], [stp.NATASA, stp.MISA])
         self.assertEqual(sum(u.imus for u in suit.units if u.line < 8), 44 + 48 + 16)
         self.assertEqual(sum(u.imus for u in Suit.standard(16, gloves=False, socks=False).units
                              if u.line < 8), 44)

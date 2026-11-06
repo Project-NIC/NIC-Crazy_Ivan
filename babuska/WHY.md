@@ -31,7 +31,7 @@ thing waits in reserve, it says so.
   the converters' 2.2 MHz of the time was 82 ns of on-time against the LMR43610's worst-case
   minimum of 75 ns, little to spare; four gave 14.6 V and 103 ns. Five sodium cells, 20 V, came to
   exactly 75 ns. At 1 MHz the on-time no longer pinches (31 Oct 2026), but 18.25 V lies over the
-  computers' eFuses' ~18.2 V overvoltage lockout, and its ring on plugging in, ~19–30 V by an
+  computers' eFuses' ~18.0 V overvoltage lockout, and its ring on plugging in, ~19–30 V by an
   estimate, past their 28 V (see [hardware](HARDWARE.md#the-battery)). A higher input also costs
   more switching loss at light load.
 - **Smaller cells, 26700 in 4S3P.** The same energy as 32140 in 4S1P with three times the cells,

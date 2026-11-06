@@ -34,7 +34,7 @@ class Bata:
         self.place_units = {p: [u for u in self.maps[p] if u.place] for p in self.maps}
         self.ecg_units = [(2, i) for i, u in enumerate(self.place_units.get(2, []))
                           if getattr(u, "trunk", False)]
-        self.ecg = [bytearray() for _ in self.ecg_units]
+        self.ecg = [[] for _ in self.ecg_units]
         self.ecg_first = 0
         self.assemblers = {}
         for u in (u for m in self.maps.values() for u in m if u.line < 8):
@@ -125,7 +125,8 @@ class Bata:
         if c % ECG_DECIMATION == 0:
             for k, (proc, i) in enumerate(self.ecg_units):
                 f = got.get(proc, [None] * (i + 1))[i]
-                self.ecg[k].append(f[4] if f is not None else 0x80)   # channel 1's top byte
+                s = int.from_bytes(f[4:7], 'big', signed=True) if f is not None else 0
+                self.ecg[k].append(round(s * 8e6 / 12 / 2 ** 24))  # channel 1 in µV, gain 12
             if self.ecg and len(self.ecg[0]) == 1:
                 self.ecg_first = c
         if c % stp.STEP == 0:
@@ -141,9 +142,9 @@ class Bata:
         joints = bytes(int(128 + 100 * math.sin(cycle / stp.ADS_SPS * math.pi + i / 10)) & 0xFF
                        for i in range(127))
         contacts = 0b11 << 28 | 0b11 << 30   # the heels and the balls of the feet: standing
-        pk = [btp.snapshot(step % 16, joints, contacts)]
+        pk = [btp.snapshot(step % 256, joints, contacts)]
         if self.ecg and self.ecg[0]:
-            pk.append(btp.ecg(self.ecg_first, [bytes(e) for e in self.ecg], ECG_DECIMATION))
+            pk.append(btp.ecg(self.ecg_first, [list(e) for e in self.ecg], ECG_DECIMATION))
             for e in self.ecg:
                 e.clear()
         pk += self.pending

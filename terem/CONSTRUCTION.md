@@ -13,15 +13,15 @@ under the ROCK, and what to watch when it is drawn.
 
 ## The board
 
-- **Shape:** ~90 × ~63 mm, an L, the figures estimates until it is drawn; the places below are
-  read from Radxa's 3D model of the ROCK 5T V1.2. Along the slots it runs from a card edge for
-  each slot, cut into one short side, past the ROCK's standoff holes at 80 mm to ~10 mm beyond
-  them. Terem's own socket must start past the mouth of the ROCK's, whose lower half stands
-  ~0.9 mm below Terem's far face, so a 2280 card on Terem has its screw ~7.5 mm past the ROCK's
-  (the chosen socket's drawing decides). Across, the two cards lie 25.5 mm apart on their axes,
-  2 mm more than the ROCK's slots, so that a gap of 3.5 mm between them takes the heatsink's
-  screws; 48.5 mm in all. The L's foot is a strip ~14 mm wide along the cards' far half, on the
-  long side away from the ROCK's 40-pin header, for the converters and the connectors.
+- **Shape:** ~90 × ~63 mm, an L, the figures estimates until it is drawn; the places below are read
+  from Radxa's 3D model of the ROCK 5T V1.2. Along the slots it runs from a card edge for each slot,
+  cut into one short side, past the ROCK's standoff holes at 80 mm to ~10 mm beyond them. Terem's
+  own socket must start past the mouth of the ROCK's, whose lower half stands ~0.9 mm below Terem's
+  far face, so a 2280 card on Terem has its screw ~7.5 mm past the ROCK's (the chosen socket's
+  drawing decides). Across, the two cards lie 25.5 mm apart on their axes, 2 mm more than the ROCK's
+  slots, with a gap of 3.5 mm between them, kept or closed to the slots' 23.5 mm when Mrazík is
+  drawn; 48.5 mm in all. The L's foot is a strip ~14 mm wide along the cards' far half, on the long
+  side away from the ROCK's 40-pin header, for the converters and the connectors.
 - **The edges** copy a 2280 module: the Key M notch, the finger pads on both faces, hard gold on
   the fingers and a bevelled edge, so that they go into the sockets as a module does. Their
   spacing and the holes are the ROCK's (see [HARDWARE](HARDWARE.md#the-two-slots)); beside and
@@ -62,9 +62,10 @@ under the ROCK, and what to watch when it is drawn.
   - **the strip:** the pins of the ROCK's top-side connectors come through its board ~2.1 mm,
     so the strip begins only past the first half of the cards.
 
-  Every part of Terem sits on the face away from the ROCK: the two sockets, the modules under
-  their heatsink, the converters, the capacitors and the connectors. A card on Terem lies ~2.5 mm
-  under that face, the socket's height, so it may reach past Terem's end, over J2 and the nut.
+  Every part of Terem sits on the face away from the ROCK: the two sockets, the modules on their
+  pads against Mrazík's wall, the converters, the capacitors and the connectors. A card on Terem
+  lies ~2.5 mm under that face, the socket's height, so it may reach past Terem's end, over J2 and
+  the nut.
 
 ## The pairs
 
@@ -100,10 +101,10 @@ has the same numbering, so each pair goes from pin N of the edge to pin N of the
 
 ## The converters
 
-Both LMR60440s on the strip, side by side, with the input bank, so that the modules' heatsink has
-nothing under it and each converter's heat spreads into its own copper; each converter's 3.3 V
-goes to its socket on the power layer, the far one's under the near card. TI's rules for the
-cell (SNAS877 8.4.1), in the order that matters:
+Both LMR60440s on the strip, side by side, with the input bank, so that the block's face over the
+modules has nothing else under it and each converter's heat spreads into its own copper; each
+converter's 3.3 V goes to its socket on the power layer, the far one's under the near card. TI's
+rules for the cell (SNAS877 8.4.1), in the order that matters:
 
 - **The input loop first:** the 4.7 µF and the 100 nF right at VIN and GND, the loop they make
   with the pins as small as it can be; this loop carries the switching edges and sets the EMI.
@@ -139,27 +140,17 @@ suit's lines are filtered on Mamka, and the battery cable here is 10 cm inside a
 - **The modules** screw to their own 2280 standoffs on Terem, as on any carrier; the sockets
   are the standard M.2 Key M type at the standard height, so that the standoff is the standard
   one.
-- **The Hailos' heatsink:** a Fischer Elektronik **ICK S 45 × 45 × 20**, aluminium pins on a 3.5 mm
-  base, 36 g, 4.4 K/W in still air down to 0.75 K/W in forced air, 17 W (DAU Components' listing;
-  Fischer's own sheet not read). Its 45 × 45 mm covers both modules side by side, 47.5 mm across
-  with the gap, all but the outer ~1 mm of each; along the cards it lies over the chips, its place
-  from the module's drawing. Its pins take the air from any side. It lies on thermal pads over the
-  modules' parts, 1.5 mm tall on top (Hailo's datasheet Rev. 1.0, 2.1), and is held by two M2 screws
-  with springs through two holes drilled in its base, down the gap between the cards into two SMT
-  nuts on Terem's far face, on the centre line, clear of the windows. No fan of its own. Inside
-  Mrazík, the closed block round the stack, no air of the backpack reaches its pins; its way to
-  the block's wall under Terem is settled when Mrazík is drawn (see
-  [Babuška](../babuska/CONSTRUCTION.md#mrazík)).
-- **The heat:** two modules at their typical 2.5 W, 5 W in all, warm it ~22 K over the air
-  round it at the 4.4 K/W of still air; both at the datasheet's 8.25 W, 16.5 W, would be ~73 K,
-  which wants a better way to Mrazík's wall or a lighter load: the computer runs the fan by the
+- **The Hailos' cooling** is Mrazík's wall (see [Babuška](../babuska/CONSTRUCTION.md#mrazík)):
+  each module lies on a soft silicone thermal pad of ~1 mm against the block's aluminium, over the
+  modules' parts, 1.5 mm tall on top (Hailo's datasheet Rev. 1.0, 2.1), the face's place along
+  the cards from the module's drawing; no heatsink of their own and no fan.
+- **The heat:** two modules at their typical 2.5 W, 5 W in all, 16.5 W at the datasheet's 8.25 W
+  each, go through the pads into the block's wall and its fins; the computer runs the fan by the
   Hailos' temperature and lowers their load if it stops (see
   [Babuška](../babuska/CONSTRUCTION.md#heat)).
-- **The height:** ~30 mm under the ROCK's board with the heatsink, an estimate until the sockets
-  are chosen: the ROCK's sockets 4.2 mm, Terem 0.8 mm, Terem's socket, the module and the pad
-  ~5 mm, the heatsink 20 mm. The stack grows to ~68 mm (see
-  [Mamka](../mamka/CONSTRUCTION.md#the-stack)). The 45 × 45 × 10 of the same series would save
-  10 mm; its thermal resistance is not read.
+- **The height:** ~10 mm under the ROCK's board to the block's wall, an estimate until the
+  sockets are chosen: the ROCK's sockets 4.2 mm, Terem 0.8 mm, Terem's socket, the module and the
+  pad ~5 mm. The stack is ~48 mm (see [Mamka](../mamka/CONSTRUCTION.md#the-stack)).
 - **Terem itself** is held by the ROCK's two 2280 standoff screws, one a slot, with its edges in
   the sockets. The screws' heads lie under the cards, ~7.5 mm before the cards' own screws, in
   the 2.5 mm between Terem and a card: a low head, under ~1.5 mm, under the module's own parts,
@@ -193,11 +184,10 @@ suit's lines are filtered on Mamka, and the battery cable here is 10 cm inside a
 - the board house's stack and its impedance figures for the pairs,
 - the XT30's direction: a vertical one mated from below, or a horizontal one with its cable
   bent along the board, under the ROCK's overhang,
-- the heatsink on a sample: the holes in its base and in Terem, the pads' thickness over the
-  modules, its temperature at both modules' full load inside Mrazík; its way to the block's wall
-  under Terem, or a boss of that wall over pads in its place, as the SoC's, when Mrazík is drawn,
+- the pads on a sample: their thickness over the modules and the modules' temperature at both
+  modules' full load against Mrazík's wall, when the block is drawn,
 - the trained speed and width of both links on the first board, read from the ROCK,
 - the ROCK's inductors L5001 and L5002 as fitted: in the model a 2280 card in the ROCK's own slot
   lies 0.3 mm on them,
-- the Hailo-10H 2280's drawing: its chip's place for the heatsink, its underside's parts over
+- the Hailo-10H 2280's drawing: its chip's place for the block's face, its underside's parts over
   Terem's screw heads.

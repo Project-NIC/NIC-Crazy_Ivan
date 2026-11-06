@@ -40,7 +40,7 @@ BMS ~0.5 W. The ROCK 5T's share is an estimate from others' measurements, not ou
   governor in Rockchip's kernel, ~0.5–0.6 W in idle; unused parts off in the device tree (Kaiser:
   2.5GbE instead of Gigabit ~0.3 W, a display ~0.35 W).
 - Glasses on the ROCK 5T's USB-C come on top, a few watts, by model.
-- 43 W from the pack at its nominal 12.8 V is ~3.4 A, under the BMS's limit of 5 A. The Hailos'
+- 47 W from the pack at its nominal 12.8 V is ~3.7 A, under the BMS's limit of 5 A. The Hailos'
   share is the datasheet's 8.25 W each at most; under a typical load they take 2.5 W.
 
 **Chemistry.** No cobalt-based lithium-ion on the body, and no charging in the cold: the BMS
@@ -92,7 +92,7 @@ and 80% come from a measurement on a sample.
 
 - **Four cells, not five.** Full, four cells give 14.6 V, and Mamka's own 3.3 V from it at
   1 MHz is ~226 ns of on-time against the converter's minimum of 75 ns at worst (SNVSBY5B,
-  tON-MIN). Five would give 18.25 V, over the computers' eFuses' ~18.2 V overvoltage lockout, and
+  tON-MIN). Five would give 18.25 V, over the computers' eFuses' ~18.0 V overvoltage lockout, and
   plugged in they would ring to ~19–30 V against the eFuses' absolute maximum of 28 V, where four
   ring to 15.1–23.8 V (the same estimate, see [Mamka](../mamka/HARDWARE.md#the-computers-supply));
   a higher input also costs more in switching losses at light load. Light load is no trouble
@@ -122,6 +122,13 @@ Babuška's pantry and decides what goes in and out.
 - It talks over RS485 (or CAN). Mamka reads it on RS485 with JK's RS485 Modbus protocol (see
   [Mamka](../mamka/SOFTWARE.md#the-battery)): the cells, the current, the temperatures, the state
   of charge.
+- **Its button and its *Shutdown* are the suit's switch** (see
+  [on and off](../mamka/HARDWARE.md#on-and-off)): a press on the activation signal of its display
+  interface P2, pins 1 K− and 2 K+, wakes it and the pack goes through (JK-B1A8S10P product
+  specification V19.3.1, the interfaces' table and 6.2: no power switch of its own, the charger,
+  the button or a display activates it); Mamka's write to 0x1604, *Shutdown*, switches it off
+  (JK's RS485 Modbus protocol V1.1, the commands from 0x1600); held, the button switches it off
+  too, a choice in JK's settings (the owner, from an earlier JK BMS).
 
 **The cell's limits,** the EVE C40, from EVE's specification RD-C40-S01-LF rev. A (10 Mar 2022,
 the datasheet attached at mivvyenergy.cz; where the shop's own page differs, the sheet counts):
@@ -168,7 +175,7 @@ limit is one of its settings.
 |---|---|---|
 | for | one computer, Baťa: the ROCK 5T in any fitting | two computers, Baťa and Borovičok beside him (see [Baťa](../bata/README.md)) |
 | the BMS's discharge limit, 0x1038 | 5,000 mA | 10,000 mA |
-| the most the suit takes | ~43 W: ~3.4 A at 12.8 V, ~4.3 A at the 10 V end; the ROCK 5T in its brutal fitting | ~64 W: ~5.0 A at 12.8 V, ~6.4 A at the 10 V end, past 5 A; both computers at full load |
+| the most the suit takes | ~47 W: ~3.7 A at 12.8 V, ~4.7 A at the 10 V end; the ROCK 5T in its brutal fitting | ~64 W: ~5.0 A at 12.8 V, ~6.4 A at the 10 V end, past 5 A; both computers at full load |
 | each cell of the 4S1P pack | 5 A at most, 0.25 C | 10 A at most, 0.5 C, EVE's standard discharge |
 | the fuse, the wires and the connector from the pack through the BMS to Mamka | rated for 5 A; the wire 2.5 mm² in both, more than the electrician's 1.5 mm² for wire not specially chosen and held | rated for 10 A |
 | the parts | a 5 × 20 mm fast-acting ceramic sand-filled fuse in the pack, before the BMS (Littelfuse 216 series or the like: IEC 60127-2 sheet 1, 1,500 A of breaking capacity at 250 V AC by Littelfuse's product page), its value the lowest that survives the measured start currents; 2.5 mm² flexible PVC wire, CYA (H07V-K); an Amass XT60 pair at the pack | the same, the fuse sized for both computers' starts |
@@ -180,9 +187,12 @@ limit is one of its settings.
 
 ## Open questions
 
-- the top at 80%: whether the BMS stops the charge by its count or the pack charges to 100%,
-  from JK; the pack's voltages at 20 and 80%, measured on a sample charged by EVE's standard
-  charge and discharged at 0.2 C while its voltage is logged,
+- the pack's 256 Wh cannot fly: airlines take 100 Wh freely and 160 Wh with their consent (IATA's
+  rule, from memory, to read); a smaller pack for travel, if ever wanted,
+- the top at 80% (6 Nov 2026): 80% by the BMS's count day to day, and once a month a full charge to
+  3.65 V a cell, which balances the cells and sets the count again, LiFePO4's flat curve leaving the
+  count to drift otherwise; the pack's voltages at 20 and 80%, measured on a sample charged by EVE's
+  standard charge and discharged at 0.2 C while its voltage is logged,
 - the charging connector on the backpack; the charger's own sheet: its end of charge and its
   connector,
 - the ROCK 5T's consumption, measured in both profiles, and the glasses',

@@ -40,7 +40,8 @@ source is named. What the electrodes and the strips are made of is under
   sternocleidomastoid, the left chest; SENIAM's own distance is 20 mm on most muscles' pages and
   5–7.5 mm on the abductor pollicis brevis' (seniam.org).
 - **No two electrodes closer than 1.5 cm,** 1 cm on the hand and the foot, where the discs are
-  small, and an IMU 1 cm from anything.
+  small, and an IMU 1 cm from anything; no two rings touching, so that each keeps its own skin's
+  moisture.
 - **No pair crosses the sternum, and the left chest keeps its pairs short:** pairs across the
   sternum carry much more ECG than one-sided ones, the left side more than the right (Oltmann et
   al., IEEE TBME 72, 2025); the QRS on chest pairs grows with their length along the heart, 1.9 mV
@@ -75,12 +76,13 @@ source is named. What the electrodes and the strips are made of is under
   bowl cut, ~4 cm above the ear; the crown and the back of the head carry no electrodes, only the
   IMUs and Nataša. Where the hair begins differs from head to head: the places here are an average
   forehead's, an estimate.
-- **Nothing where the body is pressed:** the palm, which a grip presses, the sole, stood on, and
-  the seat, sat on, stay bare, the electrodes there wandering in the signal; and the backpack's
-  straps, its belt and its back panel press too, so neither an electrode nor an IMU sits under
-  their path, the straps padded past the shoulders' units (see
-  [Rubaška](../rubaska/CONSTRUCTION.md#open-questions)). What else was left
-  out, and why, is under [WHY](WHY.md).
+- **Nothing where the body is pressed:** the palm, which a grip presses, the sole, stood on, and the
+  seat, sat on, stay bare, the electrodes there wandering in the signal; and the backpack's straps,
+  its belt and its back panel press too, so neither an electrode nor an IMU sits under their path,
+  the panel held off the back on a mesh or over a channel along the spine; the glasses' arms press
+  too, so no electrode under them; the straps padded past the shoulders' units (see
+  [Rubaška](../rubaska/CONSTRUCTION.md#open-questions)). What else was left out, and why, is under
+  [WHY](WHY.md).
 
 ## The modules
 
@@ -181,7 +183,7 @@ output; see [Porjadok](../porjadok/SOFTWARE.md#output).
 | hip, each | 1 | the iliac crest's tubercle, in front on its outer lip, a second look at the pelvis' tilt; the backpack's hip belt, if one is worn, runs over the crest, so the belt is padded clear of it or the IMU sits a finger's breadth below the crest |
 | upper arm, each | 4 | the outer side at the deltoid's insertion; the lowest on the lateral supracondylar ridge, just above the lateral epicondyle; above the medial epicondyle, in front of the ulnar nerve's groove; the back above the olecranon |
 | forearm, each | 2 | the ulna's border 3–4 cm below the olecranon; the radius' back ~2 cm above the wrist, on the radius alone, which turns with the hand while the ulna does not; the hand's are the glove's (below) |
-| thigh, each | 4 | 5 cm below the greater trochanter's tip on the outer side; 4–5 cm above the lateral and the medial epicondyle; the front above the patella (estimate) |
+| thigh, each | 4 | 5 cm below the greater trochanter's tip on the outer side; 4–5 cm above the lateral and the medial epicondyle; the lateral femoral condyle's flat, on bone, not the tendon above the patella (estimate) |
 | calf, each | 2 | the tibia's inner surface 3–4 cm below the knee and 6–8 cm above the ankle; the foot's are the sock's (below) |
 
 | | IMUs |
@@ -215,11 +217,11 @@ sliding over them, the first glove shows.
 Nosok's board sits on the calf above the ankle (see [Rubaška](../rubaska/HARDWARE.md#the-sock)); on
 the foot its ADS1298's sixteen electrodes, eight channels waiting with the rest, and eight IMUs to
 start, of the board's 24 places, the segments of a multi-segment foot model, the Oxford Foot Model's
-hindfoot, forefoot and hallux (Stebbins et al., Gait & Posture 23, 2006): the heel over the
-calcaneus, the midfoot's inner side, the fourth metatarsal and the hallux's proximal phalanx, four
-laid out, the other four for trials, the forefoot's outer side and the lesser toes among them, all
-in Staršaja's zones as the glove's; over bone, not on the sole, which is stood on, and clear of the
-foot's electrodes; the first places a proposal.
+hindfoot, forefoot and hallux (Stebbins et al., Gait & Posture 23, 2006): the heel on the
+calcaneus's outer face, the midfoot's inner side, the fourth metatarsal and the hallux's proximal
+phalanx, four laid out, the other four for trials, the forefoot's outer side and the lesser toes
+among them, all in Staršaja's zones as the glove's; over bone, not on the sole, which is stood on,
+and clear of the foot's electrodes; the first places a proposal.
 
 ## Open questions
 

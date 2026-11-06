@@ -118,8 +118,14 @@ Each entry says what it was and why it went, so that nobody digs it up without k
 
 - **Processor 2 always alive on the battery,** waiting for the power button. Mamka's own 3.3 V
   with two processors and the drivers' receivers would draw ~0.3 W or more with the suit off,
-  and the 256 Wh pack would be flat in a month. Budilnik holds the converter off instead: the
-  button wakes it, processor 2 holds it, and the suit switches itself off completely.
+  and the 256 Wh pack would be flat in a month. The BMS takes the pack off instead: its button
+  wakes it, Mamka's *Shutdown* ends it (see [on and off](HARDWARE.md#on-and-off)).
+- **Budilnik's latch on Mamka and an RC on every EN** (to 5 Nov 2026): the start button lifted
+  the EN of Mamka's own 3.3 V, processor 2 held it on PB5 through a diode, and 2.2 kΩ, 2.2 µF and
+  100 kΩ on every EN she drove let her reset pass. Every reset of hers held the computers' power
+  in her hands. The BMS's own button and its *Shutdown* do it with no part on Mamka, the base and
+  the computers up with the pack, she switching only the suit's lines;
+  the computers' eFuses run by themselves behind a fuse, no wire to her.
 - **A polymer bulk at Mamka's outputs.** The lines' inputs are damped at the modules, where the
   cables arrive; one here would only add to what each converter charges at start.
 - **A polymer bulk wherever a cable arrives,** the house rule to 31 Oct 2026: a POSCAP at every

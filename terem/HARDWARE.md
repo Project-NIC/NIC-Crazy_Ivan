@@ -51,8 +51,8 @@ known.
   another accelerator or any other card of that length goes in, with only the software changed,
   as long as it stays within what its converter gives, 4 A of 3.3 V, ~13 W a slot, and works on
   the slot's two lanes. A card that wants more wants a Terem of its own.
-- **Height:** the sockets' and the modules' height under the ROCK, inside Mrazík, with one
-  heatsink over both modules (see [Terem](CONSTRUCTION.md#the-connectors-and-the-mounting), and
+- **Height:** the sockets' and the modules' height under the ROCK, inside Mrazík, the modules on
+  pads against the block's wall (see [Terem](CONSTRUCTION.md#the-connectors-and-the-mounting), and
   [Babuška](../babuska/CONSTRUCTION.md#mrazík)).
 
 ## The converters
@@ -76,15 +76,16 @@ pin compatible (LMR60406, 10, 20, 30, 40), so one board takes a smaller or a lar
   Linux says otherwise; a pin that rests pulled up, as pin 33 does (`GPIO3_A7_u`), suits a PGOOD,
   not an EN.
 - **The PCIe driver does the switching,** not a script. In the device tree each EN is a
-  `regulator-fixed` with `enable-active-high` and `vin-supply = <&vcc3v3_pcie30>`, the ROCK's
-  own slot rail on GPIO1_A4, and each port names it as its `vpcie3v3-supply`: `pcie3x4` for
-  slot A, `pcie3x2` for slot B (mainline `rk3588-rock-5t.dts` and its `rk3588-rock-5b-5bp-5t.dtsi`;
-  the ROCK's rail is such a regulator already). The driver, `pcie-dw-rockchip.c`, enables the
-  regulator before it touches the PHY, holds PERST# low, waits `PCIE_T_PVPERL_MS`, 100 ms, and
-  lets it go; so the module gets the slot rail, its own 3.3 V (soft start 6 ms, t_SS,
-  SNAS877), and the reset in the order the M.2 sequence asks, with `startup-delay-us` set to
-  the converter's soft start. A module is never powered while its slot's rail is not, since the
-  slot rail is the regulator's supply.
+  `regulator-fixed` with `enable-active-high` and no `vin-supply`, the converter running from
+  the battery (the ROCK's own slot rail, `vcc3v3_pcie30` on GPIO1_A4, named there would be raised
+  for nothing; see [Baťa](../bata/SOFTWARE.md#the-kernel)), and each port names it as its
+  `vpcie3v3-supply`: `pcie3x4` for slot A, `pcie3x2` for slot B (mainline `rk3588-rock-5t.dts`
+  and its `rk3588-rock-5b-5bp-5t.dtsi`; the ROCK's rail is such a regulator already). The driver,
+  `pcie-dw-rockchip.c`, enables the regulator before it touches the PHY, holds PERST# low, waits
+  `PCIE_T_PVPERL_MS`, 100 ms, and lets it go; so the module gets its own 3.3 V (soft start 6 ms,
+  t_SS, SNAS877) and the reset in the order the M.2 sequence asks, with `startup-delay-us` set to
+  the converter's soft start. A module is powered only while its port's driver holds its
+  regulator on.
 - **Off and on at runtime** go through the same driver, patched: the stock `pcie-dw-rockchip.c`
   has no `remove` and `suppress_bind_attrs`, so Baťa's kernel carries a small patch that adds
   the remove and allows unbind and bind (see [Baťa](../bata/SOFTWARE.md#the-kernel)). `unbind` of
@@ -124,7 +125,7 @@ pin compatible (LMR60406, 10, 20, 30, 40), so one board takes a smaller or a lar
 
 ## Open questions
 
-- the Hailo-10H 2280's drawing: where its chip and its memory lie, for the heatsink's place,
+- the Hailo-10H 2280's drawing: where its chip and its memory lie, for the block's face over it,
 - a module with its EN low in a live slot: the host's pull-ups and the reference clock into an
   unpowered Hailo-10H, from its sheet; the Hailo driver's own low-power states as the way to
   rest a module while running,
