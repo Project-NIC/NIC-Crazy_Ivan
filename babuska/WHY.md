@@ -31,7 +31,7 @@ thing waits in reserve, it says so.
   the converters' 2.2 MHz of the time was 82 ns of on-time against the LMR43610's worst-case
   minimum of 75 ns, little to spare; four gave 14.6 V and 103 ns. Five sodium cells, 20 V, came to
   exactly 75 ns. At 1 MHz the on-time no longer pinches (31 Oct 2026), but 18.25 V lies over the
-  computers' eFuses' ~18.0 V overvoltage lockout, and its ring on plugging in, ~19–30 V by an
+  computers' eFuses' ~17.7 V overvoltage lockout, and its ring on plugging in, ~19–30 V by an
   estimate, past their 28 V (see [hardware](HARDWARE.md#the-battery)). A higher input also costs
   more switching loss at light load.
 - **Smaller cells, 26700 in 4S3P.** The same energy as 32140 in 4S1P with three times the cells,
@@ -79,3 +79,7 @@ thing waits in reserve, it says so.
 - **One connector for the whole suit,** an Amphenol PT 24-61 (MIL-DTL-26482 Series 1, 61
   contacts, a quarter-turn bayonet, IP67), until 24 Oct 2026. It took five lines of 11 contacts;
   eight lines take 88, and a piece of the suit is better taken off by itself.
+- **A full charge to 3.65 V once a month** for the balance and the count (6–9 Nov 2026). JK's
+  board balances from 3.0 V a cell, over the whole plateau, and its count is anchored at the low
+  top itself at every charge, so the full charge is needed for neither (the owner, from his own JK
+  boards); it stays a choice.

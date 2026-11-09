@@ -23,16 +23,15 @@ neck's on line 7.
 
 ## The processor's pins
 
-Nataša's **STM32H523RE** in LQFP64 has 49 I/Os (DS14540, table 2). She needs 28; the pins come
-from DS14540's pinout (figure 7) and alternate functions (tables 14 and 15), the numbers from the
-LQFP64 column of its pin table:
+Nataša's **STM32H562RG** in LQFP64 has 49 I/Os (DS14258, table 2). She needs 28; the numbers are
+ST's open pin data for the STM32H562RGTx, the alternate functions DS14258's (tables 15 and 16):
 
 | what | pins | where |
 |---|---|---|
 | the suit clock in | 1 | PH0-OSC_IN (5), the HSE in bypass, as on a module |
 | line 8: transmit, the echo, DE, receive from Mamka | 4 | the module's pins and AFs, so one line driver serves both firmwares: USART1_TX PA9 (42), USART1_RX PA10 (43), USART1_DE PA12 (45), all AF7; UART4_RX PA11 (44), AF6 |
 | the sound: one I2S, full duplex | 4 | SPI3 in I2S mode, AF6: CK PC10 (51), WS PA15 (50), SDO to the DAC PC12 (53), SDI from the microphones PC11 (52) |
-| the headphone amplifier's EN; the DAC's GPO, its latched clock-error interrupt | 2 | PB2 (28), an output; PB10 (29), an input |
+| the headphone amplifier's EN; the DAC's GPO, its latched clock-error interrupt, with the jack fitted | 2 | PB2 (28), an output; PB10 (29), an input |
 | the motors: four PWMs from one timer, the drivers' shared EN | 5 | TIM3_CH1–CH4 on PC6, PC7, PC8, PC9 (37–40), AF2; EN on PB1 (27) |
 | the buttons | 8 | inputs on the internal pull-up, 33 Ω in series: behind the right ear PC0–PC3 (8–11), the left PA4–PA7 (20–23) |
 | SWD and SWO | 3 | PA13 SWDIO (46), PA14 SWCLK (49), PB3 SWO (55), AF0 |
@@ -57,12 +56,13 @@ LQFP64 column of its pin table:
 - **The buttons are polled** with every frame (see [buttons](#buttons)), so they take no EXTI
   lines; any GPIO does, and two groups of four keep each side's cable on one port.
 - BOOT0 goes to ground through 10 kΩ, NRST to the SWD pads, each VCAP takes 2.2 µF with an ESR
-  under 100 mΩ (DS14540, table 21), as on a module. PC13 to PC15 stay free: they hang on the
+  under 100 mΩ (DS14258, table 22), as on Mamka. PC13 to PC15 stay free: they hang on the
   backup domain's switch and drive no current (table 13, note 2).
 
 ## Microphones
 
-Two digital MEMS microphones with the converter inside, so there is no ADC on the board:
+Two digital MEMS microphones with the converter inside, so there is no ADC on the board, each on
+the ear's board behind its ear with that side's four buttons (see [buttons](#buttons)):
 
 | part | package | what it does |
 |---|---|---|
@@ -85,15 +85,16 @@ Two digital MEMS microphones with the converter inside, so there is no ADC on th
   never run into an unpowered microphone, which the sheet warns against.
 - **0.1 µF X7R** at each VDD, closest to the ground pin, both sides of it short and on one
   layer (*Power supply decoupling*, figure 12).
-- They go straight to the STM32H523: the data wire into its I2S input, beside the DAC's output
-  on the same SPI.
+- They go straight to the STM32H562: the data wire into its I2S input, beside the DAC's output
+  on the same SPI. The clock, the word select and the data have 33 Ω each at the processor, the
+  house rule for a line that leaves the board.
 - **High-performance mode**, which takes 23 to 51.6 kHz; 48 kHz falls inside. The low-power
   mode only reaches 18.75 kHz.
 - **±1 dB of sensitivity** between parts, so the two need no calibration against each other.
 - **16 bits are enough.** Full scale is 120 dB SPL (−26 dBFS at 94 dB SPL) and the noise sits
   at 29 dBA SPL (65 dB under 94 dB), so the microphone spans ~91 dB; 16 bits give 96 dB. Any
   bits below carry only the microphone's own noise. It sends 24 bits in a 32-bit slot, the most
-  significant first, and the STM32H523 keeps the top 16 by taking 16-bit data in a 32-bit
+  significant first, and the STM32H562 keeps the top 16 by taking 16-bit data in a 32-bit
   channel: the I2S supports that format in full duplex, and a receiver ignores the bits after
   its data length (RM0481 Rev 5, 58.9.5, figure 829). The transmitter leaves those bits "not
   significant", so the DAC sees noise below its 16th bit, under −96 dBFS, which does not matter.
@@ -102,7 +103,9 @@ Two digital MEMS microphones with the converter inside, so there is no ADC on th
 
 ## Headphones
 
-A DAC and a headphone amplifier, both set by their pins, with no registers to write:
+**Fitted on request,** for wired headphones; Bluetooth ones paired with Baťa are the rule (see
+[software](SOFTWARE.md#bluetooth-headphones)), and without the jack these parts' places stay
+empty. A DAC and a headphone amplifier, both set by their pins, with no registers to write:
 
 | part | package | what it does |
 |---|---|---|
@@ -115,11 +118,11 @@ A DAC and a headphone amplifier, both set by their pins, with no registers to wr
 - Both run from 3.3 V. The DAC's AVDD and IOVDD come up in any order, its VREF takes at least
   1 µF and nothing else, and its MD pins are fixed before the clocks start, as straps are.
 - The DAC is strapped to 32-bit words (MD1 and MD2 low; 24 bits is the other choice, table 6-3):
-  the STM32H523 sends its 16 bits in a 32-bit slot, as it already does for the microphones' 64
+  the STM32H562 sends its 16 bits in a 32-bit slot, as it already does for the microphones' 64
   bit clocks a frame. The straps: MD0 to ground is I2S target mode (table 6-2), MD4 and MD5 low
   the differential line-out (table 6-9), MD6 low stereo (table 6-10), MD3 to ground as the
   target mode asks. Its GPO pin, a latched interrupt on a clock error (table 4-1), goes to a pin
-  of the STM32H523 (see [the processor's pins](#the-processors-pins)).
+  of the STM32H562 (see [the processor's pins](#the-processors-pins)).
 
 **The amplifier's input** (TPA6132A2 datasheet, SLOS597B):
 
@@ -137,8 +140,9 @@ A DAC and a headphone amplifier, both set by their pins, with no registers to wr
   flying one), 2.2 µF on HPVDD and nothing else on that pin, 2.2 µF within 5 mm of VDD; all
   X5R or better.
 - **SGND** goes to the ground terminal of the jack.
-- **EN** is on a pin of the STM32H523: the amplifier comes on after the DAC runs and goes off
-  before it stops, as the datasheet asks.
+- **EN** is on a pin of the STM32H562, with 100 kΩ to ground so the amplifier stays off while
+  the pin floats from reset: it comes on after the DAC runs and goes off before it stops, as the
+  datasheet asks.
 - Baťa sets the volume and holds a ceiling on it: 19 mW is still very loud in
   headphones.
 
@@ -153,11 +157,14 @@ each press is confirmed by a short vibration pattern of its own, for a deaf wear
 | C&K KSC2 | SMD, 6.2 × 6.2 × 3.5 mm, soft actuator | 8 | sealed tactile switch, IP67 against sweat; the stiffer KSC241J (3 N) so that a cap or a headrest does not press it |
 | TPD4E05U06 | | 2 | ESD, one four-channel array for each side's four lines, at the connector |
 
-- **Each button between a pin of the STM32H523 and ground,** on the pin's own pull-up, with
+- **Each button between a pin of the STM32H562 and ground,** on the pin's own pull-up, with
   33 Ω at the processor, the house rule for a line that leaves the board. Eight pins.
 - **Read every cycle** with the frame, so no interrupts are needed. Nataša debounces them and
   sends one bit per button; 8 of the frame's 16 bits are taken.
-- **A cable to each side,** behind the ear: four lines and ground.
+- **The ear's board,** one behind each ear: the four buttons and the microphone on one small
+  board, one lead of nine ways to Nataša: 3.3 V, ground, the I2S's SCK, WS and SD, the four
+  buttons. The same board left and right, a 0 Ω choosing the microphone's channel; the arrays
+  sit on Nataša at the leads' connectors.
 
 What the buttons do is under [software](SOFTWARE.md#buttons-and-vibration).
 
@@ -178,8 +185,10 @@ pulses, different repeat rates.
 - **The lower speed:** 9,000 rpm, a shake at ~150 Hz.
 - **Straight from the line's 4 V,** not through the LDO, so the motors' current stays off the
   sound and the processor; their branch has its own choke (see [Power](#power)).
-- **PWM from four channels of one timer** of the STM32H523 (the driver takes 10–250 kHz), and
-  one EN shared by all four: five pins. LRA/ERM is tied low for ERM.
+- **PWM from four channels of one timer** of the STM32H562 (the driver takes 10–250 kHz), and
+  one EN shared by all four: five pins. EN has 100 kΩ to ground, the sheet giving it no
+  pull-down, so the drivers stay off while the pins float from reset. LRA/ERM is tied low for
+  ERM.
 - **The duty cycle sets the drive:** 100% full forward, 50% nothing, 0% full reverse. The full
   scale is ~3.3 V into 20 Ω, 3.6 V open, the same at any supply, since the driver corrects for
   it. The motor runs at ~94% for its 3.0 V; 100% only for the 20–50 ms of overdrive at the
@@ -227,21 +236,21 @@ both sides (see [Rubaška](../rubaska/HARDWARE.md#power)).
 
 - **The motors** straight from 4 V through their own π filter with the SWPA252012S2R2MT, then
   the four DRV2603 with 100 nF each. Two motors, ~0.2 A, drop ~34 mV in the choke's 0.17 Ω.
-  Behind the choke, beside its 10 µF + 100 nF, sits a 6TPE470MAZU.
+  Behind the choke, beside its 10 µF + 100 nF, sits a 6TPE330MAP.
 - **What Nataša takes from the line,** from the parts' sheets: on the 3.3 V behind the LDO the
-  STM32H523 ~50 mA typical and 84 mA at most (DS14540, table 26, as in a module), the three THVD
-  receivers ~6 mA, the line driver ~37 mA for the ~10% of the time her packets take (~4 mA on
-  average), the DAC ~17 mA (SLASF32A), the headphone amplifier 2.1 mA and ~12 mA more at full
-  volume into 16 Ω, the two microphones ~1 mA, the LED ~2 mA: **~90 mA on average, ~160 mA at the
-  peak**, inside
-  the TPS7A2033's 300 mA. Straight from the 4 V the motors, two at once ~0.2 A with their drivers
-  (see [vibration](#vibration)). Míša on his own tap takes ~60 mA on average and a burst of
-  ~0.58 A for ~1 ms each frame, ten times a second, while the radar chirps (see
-  [Míša](../misa/HARDWARE.md#the-board)). Line 8's converter sees ~0.35 A on
-  average and, at the worst coincidence of a chirp with two motors, ~1.0 A for a millisecond, which
-  its current limit of at least 1.13 A carries (see [Mamka](../mamka/HARDWARE.md#converters));
-  Míša's polymer at his input bridges the microseconds the converter's loop takes during a chirp,
-  the motors' own behind their choke their start.
+  STM32H562 counted at a module's 84 mA at most (its own ~16 mA at 49.152 MHz, 29 mA at most at 85
+  °C, DS14258 table 28, VOS3 at 60 MHz), the three THVD receivers ~6 mA, the line driver ~37 mA for
+  the ~10% of the time her packets take (~4 mA on average), with the jack fitted the DAC ~17 mA
+  (SLASF32A) and the headphone amplifier 2.1 mA and ~12 mA more at full volume into 16 Ω, the two
+  microphones ~1 mA, the LED ~2 mA: **~90 mA on average, ~160 mA at the peak**, inside the
+  TPS7A2033's 300 mA. Straight from the 4 V the motors, two at once ~0.2 A with their drivers (see
+  [vibration](#vibration)). Míša on his own tap takes ~60 mA on average and a burst of ~0.58 A for
+  ~1 ms each frame, ten times a second, while the radar chirps (see
+  [Míša](../misa/HARDWARE.md#the-board)). Line 8's converter sees ~0.35 A on average and, at the
+  worst coincidence of a chirp with two motors, ~1.0 A for a millisecond, which its current limit of
+  at least 1.13 A carries (see [Mamka](../mamka/HARDWARE.md#converters)); Míša's polymer at his
+  input bridges the microseconds the converter's loop takes during a chirp, the motors' own behind
+  their choke their start.
 - **The LDO** to 3.3 V, the TPS7A2033 as in the sensing modules, and behind it a star of branches,
   each with its own π filter: the processor (choke and bead), the RS-485 drivers, the DAC, the
   headphone amplifier and the microphones. The parts' own capacitors from their
@@ -252,16 +261,14 @@ both sides (see [Rubaška](../rubaska/HARDWARE.md#power)).
   at ≤ 4.52 V, under the TPS7A2033's 6.5 V (SBVS338H, 5.1), computed for a line of 0.2–1.0 µH and
   0.08–0.35 Ω (the 3M 3811 at ~0.44 µH/m, an estimate), and it leaves line 8's converter ~26 µF
   to charge at start (see [Mamka](../mamka/HARDWARE.md#converters)). The motors' own polymer
-  behind their choke is the **6TPE470MAZU** (Panasonic POSCAP, TPE series, case D15E), 470 µF
-  6.3 V, 7.3 × 4.3 × 1.4 mm, 35 mΩ, 1.7 A of ripple, 85 °C / 2,000 h (5.0 V up to 105 °C), which
-  carries their start. At 1.4 mm it lies flat in the headband, where Mamka's 50 V hybrid polymer
-  stands 10.2 mm tall. Others of the series in the same footprint: 6TPE330MAP (330 µF, 25 mΩ,
-  1.8 mm) and 6TPE220MI (220 µF, 18 mΩ, 1.8 mm, 105 °C).
+  behind their choke is the **6TPE330MAP** (Panasonic POSCAP, TPE series), 330 µF 6.3 V,
+  7.3 × 4.3 × 1.8 mm, 25 mΩ (JLCPCB C79112), which carries their start. At 1.8 mm it lies flat
+  in the headband, where Mamka's 50 V hybrid polymer stands 10.2 mm tall.
 - **The DRV2603 switches at ~20 kHz,** below a plain π filter's ~34 kHz corner. With the
-  polymer behind the choke the corner falls to ~5 kHz (2.2 µH into ~480 µF), so the 20 kHz
-  comes back through the choke ~19 dB down: at 20 kHz the polymer's 35 mΩ of ESR already
-  outweighs its 17 mΩ of reactance. The choke's 0.17 Ω with the polymer's 35 mΩ damp the pair
-  to a Q of ~0.3. The LDO keeps the rest off the 3.3 V. To check by simulation,
+  polymer behind the choke the corner falls to ~5.8 kHz (2.2 µH into ~340 µF), so the 20 kHz
+  comes back through the choke ~19 dB down: at 20 kHz the polymer's 25 mΩ of ESR and its 23 mΩ
+  of reactance stand against the choke's ~0.32 Ω. The choke's 0.17 Ω with the polymer's 25 mΩ
+  damp the pair to a Q of ~0.4. The LDO keeps the rest off the 3.3 V. To check by simulation,
   with the rest of the filters.
 
 ## Open questions

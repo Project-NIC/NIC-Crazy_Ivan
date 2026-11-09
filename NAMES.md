@@ -32,6 +32,7 @@ The project's name and the picture on the front page are a joke too, nothing mor
 | [**Perevodčica**](porjadok/SOFTWARE.md#output) | the interpreter | the converters on Baťa: she tells whoever asks, Unreal, Unity, VRChat, a lab or a robot, what the body does, each in its own tongue, and writes the recordings. |
 | **Nastěnka** | the good stepdaughter of *Mrazík*, the fairy tale | the main software, which had no name so far. |
 | **Macecha** | the stepmother of the same tale | the correcting software on Baťa: the strict one who lets nothing through. |
+| [**Marfuška**](porjadok/HARDWARE.md#drivers-on-a-unit) | the stepmother's own spoilt daughter, of the same tale | the small board at the end of every line's cable: she takes everything that comes to her and gives nothing back, so nothing is reflected; a connector and three resistors. |
 | [**Mrazík**](babuska/CONSTRUCTION.md#mrazík) | Father Frost of the same tale | the inner construction of the cooling: a closed aluminium block round a ROCK 5T and the boards stacked with it, its heat out through the fins. |
 | **Kommunalka** | a communal flat | the backpack, where the whole family lives and shares one kitchen. |
 | [**Chodiki**](mamka/HARDWARE.md#clock) | the wall clock with weights | the suit's clock: the whole household lives by it. |

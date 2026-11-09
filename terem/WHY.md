@@ -78,3 +78,7 @@ Each entry says what it was and why it went, so that nobody digs it up without k
   still air. Inside the closed block it would sit in the block's own warm air, ~22 K over it at
   2.5 W a module and ~73 K at 8.25 W. The modules lie on pads against the block's wall instead
   (see [construction](CONSTRUCTION.md#the-connectors-and-the-mounting)).
+- **A whole board under the cards** (to 9 Nov 2026), with two windows over the ROCK's inductors.
+  Under the cards Terem carried nothing but its plane; a frame with the front, the strip, a back
+  plate, rails and a middle leg carries the same, leaves the inductors free whatever their
+  height and lets air past, and a screwed stiffener keeps it flat (the owner).

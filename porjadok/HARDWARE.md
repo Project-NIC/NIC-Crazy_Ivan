@@ -46,7 +46,7 @@ processor at its datasheet maximum and the line driver sending:
 - The digital rail at 4 V costs ~0.3 W across the suit against 3.7 V and buys the margin the
   LDOs and the head's motors need (see [WHY](WHY.md)). The analog rail is 6 V, the 5 V LDO's
   output plus 1 V, the input at which the LP2985-5.0's sheet gives its figures, its 70 dB of
-  ripple rejection at 1 kHz among them (SLVS522S, Electrical Characteristics); 5.5 V would save
+  ripple rejection at 1 kHz among them (SNVS018AB, Electrical Characteristics); 5.5 V would save
   only ~0.06 W.
 
 ## Links between boards
@@ -182,28 +182,28 @@ it two.
 
 ### End to end
 
-The TPS7A2033 holds its ±1.5% from an input of 3.6 V up and falls out of regulation below
-~3.44 V: its dropout is at most 140 mV at 300 mA, over −40 to 125 °C (SBVS338H, 5.5). From
-Mamka's converter to a module's LDO, at ~0.54 A, all of it at the end of a metre, every part at
-its worst, a margin over the ~0.45 A a body line draws at most (an arm's three modules and the
-glove); line 8 is counted on its own, below:
+The TPS7A2033 holds its ±1.5% from an input of 3.6 V up and falls out of regulation below ~3.45 V:
+its dropout is at most 145 mV at 300 mA in the SOT-23, over −40 to 125 °C (SBVS338H, 5.5). From
+Mamka's converter to a module's LDO, at ~0.54 A, all of it at the end of a metre, every part at its
+worst, a margin over the ~0.45 A a body line draws at most (an arm's three modules and the glove);
+line 8 is counted on its own, below:
 
 | from Mamka to the LDO | resistance | drop |
 |---|---|---|
-| the converter: 1.00 V ± 1% at FB (SNVSBY5B, 7.5) and 1% resistors | | 3.92 V instead of 4.02 V |
+| the converter: 1.00 V ± 1% at FB (SNVSBY5B, 7.5) and 1% resistors | | 3.90 V instead of 4.00 V |
 | Mamka's π filter, two chokes and two beads side by side | ≤ 0.185 Ω | 100 mV |
 | Mamka's IDC, +4 V and ground on one contact each | ~2 × 20 mΩ, an estimate (3M's sheet not read) | 22 mV |
 | the harness in the backpack, 20 cm of 28 AWG, one wire each way | 2 × 48 mΩ | 52 mV |
 | the backpack's Weipu SP21, +4 V on one contact, ground on two | ~10 mΩ, taken as 7 mΩ a contact, Weipu's figure not read | 6 mV |
 | a metre of the cable at ~151 Ω/km (above), +4 V on two wires, ground on six | 0.10 Ω | 54 mV |
 | the unit's Picoflex, two contacts for +4 V, six for ground | ~13 mΩ at ~20 mΩ a contact, an estimate (Molex's figure not read) | 7 mV |
-| **at the LDO** | | **≥ 3.67 V**, ~3.83 V from typical figures |
+| **at the LDO** | | **≥ 3.66 V**, ~3.81 V from typical figures |
 
 - **The suit's lines hold** the 3.6 V at the worst corner. The glove's LDOs sit at the end of its
   arm's line, on the hand, as a unit's do.
 - **Line 8, Nataša's and Míša's,** at its worst millisecond, ~1.0 A while the radar chirps with
-  two motors running, falls to ~3.48 V at the worst corner, ~3.67 V from typical figures.
-  Nataša's LDO still holds 3.3 V: at her ~160 mA its dropout is about half the 140 mV, inferred
+  two motors running, falls to ~3.46 V at the worst corner, ~3.65 V from typical figures.
+  Nataša's LDO still holds 3.3 V: at her ~160 mA its dropout is about half the 145 mV, inferred
   from the sheet's figure at 300 mA. A motor's overdrive is weaker for that millisecond only.
   Míša's supply is under [Míša](../misa/HARDWARE.md).
 - **The harness is the weak link:** a single 28 AWG wire each way. It stays short, ~10–20 cm,
@@ -218,35 +218,49 @@ measurement.
 
 ## Clock: a one-way RS-485 channel
 
-[Mamka](../mamka/README.md) sends the clock straight from her oscillator through three buffers
-and eight drivers, one per line. **Each processor switches the clock drivers of her own lines on
-one pin:** their DE up from her start, so the clock runs on her lines from then on (see
-[Bring-up](SOFTWARE.md#bring-up)), and down only while her lines are off or asleep. The
-eight drivers draw ~37 mA each into their terminations, ~0.3 A, which the two pins take off then.
+[Mamka](../mamka/README.md) sends the clock straight from her oscillator through three buffers and
+eight drivers, one per line. **Each processor switches the clock drivers of her own lines on one
+pin:** their DE up from her start, so the clock runs on her lines from then on (see
+[Bring-up](SOFTWARE.md#bring-up)), and down only while her lines are off or asleep, ~20–25 mA a
+driver. Each line's data driver has a DE of its own, on only while Mamka sends to it (7 Nov 2026).
 The units on a line receive the clock from one pair.
 
 ## Drivers on a unit
 
 | driver | count | pair |
 |---|---|---|
-| TI THVD1452 (full duplex, DE/RE) | 2 | data: the pair from the master and the return pair |
-| TI THVD1450 (half duplex) | 1 | clock, receive only |
+| TI THVD1450 (half duplex, DE/RE) | 3 | the pair from the master, the return pair, the clock |
 
-Expected wiring: the first THVD1452 receives from the master on A/B and drives the return pair
-on Y/Z, its driver switched by DE from the UART. The second THVD1452 receives the return pair on
-A/B and so gives the echo. The THVD1450 receives the clock. **The glove's Staršaja and Míša**
-carry the same three (the owner, 5 Nov 2026): one set of drivers for every unit of the suit. The
-return pair is terminated and idle between the slots, and the THVD145x receivers are fail-safe
-on an idle bus (SLLSEY3E: open, short and idle), so the echo reads a clean high between the
-frames; a receiver fail-safe on an open input alone would read noise there (see
-[Rubaška](../rubaska/WHY.md#the-sensing-module)).
+Expected wiring: the first THVD1450 receives from the master on A/B, its driver never on (DE and D
+on ground). The second sits on the return pair: its driver, switched by DE from the UART, drives A/B
+in the unit's slot, and its receiver, always on (RE on ground), reads the same A/B back, the unit's
+own frame while it sends, so it gives the echo, and the others' frames between. The third receives
+the clock. **The glove's Staršaja and Míša** carry the same three (the owner, 5 Nov 2026): one set
+of drivers, one part, for every unit of the suit. The return pair is terminated and idle between the
+slots, and the THVD145x receivers are fail-safe on an idle bus (SLLSEY3E: open, short and idle), so
+the echo reads a clean high between the frames; a receiver fail-safe on an open input alone would
+read noise there (see [Rubaška](../rubaska/WHY.md#the-sensing-module)).
 
-Every pair is terminated with 120 Ω, checked on the cable, at the cable's far end by a small
-terminator board in its last IDC socket, no unit carrying one: a potted unit's jumper cannot be
-moved, and a spare must fit any place. The pairs the units drive are terminated at Mamka too, so a
-unit's driver sees the two in parallel, ~60 Ω, close to the 54 Ω the datasheets test with; the
-pairs Mamka alone drives, the data down and the clock, only at the far end, which saves her
-~0.15–0.2 A and ~0.5 W inside Mrazík (an estimate; see [Mamka](../mamka/HARDWARE.md#lines)).
+Every pair is terminated in its own impedance, at the cable's far end, whichever unit is last. The
+value follows the cable used: the 3M 3811 gives 95 Ω only between ground, signal and ground
+(TS-0122), not a pair's own between two grounds, so the pair is measured on a sample and the
+resistors fitted for it, 100–120 Ω, 120 Ω until then; another cable, another value, the same at
+Mamka. The end is **Marfuška**, a small board assembled at JLCPCB, the unit's Picoflex header and
+three resistors in 1206: a Picoflex receptacle is pressed onto the cable just past the last tap, as
+close as two receptacles allow, with the same tool as every tap, and Marfuška plugged into it and
+potted with it, one a line, nothing soldered by hand (6 Nov 2026). No unit carries one: a potted
+unit's jumper cannot be moved, and a spare must fit any place. The cable past the last tap is line,
+not a stub, ended in its impedance: a few centimetres add a fraction of a nanosecond (4.63 ns/m,
+TS-0122); left open, 5 cm would be a stub of 0.46 ns there and back against the drivers' edges of
+1–6 ns (SLLSEY3E, 7.8), still tolerable, ~20 cm not. Mamka's clock drivers run without pause, ~20–25
+mA into the far end's 120 Ω (an estimate, see [Mamka](../mamka/HARDWARE.md#lines)), ~75 mW and at
+most 91 mW at 3.3 V, ~110 mW at 100 Ω: hence 1206, typically 0.25 W; the clock's resistor has a
+capacitor's place in series, 0 Ω until measured, which would take the direct current off, the
+clock's duty being 50 % (an AC termination); the data down is driven only while Mamka sends. The
+pairs the units drive are terminated at Mamka too, so a unit's driver sees the two in parallel, ~60
+Ω (~50 Ω at 100 Ω), close to the 54 Ω the datasheets test with; the pairs Mamka alone drives, the
+data down and the clock, only at the far end, which saves her ~0.15–0.2 A and ~0.5 W inside Mrazík
+(an estimate; see [Mamka](../mamka/HARDWARE.md#lines)).
 
 All the drivers run from 3 to 5.5 V at up to 50 Mbit/s; on a unit they run from 3.3 V (see
 [power](#power)). We considered M-LVDS too, but stayed with classic
@@ -257,7 +271,7 @@ RS-485 also carries the sound from Baťa across the suit to
 
 ## Boards
 
-Seven boards are drawn, every one of them with the same four layers: signal, ground, power with
+Nine boards are drawn, every one of them with the same four layers: signal, ground, power with
 ground, signal, so that every trace has a plane under it and the ground is never cut by a trace.
 Even the small ones take it: a four-layer board costs little more than a two-layer one at the
 sizes here (an estimate; the house's price list decides), and one stack means one set of rules,
@@ -271,26 +285,38 @@ one impedance table and one order.
 | the IMU board | [Rubaška](../rubaska/HARDWARE.md#the-imu) | small; the same stack for the same order, I3C over a plane |
 | the glove's, Vešč, and the sock's, Nosok | [Rubaška](../rubaska/HARDWARE.md#the-glove) | one board on the back of the hand, or on the calf above the ankle for the foot: an ADS1298 with its inputs on one side, Staršaja, the line's drivers and her IMUs' switches and buffers on the other; the same stack as a module's |
 | [Míša](../misa/README.md) | the headband | the radar module, the ultrasound, a processor, the line's drivers |
-| [Nataša](../natasa/README.md) | the headband | I2S, the DAC and the amplifier beside the processor |
+| [Nataša](../natasa/README.md) | the headband | I2S beside the processor, the DAC and the amplifier where fitted |
+| the ear's board, two | [Nataša](../natasa/HARDWARE.md#buttons), behind each ear | small: the microphone and four buttons; the same stack for the same order |
+| Marfuška | the far end of each line's cable | nothing but the line's three pairs, each across the cable's impedance, assembled at JLCPCB; the same stack for one order, see [Drivers on a unit](#drivers-on-a-unit) |
 
 Beside them the flexible circuits, no boards but drawn the same way, all polyimide from JLCPCB:
 the bands' strips, on the torso and the limbs alike, of four layers, a ground on both faces and
 the leads inside, and the glove's zone strips, bare flex soldered to the IMU boards (see
 [Rubaška](../rubaska/CONSTRUCTION.md#electrodes)).
 
-The ADS1298's own example layout is drawn for a minimum of two layers, with inner layers for
-power where there are more (SBAS459K, 12.2); it is the processor and the drivers on the same
-board, and the module's narrow shape, that make the plane worth having there. Thickness follows
-the board: 0.8 mm where an M.2 socket demands it, otherwise the house's standard 1.6 mm, and
-thinner for the IMU board and the glove's board if the suit asks, decided at construction. The
-rest of the family is software or bought: Baťa and Borovičok, the BMS, the cables and connectors.
+The ADS1298's own example layout is drawn for a minimum of two layers, with inner layers for power
+where there are more (SBAS459K, 12.2); it is the processor and the drivers on the same board, and
+the module's narrow shape, that make the plane worth having there. Thickness follows the board: 0.8
+mm where an M.2 socket demands it, otherwise the house's standard 1.6 mm, and thinner for the IMU
+board if the suit asks, decided at construction; a board with the line's Picoflex header 1.6 mm, the
+glove's too, the thickness Molex recommends for its pegs (90814-0816's product sheet). The rest of
+the family is software or bought: Baťa and Borovičok, the BMS, the cables and connectors.
+
+**The connectors are chosen last,** when each board is drawn, by its shape and by where its
+cables leave it, on one edge or both (the owner, 7 Nov 2026): the net lists give the nets and the
+order of the ways, and the connectors these pages name are candidates until then.
 
 ## Open questions
 
 - cable length: confirm by measurement that a metre of the cable carries ~20 Mbit/s on every
   line, and whether 24.576 Mbaud holds,
-- the 3M 3811/16 on a sample: its pairs' impedance against the 120 Ω terminations, the Picoflex
-  receptacle pressed onto its 26 AWG, and its resistance against the ~151 Ω/km taken,
+- the 3M 3811/16 on a sample: its pairs' impedance, for Marfuška's and Mamka's resistors, the
+  Picoflex receptacle pressed onto its 26 AWG, and its resistance against the ~151 Ω/km taken,
+- should the flat cable fail the sample's reflections or crosstalk: loose twisted pairs of 26 AWG,
+  stranded, with a long lay of 3–5 cm, which press into the same Picoflex receptacle untwisted
+  (the owner's trial with a Cat5e pair), laid in their order in a comb, insulation within the
+  receptacle's 1.00 mm (Molex's product sheet for 90327-0316); a twisted pair is ~100 Ω, so
+  Marfuška would take 100 Ω,
 - the Picoflex parts' drawings: the header's length and the mated height, and the contact's
   resistance against the ~20 mΩ taken,
 - the Weipu SP21's contact resistance, from its sheet or measured,

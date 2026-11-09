@@ -37,3 +37,15 @@ thing waits in reserve, it says so.
   22 µF ceramic behind 0.5 Ω damps a plug into a live line as well, ≤ 4.52 V against the
   TPS7A2033's 6.5 V, leaves line 8's converter ~26 µF to charge at start instead of ~110, and is
   a JLCPCB Basic part; the motors' polymer behind their choke stays.
+- **The 6TPE470MAZU behind the motors' choke** (to 7 Nov 2026): 470 µF, 35 mΩ, 1.4 mm, not
+  stocked at JLCPCB; the 6TPE330MAP of the same series and footprint took its place, the filter's
+  corner ~5.8 kHz for ~5, the same ~19 dB at the drivers' 20 kHz.
+- **The STM32H523RE** (to 7 Nov 2026), the modules' family in LQFP64: none stocked at JLCPCB. The
+  STM32H562RGT6 has the same pinout name for name and the same AFs on every pin she uses, 1 MB of
+  flash, and is Mamka's family; it took the place.
+- **The microphone and the buttons on leads of their own** (to 7 Nov 2026), a microphone's small
+  board and a cable of four lines and ground to each side. Both sit behind the same ear, so one
+  board carries them, on one lead of nine ways (the owner).
+- **The jack, the DAC and the amplifier on every Nataša** (to 7 Nov 2026). Bluetooth headphones
+  paired with Baťa serve most, and they have one microphone where the headband has two; the
+  wired output is fitted on request (the owner).

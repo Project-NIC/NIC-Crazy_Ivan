@@ -22,6 +22,7 @@ and the lines to Mamka.
 | Amass XT30 | | 1 | the battery in from Mamka, ~1.6 A with two Hailos at their most, ~2.6 A with two cards at a slot's full 13 W |
 | chip fuse, 1206 or 1812 | SMD | 1 | right at the input, before the bank: fast-acting, ~2–5 A by the cards fitted, its value from the measured start (see [Babuška](../babuska/HARDWARE.md#power-variants)) |
 | IDC box header, 2 × 5 | 2.54 mm grid | 1 | to Mamka on a 10-wire flat cable: each converter's EN and PGOOD, six grounds; Mamka's line part |
+| stiffener | aluminium or 1.6 mm FR4 bar | 1 | screwed across the back plate and the rails, keeping the 0.8 mm frame flat (see [construction](CONSTRUCTION.md#the-board)) |
 
 ## The two slots
 
@@ -60,10 +61,11 @@ known.
 A **TI LMR60440** for each module, its fixed-3.3 V variant (LMR604403SRAKR, FB straight to the
 output, no divider; 3.24–3.35 V), 4 A: a Hailo-10H takes up to 8.25 W, ~2.5 A (Hailo's datasheet
 Rev. 1.0, 3.1), and a slot has ~13 W to give, room for a larger card (TI SNAS877, December 2024).
-The cell is TI's for 2 MHz, 3.3 V and 4 A (table 8-1): 16.5 kΩ on RT, 1.5 µH, ~20 µF of rated output
-capacitance, C_IN 4.7 µF 50 V + 100 nF, 100 nF on BOOT, MODE/SYNC to ground for PFM at light load
-(its pin table); the inductor's saturation current at least the high-side limit, up to 8.2 A
-(8.2.2.2, 6.5). From 14.6 V at 2 MHz the on-time is ~113 ns against the 30 ns minimum. The family is
+The cell is TI's for 2 MHz, 3.3 V and 4 A (table 8-1): 1.5 µH, ~20 µF of rated output capacitance,
+C_IN 4.7 µF 50 V + 100 nF, 100 nF on BOOT, MODE/SYNC to ground for PFM at light load (its pin
+table); the inductor's saturation current at least the high-side limit, up to 8.2 A (8.2.2.2,
+6.5). On RT 18 kΩ, a JLCPCB Basic part, for ~1.86 MHz by equation 3, in place of the cell's
+16.5 kΩ for 2.0 MHz. From 14.6 V the on-time is ~122 ns against the 30 ns minimum. The family is
 pin compatible (LMR60406, 10, 20, 30, 40), so one board takes a smaller or a larger one.
 
 - **EN from the ROCK, straight.** Each converter's EN is a trace from a GPIO of the ROCK, **EN A**

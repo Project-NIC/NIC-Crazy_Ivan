@@ -178,15 +178,15 @@ That need not matter:
 ## The battery
 
 The BMS of the battery sits in the same backpack and talks over RS485. Processor 2 reads it
-on a UART through a THVD1450, the half-duplex driver the lines already use for the
-clock: the cells' voltages, the current, the temperatures and the state of charge (see
-[Babuška](../babuska/HARDWARE.md#the-bms)). JK's BMS speak their RS485 Modbus protocol (V1.0,
-9,600 Bd), so this is Modbus RTU.
+on UART5 through the CA-IS3092W, an isolated half-duplex driver (see [hardware](HARDWARE.md)):
+the cells' voltages, the current, the temperatures and the state of charge (see
+[Babuška](../babuska/HARDWARE.md#the-bms)). JK's BMS speak their RS485 Modbus protocol (V1.1,
+115,200 Bd, 8N1, its section 1), so this is Modbus RTU.
 
 - **The BMS as a slave:** its address on its switches is 1 to 15. Address 0x00 would make it a
   Modbus master that polls other packs.
-- **Protocol 013** in JK's app: JK BMS RS485 Modbus V1.0 at 9,600 Bd; 001 is the same at
-  115,200 Bd. It knows only function 0x03 (read) and 0x10 (write multiple registers).
+- **Protocol 001** in JK's app: JK BMS RS485 Modbus at 115,200 Bd; 013 is the same at
+  9,600 Bd. It knows only function 0x03 (read) and 0x10 (write multiple registers).
 - **Registers:** JK numbers each one as a base plus the field's byte offset: the settings from
   0x1000, the live data from 0x1200, the device from 0x1400, the commands from 0x1600 (JK BMS
   RS485 Modbus general protocol V1.0 and V1.1).
@@ -195,7 +195,7 @@ clock: the cells' voltages, the current, the temperatures and the state of charg
   current 0x1298 (mA, signed), the temperatures 0x129C and 0x129E and the MOSFETs' 0x128A
   (0.1 °C), the alarms 0x12A0 (one bit each: over- and under-voltage, over-current, short
   circuit, temperatures, the MOSFETs), the state of charge in 0x12A6 and the remaining capacity
-  0x12A8 (mAh). At 9,600 Bd the ~0.18 kB take ~0.2 s.
+  0x12A8 (mAh). At 115,200 Bd the ~0.18 kB take ~16 ms.
 - The byte order of the 32-bit values is to be confirmed on a sample.
 
 Processor 2 keeps what she read as her chip 0x04 (see [her registers](#mamkas-own-registers)),
@@ -257,7 +257,7 @@ in VOS0 with LATENCY = 4 (see [firmware](#firmware)). Both processors take:
 | lines 5–7, 19,660,800 Bd | OVER8 = 1, BRR = 0x0012; USART1 receives line 5 and sends for all three, USART6 and UART7 only receive |
 | USART3, line 8 | OVER8 = 1, BRR = 0x0012: 19,660,800 Bd |
 | TIM6, line 8's cycle | PSC = 19: a tick of the suit clock; ARR = 5,119, a cycle of 520.8 µs, at whose start the heartbeat goes down line 8 once a second |
-| UART5 to the BMS | the APB clock, 16×, BRR = 0x5000: 9,600 Bd |
+| UART5 to the BMS | the APB clock, 16×, BRR = 1,707: 196.608 MHz ÷ 1,707 = 115,178 Bd, 0.02 % off |
 | LPUART1 to the GPS | the APB3 clock ÷ 8 (LPUART1SEL = 000, PRESCALER = 0100), BRR = 0xA0000: 9,600 Bd, the kernel clock 2,560 times the rate, within its 3 to 4,096 (RM0481 Rev 5, 57.4.8 and 57.7.13) |
 | TIM2, the GPS's PPS | PSC = 19: a tick of the suit clock, 101.7 ns |
 | TIM5, the cycle's end | as processor 1's TIM2 |
@@ -265,8 +265,9 @@ in VOS0 with LATENCY = 4 (see [firmware](#firmware)). Both processors take:
 | TIM3, the fan's speed | input capture |
 
 Each processor raises her lines' clock drivers' DE at her start, on one plain pin chosen when the
-board is drawn, and lowers it while her lines are off or asleep (see
-[hardware](HARDWARE.md#clock)).
+board is drawn, and lowers it while her lines are off or asleep; a line's data driver's DE only
+while she sends to it, all of hers for a broadcast (see [hardware](HARDWARE.md#clock) and
+[lines](HARDWARE.md#lines)).
 
 ## DMA
 

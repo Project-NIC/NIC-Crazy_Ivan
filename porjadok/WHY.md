@@ -65,12 +65,19 @@ thing waits in reserve, it says so.
   each supply pin, so the cable has 14 wires and four grounds: on a metre at ~0.38 A the drop is
   ~57 mV against 51 mV, and a unit sits ≤ ~30 mV off Mamka's ground at the worst line. Taken
   again on 28 Oct 2026 with the 3811/16: a ground between the pairs and two in the supply.
-- **The clock drivers' DE on a pin a line** (24 Oct 2026, morning) **or tied on** (the
-  afternoon). Each processor switches her own lines' clock on one pin: ~0.3 A of the eight
-  drivers comes off while her lines are off or asleep, and no line is switched alone.
+- **The clock drivers' DE on a pin a line** (24 Oct 2026, morning, and once more on 7 Nov) **or tied
+  on** (24 Oct, the afternoon): one pin a processor switches her lines' clocks together, which is
+  enough (the owner, 7 Nov 2026).
+- **Mamka's data drivers with no DE,** always on (to 7 Nov 2026): ~20–25 mA a line into the far
+  terminator whatever was sent. Since 7 Nov each is a THVD1452 with a DE of its own, on only while
+  Mamka sends to its line (the owner: every RS-485 its own DE).
+- **Two THVD1452 on a unit** (to 7 Nov 2026): the first received from the master and drove the
+  return pair on its own Y/Z, the second only received the return pair for the echo. A THVD1450
+  on the return pair does both on the same A/B, its receiver always on, and another receives from
+  the master: three THVD1450, one part on every unit, smaller and cheaper (the owner).
 - **The digital rail at 3.7 V** (to 10 Oct 2026). It saved ~0.3 W across the suit against 4 V, but
   at the worst corner the cable, the filters and the connectors left the modules' TPS7A2033 ~3.35 V,
-  under the 3.44 V its dropout (at most 140 mV) needs and the 3.6 V its ±1.5% asks (SBVS338H, 5.5),
+  under the 3.45 V its dropout (at most 145 mV) needs and the 3.6 V its ±1.5% asks (SBVS338H, 5.5),
   and the head's motors ~3.5–3.6 V, short of the 3.55 V their overdrive needs (SLOS754C). 4 V gives
   both room for ~0.3 W. The analog rail stays at 6 V: 5.5 V would save only ~0.06 W, and the
   headroom helps the analog LDO reject ripple.

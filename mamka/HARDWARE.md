@@ -17,18 +17,18 @@ functions and the whole suit's power.
 |---|---|---|---|
 | STM32H562VG or STM32H563VG | LQFP100, 14 × 14 mm | 2 | processor 1, the limbs: lines 1–4 and one SPI to Baťa; processor 2, the head and the trunk: lines 5–8, two SPIs to Baťa, the sound, the battery and the power |
 | SWD pads | | 2 | one set for each processor, for a programmer on the bench |
-| SiTime SiT8008BI-21-33N-9.830400D | 3.2 × 2.5 mm | 1 | the suit's clock, 9.8304 MHz: a MEMS oscillator, ±20 ppm in all (tolerance, temperature, supply, load and the first year's ageing) over −40…+85 °C, 3.3 V, 4.5 mA at most, pin 1 without function; 0.1 µF at its VDD |
+| SCTF SX7M9.8304M20F30TNN | 7.0 × 5.0 mm | 1 | the suit's clock, 9.8304 MHz: a quartz oscillator, CMOS, 1.62–3.63 V, 10 mA at most, duty 45–55 %, edges ≤ 5 ns, ±20 ppm at 25 °C, ±30 ppm over −40…+85 °C, ±3 ppm the first year (SCTF's sheet, revision 05/12/2026); pin 1 its tri-state, on at 1 or open, tied to its 3.3 V; 0.1 µF at its VDD; JLCPCB C21547509, the cheapest. For whoever wants ±20 ppm in all: SiTime's SiT8008 MEMS oscillator in the same 7.0 × 5.0 mm, pins alike: SiT8008BI-81-33N-9.830400Y, a reel of 1,000, or in bulk without the Y (8 the 7.0 × 5.0 mm, 1 ±20 ppm in all, N pin 1 without function at any level or open; SiTime's SiT8008B sheet 1.08, tables 1 and 2, the ordering information) |
 | SN74LVC126A | quad buffer, 14 pins | 3 | the suit clock from the oscillator to both processors' OSC_IN and the eight lines' clock drivers, two spare gates |
-| THVD1451 | 8 pins, full duplex, no enables | 8 | a line's data: drives the pair to the units, receives the return pair; a processor's lines with modules driven by her one TX |
+| THVD1452 | VSSOP-10, the units' part | 8 | a line's data: drives the pair to the units only while Mamka sends, its DE a pin of its own, and receives the return pair; a processor's lines with modules driven by her one TX |
 | THVD1450 | SOIC-8, VSSOP-8 or VSON-8 | 8 | drive the lines' clock, their DE on one pin a processor |
-| ISOW1412 | SOIC-16 | 1 | the BMS's RS-485, isolated with its own DC/DC: JK switches the pack's negative side (P− and B−, the JK-B1A8S10P specification V19.3.1, 6.2), so with its MOSFETs open Mamka's ground stands up to the pack's 14.6 V off the BMS's; TI's sheet to read when drawn |
+| Chipanalog CA-IS3092W | SOIC-16, wide | 1 | the BMS's RS-485, half-duplex, isolated with its own DC/DC (5 kVrms, 500 kbps): JK switches the pack's negative side (P− and B−, the JK-B1A8S10P specification V19.3.1, 6.2), so with its MOSFETs open Mamka's ground stands up to the pack's 14.6 V off the BMS's; its SEL on the isolated ground for 3.3 V, VCC and VISO each 100 nF and at least 10 µF (CA-IS309x Version 1.11, table 6-1); A and B to the BMS's P6 (A1254WF-4A) pins 3 RS485_A and 4 RS485_B, the isolated ground to its P2 pin 3 GND, P6 having none (JK-B1A8S10P product specification V19.3.1, the interfaces' table); JLCPCB C2890051 |
 | LMR43610MB3RPER | VQFN-HR, 2 × 2 mm | 11 | Mamka's own 3.3 V; 4 V for each of the eight lines, each with an EN and a PGOOD of its own on processor 2; 6 V for the suit; 5 V for the fan |
 | SWPA6045S100MT | 6 × 6 × 4.5 mm | 11 | the converters' inductor, 10 µH |
 | SWPA252012S2R2MT | 2.5 × 2.0 mm | 18 and more | the π filters behind the nine suit rails, two chokes side by side each; Mamka's own 3.3 V branches take theirs too, counted when she is drawn |
 | GZ2012D301TF | 2.0 × 1.25 mm | 18 and more | the beads behind them, two side by side each, and the processors' branch's |
 | EEHZA1H470P | SMD 8 × 10.2 mm | 2 | the bulk on the battery input: 47 µF 50 V hybrid polymer, the house part |
 | female header, 2 × 20, extra tall | 2.54 mm grid, body 23 mm (Adafruit 1979) | 1 | onto Baťa's header, raising her ~25.5 mm over his board, a window in her over his SoC for Mrazík's boss (see [construction](CONSTRUCTION.md#the-stack)) |
-| IDC box header, 2 × 5 | 2.54 mm grid | 9 | one per line, for the harness to the shell: three pairs and the supply; one for Terem's flat cable |
+| the lines' connectors, a 2 × 5 IDC box header the candidate | 2.54 mm grid | 9 | one per line, for the harness to the shell: three pairs and the supply; one for Terem's flat cable; chosen when she is drawn |
 | Noctua NF-A4x10 5V PWM | 40 × 40 × 10 mm | 1 | the backpack's fan: 4 wires, 5 V, 0.07 A, its own driver inside |
 | 4-pin PC fan header | 2.54 mm grid | 1 | the fan's +5 V, ground, PWM in and speed out |
 | Amass XT60 | | 1 | the battery in, from the pack's 2.5 mm² wire (see [Babuška](../babuska/HARDWARE.md#power-variants)) |
@@ -46,7 +46,7 @@ datasheet, one pin table (DS14258 Rev 6, table 14) and one footprint. ST's pin d
 STM32H563VGTx has the same 100 pins, each with every signal of the STM32H562VGTx's, and adds
 Ethernet and a second FDCAN, which Mamka leaves unused. The STM32H563 is taken in its LDO version,
 the STM32H563VGT6, not the ...Q with its own SMPS for the core (see [WHY](WHY.md)). Processor 2
-needs 52–55 I/Os, more than LQFP64's 49, and LQFP64 lacks PB9 and PB11 (pins 62 and 30–32 are
+needs 56–59 I/Os, more than LQFP64's 49, and LQFP64 lacks PB9 and PB11 (pins 62 and 30–32 are
 VCAP and the supply, ST's pin data for the STM32H562RGTx). The STM32H523, the modules' part, has 4
 USARTs, 2 UARTs and 4 SPIs, three with I2S (DS14540), and 272 KB of RAM; processor 1 needs the
 larger memory (see [memory](SOFTWARE.md#memory)).
@@ -57,7 +57,8 @@ larger memory (see [memory](SOFTWARE.md#memory)).
 |---|---|---|
 | the suit clock in | 1 | PH0-OSC_IN, the HSE in bypass, from the clock buffer |
 | lines 1–4: from the units | 4 | RX at 19.66 Mbaud, a line each in this order: USART2 on PA3, USART3 on PC4, USART6 on PC7, USART1 on PB7 (AF7) |
-| lines 1–4: to the units, one TX for all four | 1 | USART2's TX on PA2 (AF7), into the four THVD1451s' driver inputs |
+| lines 1–4: to the units, one TX for all four | 1 | USART2's TX on PA2 (AF7), into the four THVD1452s' driver inputs |
+| lines 1–4: the data drivers' DE | 4 | plain GPIOs, a line each, chosen when the board is drawn |
 | the SPI to Baťa, as the slave | 4 | SPI1 (AF5): NSS on PA4, SCK on PA5, MISO on PA6, MOSI on PA7 |
 | "data ready" to Baťa | 1 | PB1 |
 | START to processor 2 | 1 | PB15, TIM12_CH2 (AF2), an output compare |
@@ -67,7 +68,7 @@ larger memory (see [memory](SOFTWARE.md#memory)).
 | SWD | 2 | PA13 SWDIO, PA14 SWCLK |
 | status LED | 1 | PB0 |
 | the lines' clock drivers' DE | 1 | a plain GPIO, chosen when the board is drawn |
-| **total** | **20** | 60 I/Os free |
+| **total** | **24** | 56 I/Os free |
 
 **Processor 2's pins,** the head, the trunk and the household
 
@@ -82,7 +83,7 @@ larger memory (see [memory](SOFTWARE.md#memory)).
 | "data ready" to Baťa | 1 | PB0 |
 | START from processor 1 | 1 | PB15, TIM12_CH2 (AF2), its edge resetting TIM12 |
 | the UART to processor 1 | 2 | UART4 at 115,200 Bd (AF8): TX on PA0, RX on PA1 |
-| the BMS | 3 | UART5 at 9,600 Bd (AF8): TX on PC12, RX on PD2, DE on PC8, through the ISOW1412 |
+| the BMS | 3 | UART5 at 115,200 Bd (AF8): TX on PC12, RX on PD2, DE on PC8, through the CA-IS3092W |
 | EN and PGOOD of each of the eight 4 V converters and of the 6 V | 18 | the 6 V: EN PE12, PGOOD PE13; the eight lines' sixteen plain GPIOs, PE8–PE11 among them, chosen when the board is drawn; every EN with 100 kΩ to ground (see [on and off](#on-and-off)) |
 | the limbs powered, to processor 1 | 1 | a plain output, high while lines 1–4's PGOOD are all high, chosen when the board is drawn |
 | Baťa's 3.3 V from header pin 1 | 1 | PC0, read as "Baťa is up" |
@@ -90,8 +91,9 @@ larger memory (see [memory](SOFTWARE.md#memory)).
 | the backpack's fan | 2 | the PWM at 25 kHz on PB8, TIM4_CH3 (AF2), open-drain on a 5 V-tolerant pin (FT); the speed on PB4 into TIM3_CH1 (AF2), pulled up to 3.3 V |
 | SWD | 2 | PA13 SWDIO, PA14 SWCLK |
 | status LED | 1 | PB1 |
+| lines 5–8: the data drivers' DE | 4 | plain GPIOs, a line each, chosen when the board is drawn |
 | the lines' clock drivers' DE | 1 | a plain GPIO, chosen when the board is drawn |
-| **total** | **52–55** | 25 I/Os free, 28 without the GPS |
+| **total** | **56–59** | 21 I/Os free, 24 without the GPS |
 
 - **Checked by script** against ST's pin data for the STM32H562VGTx and the STM32H562RGTx, the
   STM32_open_pin_data that CubeMX reads: every pin in the package, its signal on it, no pin
@@ -99,7 +101,7 @@ larger memory (see [memory](SOFTWARE.md#memory)).
   DS14258's tables 15 and 16.
 - **The plain GPIOs named here stay named,** data ready, the ENs and PGOODs, the LEDs and
   Baťa's 3.3 V, checked with the rest; a plain GPIO added later is chosen when the board is drawn,
-  as the clock drivers' DE is.
+  as the drivers' DEs are.
 - **The four wires between the processors** are START, "the limbs powered" and the UART's two (see
   [software](SOFTWARE.md#the-wires-between-the-processors)).
 - **SPI2 off PB13 and PB14:** with MISO on PB14 a slave transmits at 6 MHz at most, and with SCK
@@ -179,14 +181,15 @@ the rest over two slower SPIs. Details under
 
 Each line has on Mamka:
 
-- **a THVD1451** for its data, full duplex with no enable pins: its driver is always on the
-  pair to the units, where Mamka is the only one that sends, and its receiver takes the
-  return pair. Every pair is terminated at both ends with 120 Ω, checked on the cable (see
-  [Porjadok](../porjadok/HARDWARE.md#cable-and-connectors-in-the-suit)): here on Mamka and on
-  the last unit. Between the units' frames nobody drives the return pair, and
-  the receiver's failsafe then reads high. **The drivers of a processor's lines with modules
-  take one input,** her one TX, so a frame goes down lines 1–4, or 5–7, at once; each receiver
-  has a USART of its own;
+- **a THVD1452** for its data, the units' part: its driver on the pair to the units, where Mamka is
+  the only one that sends, enabled by a DE of its own only while she sends, the pair otherwise
+  resting on its terminator, which the units' receivers read as a fail-safe high (SLLSEY3E); its
+  receiver takes the return pair, RE on ground. The pairs the units drive are terminated here and at
+  the cable's far end, the pairs Mamka drives at the far end alone, by Marfuška (see
+  [Porjadok](../porjadok/HARDWARE.md#drivers-on-a-unit)). Between the units' frames nobody drives
+  the return pair, and the receiver's failsafe then reads high. **The drivers of a processor's lines
+  with modules take one input,** her one TX, the lines' DEs choosing which a frame goes down, all of
+  them for a broadcast; each receiver has a USART of its own;
 - **a THVD1450** that drives its clock: DE on her processor's one pin, the receiver off;
 - **a 2 × 5 IDC box header** for the flat cable, the pairs side by side as the cable has them:
 
@@ -220,7 +223,7 @@ units keep themselves (see [Porjadok](../porjadok/SOFTWARE.md#the-modes)). The
 clock travels over its own one-way RS-485 channel alongside the data bus, through buffers and
 eight drivers, one per line.
 
-The base is **9.8304 MHz**, from a SiTime SiT8008 MEMS oscillator into three SN74LVC126A buffers,
+The base is **9.8304 MHz**, from a quartz oscillator (SCTF's SX7M) into three SN74LVC126A buffers,
 and from them to everything: both processors' HSE in bypass and the eight lines. No processor makes
 or passes on the clock, so a processor's reset stops nothing but her own lines' clock drivers, her
 DE pin falling (below). It is the family of 120: the IMUs'
@@ -235,11 +238,11 @@ Every rate in the suit is the base multiplied or divided by a whole number, apar
 - The buffers' twelve gates: two to the processors' OSC_IN, eight with 33 Ω in series to each
   line's THVD1450, their ten OE tied on, and two spare with their OE on ground. One short trace
   takes the oscillator to the three buffers' inputs.
-- **Each processor switches her own lines' clock drivers on one pin,** a plain one chosen when
-  the board is drawn: DE up at her start, so the clock goes out on her lines from then on, and
-  down only while her lines are off or asleep, which takes ~0.3 A off the eight. A
-  unit that sees a quiet pair, its receiver holding the clock input high (fail-safe, SLLSEY3E),
-  waits for the clock (see [Porjadok](../porjadok/SOFTWARE.md#bring-up)).
+- **Each processor switches her own lines' clock drivers on one pin,** a plain one chosen when the
+  board is drawn: DE up at her start, so the clock goes out on her lines from then on, and down only
+  while her lines are off or asleep, which takes ~20–25 mA a driver off. A unit that sees a quiet
+  pair, its receiver holding the clock input high (fail-safe, SLLSEY3E), waits for the clock (see
+  [Porjadok](../porjadok/SOFTWARE.md#bring-up)).
 
 | to | clock | from 9.8304 MHz |
 |---|---|---|
@@ -254,7 +257,10 @@ The ADS1298 accepts 1.94 to 2.25 MHz (SBAS459K); its sample rates in its high-re
 come out as 480 to 30,720 SPS.
 
 A 9.8304 MHz clock means roughly 19.7 Mbit/s on the line. Its THVD1450 driver handles up to
-50 Mbit/s.
+50 Mbit/s. The driver's and the unit's receiver's pulse skew, 3.5 ns at most each (SLLSEY3E,
+switching characteristics), take ~7 ns from a half period of 50.9 ns; a digital clock on OSC_IN
+asks only 7 ns high and low and 0.7 / 0.3 VDD (DS14540 Rev 3, table 38; the 45–55 % there is for
+an analog low-swing clock), and the receiver's output swings rail to rail.
 
 ## Helper functions
 
@@ -297,16 +303,17 @@ in auto mode.
 | consumer | current |
 |---|---|
 | 2 × STM32H562 or STM32H563, both at 197 MHz with every peripheral clocked | ~61 mA typical, ~82 mA at 85 °C each at 200 MHz in VOS1 (DS14258, table 28); on silicon A or Z in VOS0 ~70 and ~102 mA (see [software](SOFTWARE.md#firmware)) |
-| 8 × THVD1451, each driver always on, into one 120 Ω at the cable's far end | ~20–25 mA each, an estimate |
+| 8 × THVD1452, each driver on only while Mamka sends to its line, into the far end's terminator | ~20–25 mA each while it sends, little on average, an estimate |
 | 8 × THVD1450 driving the clock, the same load, DE up while the lines run | ~20–25 mA each |
 | the receivers, the buffers, the LED | a few mA |
-| **total** | **~0.5–0.6 A of the 1 A** |
+| **total** | **~0.3–0.4 A of the 1 A** |
 
 - Every branch sits behind the house π filter, and the processor's branch has the bead too
   (see [Rubaška](../rubaska/HARDWARE.md#power)).
-- **Eight lines' drivers** take ~0.6 A of it; should the first board show it tight, the drivers
-  get a 3.3 V of their own.
-- **The fan's 5 V:** one more LMR43610 with the divider 48.7 kΩ over 12.1 kΩ, 5.02 V, for the
+- **Eight lines' drivers** take ~0.2 A of it, their clocks' the most; the data drivers only while
+  Mamka sends. Should a larger Mamka or the first board show it tight, the drivers get a 3.3 V of
+  their own.
+- **The fan's 5 V:** one more LMR43610 with the divider 30 kΩ over 7.5 kΩ, 5.00 V, for the
   fan's 0.07 A, in forced PWM. Its EN hangs on Baťa's eFuse's EN node, 1.4–2.1 V over 10–14.6 V,
   above its 1.23 V (see [the computers' supply](#the-computers-supply)): the fan runs while he
   does.
@@ -325,8 +332,8 @@ nothing draws from the battery in between but the BMS itself. The button and the
   display activates it (6.2), and it wakes from its sleep the same way (3.16). That the button
   wakes it after a *Shutdown* as after its sleep is our reading, tried on the BMS bought.
 - **The base comes up with the pack,** held by no processor: Mamka's own 3.3 V, its LMR43610's EN
-  on a divider from the input, 100 kΩ over 18.2 kΩ, on at ~8.0 V and off under ~5.7 V (the 1.23 V
-  threshold less its 0.35 V of hysteresis, SNVSBY5B), ~2.3 V at 14.6 V under the pin's 42 V; and
+  on a divider from the input, 100 kΩ over 18 kΩ, on at ~8.1 V and off under ~5.8 V (the 1.23 V
+  threshold less its 0.35 V of hysteresis, SNVSBY5B), ~2.2 V at 14.6 V under the pin's 42 V; and
   the computers' eFuses, each EN/UVLO on a divider of its own (see
   [the computers' supply](#the-computers-supply)), so Baťa and Borovičok start with the pack;
   Terem's modules come as the ROCKs switch them.
@@ -369,19 +376,19 @@ the fan's 5 V use the same part.
   | position | value |
   |---|---|
   | inductor | 10 µH, shielded, saturation at least the 2.1 A of the LMR43610's highest peak current limit (IPEAKMAX, 7.5): Sunlord SWPA6045S100MT, 6 × 6 × 4.5 mm, 3.5 A saturation, 2.45 A rated, 48 mΩ (JLCPCB C79272) |
-  | divider on VOUT/FB, against 1.00 V | bottom 12.1 kΩ; top 36.5 kΩ → 4.02 V, 60.4 kΩ → 5.99 V |
+  | divider on VOUT/FB, against 1.00 V | bottom 10 kΩ; top 30 kΩ → 4.00 V, 49.9 kΩ → 5.99 V; all JLCPCB's Basic parts, their parallel 7.5 and 8.3 kΩ within the 5–10 kΩ TI asks (equation 5) |
   | C_FF across the top resistor | 22 pF C0G |
   | C_IN | 4.7 µF 50 V X7R 1206 + 100 nF |
   | C_OUT | 3 × 10 µF 50 V 1206 + 100 nF |
   | VCC · BOOT | 1 µF · 100 nF |
   | MODE/SYNC | on Mamka's 3.3 V for the 6 V, the eight lines and the fan's 5 V, forced PWM, no bursts at light load; on ground for Mamka's own 3.3 V, auto mode |
 - **TI's row at 1 MHz** (table 9-2): C_IN 4.7 µF + 100 nF, C_OUT at least 2 × 10 µF; the cell has
-  three. **The inductor** by TI's equation 7 at K = 0.3 and 1 A from 12.8 V is 9.2 µH for 4.02 V,
+  three. **The inductor** by TI's equation 7 at K = 0.3 and 1 A from 12.8 V is 9.2 µH for 4.00 V,
   10.6 µH for 5.99 V and 8.2 µH for 3.3 V, so 10 µH serves all.
 - **Fixed at 1 MHz, with no clock** from the processor and no resistor; the 6 V, the lines' and the
   fan's converters run in forced PWM (see [Filtering](#filtering)).
-- **The inductor's ripple:** from the nominal 12.8 V, 0.28 A to 4.02 V, 0.32 A to 5.99 V and
-  0.25 A to 3.3 V; from 14.6 V 0.29 A to 4.02 V and ~0.35 A to 5.99 V; inside the 20–40% of the
+- **The inductor's ripple:** from the nominal 12.8 V, 0.28 A to 4.00 V, 0.32 A to 5.99 V and
+  0.25 A to 3.3 V; from 14.6 V 0.29 A to 4.00 V and ~0.35 A to 5.99 V; inside the 20–40% of the
   1 A the datasheet asks for (9.2.2.3).
 - **A converter for each line on 4 V, one for the whole suit on 6 V.** Eight make 4 V, one
   for each line; one makes 6 V:
@@ -448,9 +455,9 @@ battery's 10–14.6 V.
   side by side, beside the input's 10 µF, at the modules', the glove's, the sock's and Nataša's
   inputs (see [Rubaška](../rubaska/HARDWARE.md#power) and [Nataša](../natasa/HARDWARE.md#power)); on
   the 6 V a 10 µF in its place, so that the one 6 V converter stays under the ~300 µF TI's guidance
-  allows; the 22 µF keeps ~16 µF at 4 V and ~12 µF at 6 V (Samsung's DC-bias curves). A module
+  allows; the 22 µF keeps ~16 µF at 4 V, the 10 µF ~7 µF at 6 V (Samsung's DC-bias curves). A module
   plugged into a live line then peaks at ≤ 4.52 V on 4 V, under the TPS7A2033's 6.5 V (SBVS338H,
-  5.1), and at ≤ 6.94 V on 6 V, under the LP2985's 16 V (SLVS522S), computed for a line of 0.2–1.0
+  5.1), and at ≤ 7.18 V on 6 V, under the LP2985's 16 V (SNVS018AB), computed for a line of 0.2–1.0
   µH and 0.08–0.35 Ω (the 3M 3811 ~0.44 µH/m, an estimate). Each input leaves ~26 µF for its
   converter to charge at start. Mamka's outputs carry no bulk, to keep that small (see
   [Converters](#converters)).
@@ -504,13 +511,13 @@ fuse → the computers' fuses and eFuses, Terem's cable and Mamka's own converte
   above 1 A); C(dVdt) 1 nF for a rise of ~2 V/ms (C = 2,000 pF / SR in V/ms, equation 4), ~5–7.3
   ms over 10–14.6 V with the typical 2.21 µA on the pin, so the ROCK's input capacitors charge
   gently and the cable does not ring, the capacitor a 50 V C0G (rated VIN + 5 V, 6.3, note 3,
-  the plug-in ring reaching ~24 V); OVLO takes a divider of its own from IN, 1 MΩ over 71.5 kΩ,
-  the overvoltage lockout at ~18.0 V (equation 11), its ~14 µA more than twenty times the pin's
+  the plug-in ring reaching ~24 V); OVLO takes a divider of its own from IN, 330 kΩ over 24 kΩ,
+  the overvoltage lockout at ~17.7 V (equation 11), its ~41 µA more than twenty times the pin's
   0.1 µA of leakage, as TI asks (8.2.2.2). PGTH takes a divider from OUT (equation 16), its
   threshold under the pack's 10 V end, its values when drawn; ITIMER's capacitor (equation 6) is
   chosen from the ROCK's measured peaks.
 - **EN and PG:** EN/UVLO on a divider from IN,
-  100 kΩ over 16.5 kΩ: on at ~8.5 V and off under ~7.7 V (the 1.20 V threshold and VUVLO(F) 1.09 V),
+  200 kΩ over 33 kΩ: on at ~8.5 V and off under ~7.7 V (the 1.20 V threshold and VUVLO(F) 1.09 V),
   ~2.1 V at 14.6 V and ~3.4 V at a plug-in's 23.8 V, under the pin's 5 V (6.3; 6.5 V absolute, 6.1),
   so each ROCK starts with the pack, Mamka's own 3.3 V with it, and a ROCK drives its header only
   once booted. No processor touches it, and PG is left unused: Baťa shows on header pin 1. The BMS

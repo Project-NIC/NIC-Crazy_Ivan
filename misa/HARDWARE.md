@@ -34,8 +34,7 @@ pins, and the radar beside the EMG.
 | part | package | count | what it does |
 |---|---|---|---|
 | STM32H523 | UFQFPN48 or LQFP64 | 1 | the processor, as in every module |
-| THVD1452 | VSSOP-10, or SOIC-14 | 2 | line 8's pair from Mamka, and its return pair with the echo, as on a module (see [Porjadok](../porjadok/HARDWARE.md#drivers-on-a-unit)) |
-| THVD1450 | VSSOP-8, or SOIC-8 | 1 | the suit's clock, receive only |
+| THVD1450 | VSSOP-8, or SOIC-8 | 3 | line 8's pair from Mamka and the suit's clock, receive only, and its return pair with the echo, as on a module (see [Porjadok](../porjadok/HARDWARE.md#drivers-on-a-unit)) |
 | a module with TI's IWRL6432AOP, to be chosen | Jorjin's MT5C01-03, the one known: 15.5 × 7.0 mm, on a Hirose BM23PF0.8-14DS-0.35V | 1 | the radar, see below |
 | LSM6DSV16X | LGA-14L, 2.5 × 3 × 0.83 mm | 1 | the IMU, the suit's: the head's tilt from gravity, short turns from the gyro; 100 nF at each supply pin and 1 kΩ in series with INT2, as on the IMU board (see [Rubaška](../rubaska/HARDWARE.md#the-imu)) |
 | ICU-20201 | LGA-14, 3.5 × 3.5 × 1.26 mm | 1 | the ultrasound ahead, in a 45° horn |
@@ -57,7 +56,7 @@ pins, and the radar beside the EMG.
   may be missing. The forehead's vibration motor sits in Míša's housing off the skin but is
   Nataša's, its two wires from her board (see [Nataša](../natasa/HARDWARE.md#míša-beside-her)).
 - **The suit's clock** comes off the line as to every unit, so his slot keeps in step and the
-  radar's rhythm is as precise as the suit's clock, a SiT8008 of ±20 ppm.
+  radar's rhythm is as precise as the suit's clock.
   He counts the suit's cycles himself, so the suit's time is his own (see
   [Radar and the EMG](#radar-and-the-emg)).
 

@@ -226,7 +226,7 @@ slots take the cycle's first half; its second half is quiet.
 - **The last slot's end** falls at 284 µs, in the cycle's quiet half; at the 3,840 SPS to try, a
   cycle of 260.4 µs, it falls 24 µs into the next cycle, while the units read their chips, which
   needs no line.
-- **The guard,** the last 1 µs of every slot, is twenty times what the drivers need: a THVD1452
+- **The guard,** the last 1 µs of every slot, is twenty times what the drivers need: a THVD145x
   lets go of the pair within 25 ns of DE falling and drives it within 50 ns of DE rising, with its
   receiver on (SLLSEY3E, 7.8), and the slots are placed by the suit clock to within the ~0.2 µs
   the START spread allows.
@@ -405,13 +405,12 @@ Until the first *start* there are no slots on lines 1–7, and a unit without a 
 but for *discover*, so it cannot talk into anyone else's answer. All of it is question and
 answer, a question of 8 B and its answer of 34 B in ~22 µs.
 
-- **The clock from the start.** Each processor raises her lines' clock drivers' DE at her start
-  and lowers it only while her lines are off or asleep (see
-  [hardware](HARDWARE.md#clock-a-one-way-rs-485-channel)). Every unit takes
-  the clock straight after its reset and only then sets its peripherals (see
-  [the clock tree](#the-clock-tree)). A unit whose pair is quiet sees its receiver hold the clock
-  input high (the receiver's fail-safe, SLLSEY3E) and waits, silent. Mamka runs from her
-  oscillator.
+- **The clock from the start.** Each processor raises her lines' clock drivers' DE at her start and
+  lowers it only while her lines are off or asleep (see
+  [hardware](HARDWARE.md#clock-a-one-way-rs-485-channel)). Every unit takes the clock straight after
+  its reset and only then sets its peripherals (see [the clock tree](#the-clock-tree)). A unit whose
+  pair is quiet sees its receiver hold the clock input high (the receiver's fail-safe, SLLSEY3E) and
+  waits, silent. Mamka runs from her oscillator.
 - ***Discover*** (0x01) to every unit (0): the body's lines share one sender, and a unit with no
   number knows no line yet. Every unit with no number answers once, 0x81 with its whole UID, on its
   own line's return pair, so the receiver it comes in on tells Mamka the line; she writes it into
@@ -662,9 +661,9 @@ The way is made so that no unit is ever lost and a bad version returns to the ol
 **Two banks.** Every STM32H5 here has its flash in two banks and reads one while writing the other
 (DS14540 Rev 3 and DS14258 Rev 6, 3.4), so a failed update never leaves a unit without a firmware.
 An image is at most one bank: 128 KB on a module's STM32H523CC (two equal banks of its 256 KB,
-RM0481 Rev 5, table 53), the glove's Staršaja's too, 256 KB on Nataša's STM32H523RE and 512 KB on
+RM0481 Rev 5, table 53), the glove's Staršaja's too, 512 KB on Nataša's STM32H562RG and on
 Mamka's STM32H562VG or H563VG. The map of the blocks received shows 256 at a time, 128 KB, through a
-window, so a whole bank is mapped in one to four windows: a module's image in one, Nataša's in two,
+window, so a whole bank is mapped in one to four windows: a module's image in one, Nataša's and
 Mamka's in four. A bank is erased in 64 ms, 320 ms at most, and 16 B are written in 31 µs, 100 µs at
 most, so a block of 512 B in ~1 ms, 3.2 ms at most, against the 0.26 ms it takes to come at 19.66
 Mbaud: the flash sets the pace. The program flash takes 10,000 cycles (DS14540 Rev 3, tables 49 and

@@ -30,8 +30,8 @@ made.
 
 - **The microphones,** one behind each ear, for stereo, where hearing aids sit: the head shades
   each from the other side. Their ports are at the bottom, so the sound comes through a hole in
-  the board under each one, on a small board of its own on a lead from the main board; what
-  covers the holes against sweat and wind is still open.
+  the board under each one, on the ear's board with that side's four buttons, one lead from the
+  main board; what covers the holes against sweat and wind is still open.
 - **The motors,** four: left and right behind the ears, the nape, and the forehead's in Míša's
   housing, off the skin and off the electrodes, so an obstacle ahead buzzes from where the
   wearer looks. Without Míša there are three. They sit as far from the microphones as the
@@ -47,15 +47,15 @@ made.
   who knows when a motor runs, marks that time in the data. If a sample shows the vibration
   does the electrodes no harm, the motor may sit among them.
 - **The buttons,** four behind each ear, so that a blind wearer finds them by the ear, away from
-  the temples' electrodes, which a press would show in; a cable of four lines and ground to each
-  side.
+  the temples' electrodes, which a press would show in; on the ear's board with the microphone.
 - **Míša** sits in the middle of the forehead on a tap of his own on line 8, the line's cable
   reaching him in the headband, and works with the glasses on.
-- **The board** lies flat in the headband: the motors' polymer is 1.4 mm tall, where Mamka's
+- **The board** lies flat in the headband: the motors' polymer is 1.8 mm tall, where Mamka's
   50 V hybrid polymer stands 10.2 mm. It sits on the back half, which has no electrodes: the
   headband is one piece with the head's band of 16 on its front half (see
   [Bogatyr](../bogatyr/CONSTRUCTION.md#the-modules)). Without electrodes it is Nataša's alone.
-- **The headphones** are any wired pair in the 3.5 mm jack.
+- **The headphones** are Bluetooth ones paired with Baťa; any wired pair takes the 3.5 mm jack
+  where it is fitted.
 
 ## Open questions
 

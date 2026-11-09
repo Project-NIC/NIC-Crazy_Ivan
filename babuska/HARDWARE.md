@@ -78,10 +78,13 @@ that matters more than the weight. More pack types will follow; the rest of the 
 depend on which.
 
 **Charged between 20 and 80%,** for the cells' life. That leaves 154 Wh, ~10 h at 15 W. The top
-can no longer be the charger's voltage, as it was meant for sodium, whose voltage rises steadily
-with its charge: LiFePO4's curve is flat over the middle, so either the BMS stops the charge by
-its count, or the pack charges to 100%. Which, JK's BMS has to say; the pack's voltages at 20
-and 80% come from a measurement on a sample.
+is not the charger's: **the BMS stops the charge itself,** its cell over-voltage set low, at the
+cell voltage that ends our charger's 5 A at ~80%, ~3.3–3.4 V (the owner's practice with JK's
+boards; the exact value from a measurement on a sample). The same charger every time puts that
+end at much the same place, though LiFePO4's curve is flat over the middle. The BMS's count is
+anchored to 100% just under that voltage, so it is set right at every charge, and its active
+balancing starts from 3.0 V a cell, over the whole plateau (see
+[software](SOFTWARE.md#the-bmss-settings)).
 
 - **The bottom:** Mamka reads the state of charge from the BMS. Its 0–100% is set to the usable
   20–80% and re-anchored at every charge (see its settings below); the cells' voltages are only a
@@ -92,7 +95,7 @@ and 80% come from a measurement on a sample.
 
 - **Four cells, not five.** Full, four cells give 14.6 V, and Mamka's own 3.3 V from it at
   1 MHz is ~226 ns of on-time against the converter's minimum of 75 ns at worst (SNVSBY5B,
-  tON-MIN). Five would give 18.25 V, over the computers' eFuses' ~18.0 V overvoltage lockout, and
+  tON-MIN). Five would give 18.25 V, over the computers' eFuses' ~17.7 V overvoltage lockout, and
   plugged in they would ring to ~19–30 V against the eFuses' absolute maximum of 28 V, where four
   ring to 15.1–23.8 V (the same estimate, see [Mamka](../mamka/HARDWARE.md#the-computers-supply));
   a higher input also costs more in switching losses at light load. Light load is no trouble
@@ -119,7 +122,10 @@ Babuška's pantry and decides what goes in and out.
   (~3.7 A at most with one ROCK 5T, ~5.0 A with two computers, see
   [Power variants](#power-variants)); it is the smallest of the family with these figures
   confirmed.
-- It talks over RS485 (or CAN). Mamka reads it on RS485 with JK's RS485 Modbus protocol (see
+- It talks over RS485 (or CAN) only in its variant **JK-B1A8S-10PR**, the one to buy (-10PHR
+  with a heater and -10PHCR with CAN too do as well; JK-B1A8S10P product specification V19.3.1,
+  2.3), on its port P6, pins 3 RS485_A and 4 RS485_B, the ground taken from P2, pin 3.
+  Mamka reads it on RS485 with JK's RS485 Modbus protocol at 115,200 Bd (see
   [Mamka](../mamka/SOFTWARE.md#the-battery)): the cells, the current, the temperatures, the state
   of charge.
 - **Its button and its *Shutdown* are the suit's switch** (see
@@ -155,7 +161,7 @@ No USB-C: the connector is small and fragile. The backpack has one sturdy chargi
 bought charger for 4S LiFePO4 plugs into it from outside, through the BMS; the charger is not part
 of the backpack. Its usual end is 14.6 V, 3.65 V a cell, EVE's end of charge; 5 A is 0.25 C for
 the 20 Ah pack, inside EVE's standard 0.5 C and inside its 0.25 C even at 0–5 °C. Whether the
-charger or the BMS stops at 80% is the question above. **The suit is taken off to charge** (the
+BMS stops at ~80%, its cell over-voltage set low (above). **The suit is taken off to charge** (the
 owner, 5 Nov 2026): a bought charger stands between the mains and the electrodes with its own
 insulation and its filter capacitors, which may pass up to ~0.25 mA of mains current into the
 suit's ground (the touch current a Class II supply is allowed, from secondary sources), through
@@ -189,10 +195,9 @@ limit is one of its settings.
 
 - the pack's 256 Wh cannot fly: airlines take 100 Wh freely and 160 Wh with their consent (IATA's
   rule, from memory, to read); a smaller pack for travel, if ever wanted,
-- the top at 80% (6 Nov 2026): 80% by the BMS's count day to day, and once a month a full charge to
-  3.65 V a cell, which balances the cells and sets the count again, LiFePO4's flat curve leaving the
-  count to drift otherwise; the pack's voltages at 20 and 80%, measured on a sample charged by EVE's
-  standard charge and discharged at 0.2 C while its voltage is logged,
+- the top at ~80%: the cell voltage at which our charger's 5 A has put ~80% in, and the voltage a
+  cell relaxes to after it, measured on a sample charged by EVE's standard charge and discharged at
+  0.2 C while its voltage is logged; they set the over-voltage, its recovery and SOC-100%,
 - the charging connector on the backpack; the charger's own sheet: its end of charge and its
   connector,
 - the ROCK 5T's consumption, measured in both profiles, and the glasses',

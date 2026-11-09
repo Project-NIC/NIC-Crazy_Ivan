@@ -22,6 +22,18 @@ under the ROCK, and what to watch when it is drawn.
   slots, with a gap of 3.5 mm between them, kept or closed to the slots' 23.5 mm when Mrazík is
   drawn; 48.5 mm in all. The L's foot is a strip ~14 mm wide along the cards' far half, on the long
   side away from the ROCK's 40-pin header, for the converters and the connectors.
+- **A frame, not a plate** (the owner, 9 Nov 2026): Terem carries nothing under the cards but its
+  plane, so it is solid only where something is: the front, with the edges, the pairs and the
+  sockets; the strip; and a back plate ~10 mm deep with the ROCK's screws and the cards'
+  standoffs. Rails ~5 mm wide join them along both long sides, and a middle leg ~5 mm wide runs
+  back from the front between the cards. The rest is milled out. The middle leg ends ~15 mm
+  before the ROCK's screws, where the ROCK's two inductors sit between the cards (below), and the
+  back plate is notched round L5002, which ends ~2.7 mm before its screw's centre. The far
+  converter's 3.3 V runs to its socket along the strip's rail and across the front, the power
+  layer whole there. Air reaches the ROCK's underside through the openings.
+- **A stiffener** screwed across the back plate and along the rails, an aluminium bar or a 1.6 mm
+  FR4 one, chosen when Terem is drawn: the frame stays 0.8 mm, the edges' thickness, and the
+  stiffener keeps it flat, so that both edges seat at once (*What to watch*).
 - **The edges** copy a 2280 module: the Key M notch, the finger pads on both faces, hard gold on
   the fingers and a bevelled edge, so that they go into the sockets as a module does. Their
   spacing and the holes are the ROCK's (see [HARDWARE](HARDWARE.md#the-two-slots)); beside and
@@ -53,8 +65,11 @@ under the ROCK, and what to watch when it is drawn.
   ~2 mm, with these exceptions:
   - **two inductors,** L5001 and L5002 of two of the ROCK's own converters (the schematic: RXW
     SHC0630-1R5M and a 1.5 µH), 2.8 mm in the model, under the cards' far ends, from ~15 to ~3
-    mm before the standoffs. Terem has a window over each, ~0.5 mm round its body, so that it
-    never lies on them, whatever their real height;
+    mm before the standoffs. They lie in the frame's opening (above), the back plate notched
+    ~0.5 mm round L5002, so Terem never lies on them, whatever their real height: an inductor
+    would have to stand 3.3 mm, the standoffs' 2.5 and Terem's 0.8, to reach past its far face,
+    where the "0630" series is ~3.0 mm (an estimate by the name, the sheet not read), so nothing
+    waits on a measurement;
   - **past the standoffs,** J2, the connector of the ROCK's clock battery, 3.5 mm, its leads
     ~10 mm beyond one standoff, and the stack's corner hole ~11.6 mm beyond the other, with its
     screw's nut (see [Mamka](../mamka/CONSTRUCTION.md#the-stack)). Terem ends ~0.5 mm before J2's
@@ -112,7 +127,7 @@ rules for the cell (SNAS877 8.4.1), in the order that matters:
   inductor's outer end to the output capacitors, ~20 µF rated, and from them into the power
   layer, a wide pour to the socket's 3.3 V pins, with its own 10 µF and 100 nF at the socket.
 - **FB straight to the output** at the capacitors, the fixed-3.3 V variant needing no divider,
-  that trace led away from SW; RT's 16.5 kΩ close to its pin; 100 nF between BOOT and SW on
+  that trace led away from SW; RT's 18 kΩ close to its pin; 100 nF between BOOT and SW on
   short, wide traces.
 - **Thermal copper:** thermal vias spread under PGND into the plane, the main path of the heat, and
   as much ground copper on the outer layers as the board leaves (SNAS877 8.4.1.1). The part's own
@@ -121,7 +136,7 @@ rules for the cell (SNAS877 8.4.1), in the order that matters:
 - **EN** as a trace from the connector with 100 kΩ to ground at the pin, nothing else.
 
 The battery's copper stays on the strip, along the board's outer long edge, and never under or
-beside the pairs. The 2 MHz of the converters is their own business: each
+beside the pairs. The ~1.9 MHz of the converters is their own business: each
 converter's loop is closed in its own input capacitors, and the plane carries nothing of it to
 the pairs when the loops are small. There is no common-mode choke and no bead on Terem; the
 suit's lines are filtered on Mamka, and the battery cable here is 10 cm inside a shell.
@@ -171,8 +186,8 @@ suit's lines are filtered on Mamka, and the battery cable here is 10 cm inside a
 - **The cards' screws ~7.5 mm past the ROCK's:** not more than ~0.5 mm further, or the standoff of
   the card on the header's side meets J2; the socket is chosen and placed with that in view, its
   drawing against the ROCK's model.
-- **The two inductors** under Terem: the windows drawn from the model and Radxa's 2D drawing,
-  and the inductors measured on a ROCK before the board is ordered.
+- **The two inductors** under Terem: the opening and the notch drawn from the model and Radxa's
+  2D drawing, a little generous; a calliper on the first ROCK only confirms them.
 - **The first board** is tried with one module, the link speed read from the ROCK (`lspci -vv`
   shows the trained width and speed), then with two. If a link trains at Gen 2 or ×1 with four
   layers, the fault is the stack or the pads, not the idea.
@@ -187,7 +202,7 @@ suit's lines are filtered on Mamka, and the battery cable here is 10 cm inside a
 - the pads on a sample: their thickness over the modules and the modules' temperature at both
   modules' full load against Mrazík's wall, when the block is drawn,
 - the trained speed and width of both links on the first board, read from the ROCK,
-- the ROCK's inductors L5001 and L5002 as fitted: in the model a 2280 card in the ROCK's own slot
-  lies 0.3 mm on them,
+- the ROCK's inductors L5001 and L5002 as fitted, for an SSD in the ROCK's own slot (Borovičok):
+  in the model a 2280 card lies 0.3 mm on them; Terem's frame does not wait on it,
 - the Hailo-10H 2280's drawing: its chip's place for the block's face, its underside's parts over
   Terem's screw heads.

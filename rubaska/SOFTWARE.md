@@ -344,7 +344,7 @@ vector table's (RM0481 Rev 5, table 153). **The module:**
 | 1 | TIM2 (45) | in slots 2–4, the slot's start: the frame's sending started |
 | 2 | UART4 (61) | Mamka's frames: the line idle, the frame read |
 | 2 | USART1 (58) | the end of sending: the echo checked |
-| 6 | I3C1 (123, 124), I3C2 (131, 132), event and error | the IMUs' frames and in-band interrupts |
+| 6 | I3C1 (123, 124), I3C2 (131, 132), event and error | the IMUs' frames |
 | 8 | ADC1 (37), FLASH (6) | the temperature and the 3.3 V, the firmware update |
 
 **The glove's Staršaja** the same as a module; her TIM1 at 6 with the I3Cs, REF's samples

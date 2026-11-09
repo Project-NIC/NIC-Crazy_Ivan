@@ -170,3 +170,12 @@ Each entry says what it was and why it went, so that nobody digs it up without k
   Inside Mrazík, the closed block round the stack, its fan would only stir the air shut in with
   it; a boss of the block's top wall through a window in Mamka takes the SoC's heat to the fins
   outside (see [construction](CONSTRUCTION.md#the-stack)).
+- **TI's ISOW1412 for the BMS's link** (to 7 Nov 2026): a full-duplex isolated RS-485 with its own
+  DC/DC, made half-duplex by tying its driver to its receiver on the board, its emissions the best
+  documented (CISPR 32 Class B). At the BMS's 115,200 Bd inside Mrazík's aluminium the emissions
+  do not count; it was out of stock at JLCPCB and four to eight times the price, so Chipanalog's
+  CA-IS3092W, a half-duplex one with its own DC/DC and 5 kVrms, took its place (the owner).
+- **The dividers in E96 values** (to 7 Nov 2026): 36.5 kΩ over 12.1 kΩ for the lines' 4.02 V,
+  60.4 and 48.7 kΩ for the 6 V and the fan, 16.5, 71.5 and 18.2 kΩ for the enables and the
+  overvoltage lockout. Seven of them are Extended at JLCPCB, $3 a type an order; Basic values do
+  the same (the lines at 4.00 V, ≥ 3.66 V at a module's LDO), so they went (the owner).

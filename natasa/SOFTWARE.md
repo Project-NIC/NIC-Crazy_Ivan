@@ -13,8 +13,9 @@ Bluetooth headphones, the buttons and the motors, Míša beside her.
 
 Nataša is a unit like any other, 0xA1, line 8's first: the same frames of 34 B and 8 B, the same
 kinds and the same answers (see [Porjadok](../porjadok/SOFTWARE.md)). Her own chips are 0x02, the
-sound, and 0x03, the motors. She is optional: any Bluetooth headphones or hands-free take her
-place (see [Bluetooth headphones](#bluetooth-headphones)), and line 8 runs without her.
+sound, and 0x03, the motors. The headphones are Bluetooth ones as a rule (see
+[Bluetooth headphones](#bluetooth-headphones)); the stream down line 8 runs only to a Nataša with
+the jack fitted. She is optional, and line 8 runs without her.
 
 ## Sound across the suit
 
@@ -23,9 +24,8 @@ Instead of overpriced I2S extenders, the sound travels like this:
 1. Baťa sends his I2S into the SAI of the STM32H562 on Mamka. The SAI is the I2S
    master and runs from the suit's clock.
 2. That processor sends the sound down line 8, in frames.
-3. The STM32H523 in Nataša turns it back into I2S. The H523 has no SAI, so it uses an SPI in
-   I2S mode, full duplex: the sound goes out to the DAC for the headphones, and the two
-   microphones come in on the same bit clock.
+3. The STM32H562 in Nataša turns it back into I2S, in an SPI in I2S mode, full duplex: the sound
+   goes out to the DAC for the headphones, and the two microphones come in on the same bit clock.
 4. The microphones' sound goes back the same way: up line 8 and through the SAI into
    the computer.
 
@@ -126,10 +126,11 @@ within ~17 ms.
 
 ## Bluetooth headphones
 
-Whoever wants wireless headphones, bone conduction ones for instance, pairs them with
-Baťa: the ROCK 5T has Bluetooth 5.2. PipeWire
-sends the sound to them instead of down the line, and no stream runs down line 8; Nataša's
-microphones keep listening.
+The headphones are Bluetooth ones, bone conduction ones for instance, paired with Baťa: the ROCK
+5T has Bluetooth 5.2. PipeWire sends the sound to them, and no stream runs down line 8; Nataša's
+microphones keep listening, two against the headphones' one. The jack, the DAC and the amplifier
+are fitted only on request; Baťa's settings say whether this Nataša has them, and only then does
+the sound chip's register 0x01 start the stream down.
 
 Bluetooth adds delay: SBC, the codec that every A2DP device has, commonly takes 150–220 ms.
 When the music plays from the computer, Nikita delays its pulses by as much, so the beat in

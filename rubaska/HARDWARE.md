@@ -34,8 +34,7 @@ electrode (see [Right-leg drive](#right-leg-drive)).
 | LSM6DSV16X, 1–4 | LGA-14L, 2.5 × 3 × 0.83 mm, on its own small board | IMU: motion and orientation of the piece, see [The IMU](#the-imu) |
 | LP2985-5.0 | SOT-23-5 | 6 → 5 V for the ADS1298's analog side, see [power](#power) |
 | TPS7A2033 | X2SON 1 × 1 mm, or SOT-23-5 | 4 → 3.3 V for the rest |
-| THVD1452, 2 | VSSOP-10, or SOIC-14 | the data pairs of the line |
-| THVD1450 | VSON-8 or VSSOP-8, or SOIC-8 | the clock pair, receive only |
+| THVD1450, 3 | VSON-8 or VSSOP-8, or SOIC-8 | the line: the pair from the master and the clock, receive only; the return pair, driving it and reading it back |
 | TLV9001S | SOT-23-6 | the strip's ground layer's driver, see [The strip's ground layer](#the-strips-ground-layer) |
 
 The smallest packages of a part come first. Leadless packages (QFN, X2SON, VSON) need machine
@@ -80,7 +79,7 @@ right the line's, the top the IMUs'.
 | 2–4 | PC13–PC15 | free | |
 | 5 | PH0-OSC_IN | the suit clock, 9.8304 MHz, into the HSE in bypass | |
 | 6 | PH1-OSC_OUT | free | |
-| 7 | NRST | to the SWD connector | |
+| 7 | NRST | to the SWD pads; 100 nF to ground | |
 | 8, 9 | VSSA, VDDA | | |
 | 10 | PA0 | ADS1298 RESET, both chips | GPIO |
 | 11 | PA1 | free | |
@@ -94,7 +93,7 @@ right the line's, the top the IMUs'.
 | 19 | PB1 | ADS1298 START: TIM3_CH4, both chips | AF2 |
 | 20 | PB2 | the first chip's DRDY, on EXTI2 | GPIO |
 | 21 | PB10 | the second chip's DRDY, on EXTI10, watched only | GPIO |
-| 22 | VCAP | 2.2 µF | |
+| 22 | VCAP | 2.2 µF; joined to pin 46 | |
 | 23, 24 | VSS, VDD | | |
 | 25 | PB12 | the status LED | GPIO |
 | 26–28 | PB13–PB15 | free | |
@@ -114,7 +113,7 @@ right the line's, the top the IMUs'.
 | 43 | PB7 | I3C1_SDA | AF3 |
 | 44 | BOOT0 | to ground through 10 kΩ | |
 | 45 | PB8 | free | |
-| 46 | VCAP | 2.2 µF | |
+| 46 | VCAP | 2.2 µF; joined to pin 22 | |
 | 47, 48 | VSS, VDD | | |
 | pad | the exposed pad | to ground (section 6.5, note 3) | |
 
@@ -136,7 +135,8 @@ right the line's, the top the IMUs'.
 - The HSE in bypass takes a digital clock of 4 to 50 MHz (table 38).
 - PC13 to PC15 hang on the backup domain's power switch: 2 MHz and 30 pF at most, and no
   current to source, so not for the LED (table 13, note 2).
-- Each VCAP takes 2.2 µF with an ESR under 100 mΩ (table 21).
+- Each VCAP takes 2.2 µF with an ESR under 100 mΩ (table 21), and the two are joined; NRST takes
+  100 nF to ground (ST's reference design for the H523, AN5711 Rev 5, figure 16 and its note).
 - Ten I/Os stay free: PC13–PC15, PH1, PA1, PA3, PB8 and PB13–PB15. PA15 is JTDI after reset, an
   alternate function with its pull-up on (RM0481 Rev 5, GPIOx_MODER reset values), which holds the
   second chip deselected until the firmware takes the pin, as a select should be, rising with the
@@ -263,9 +263,9 @@ whole with their connectors mated and stay on the harness (see
   series it is **soldered to the board** through plated holes at 1.27 mm in two staggered rows,
   ~23 × 3.5 mm for 36 ways against the FH12-36S's 22.1 × 5.6 mm, with a plain iron, and potted
   with the unit; a repair cuts the gel and unsolders.
-- **The IMU buses** go out the same way, each on a polyimide strip of five leads, SCL, SDA,
-  +3.3 V, ground and REF: in a lever connector on the first arm, soldered in a series (see
-  [the IMU board](#the-imu-board)). The part is chosen when the board is drawn.
+- **The IMU buses** go out the same way, each on a polyimide strip of six leads, SCL, SDA,
+  +3.3 V, ground, REF and a second ground: in a Hirose FH12-6S, a lever connector, on the first
+  arm (JLCPCB C202118), soldered in a series (see [the IMU board](#the-imu-board)).
 
 ### The noise
 
@@ -340,12 +340,12 @@ noise on paper, but we found no external clock input on it.
 
 [Mamka](../mamka/README.md) describes the clocks for both the ADS1298 and the IMUs.
 
-REF comes in on pin 9, INT2, through the IMU board's 1 kΩ (see [the IMU board](#the-imu-board)). The
-chip takes it once it is set in the ODR-triggered mode, in the order AN5763 gives: both sensors
+REF comes in on pin 9, INT2, through the IMU board's 10 kΩ (see [the IMU board](#the-imu-board)).
+The chip takes it once it is set in the ODR-triggered mode, in the order AN5763 gives: both sensors
 powered down, the samples a period, the mode, the edge, then REF started, then the rate (3.3; see
-[software](SOFTWARE.md#the-imus-settings)). INT1 stays open: on a module a sample ready is told on
-the bus, by an in-band interrupt (DS13510, INT1_CTRL, 9.11); the glove and the sock read theirs on
-Staršaja's schedule from REF, with none (see [the glove](#the-glove)).
+[software](SOFTWARE.md#the-imus-settings)). INT1 stays open and no unit takes an in-band interrupt
+(DS13510, INT1_CTRL, 9.11): every IMU is read on its unit's schedule from REF, the module's as the
+glove's and the sock's (see [the glove](#the-glove)).
 
 ### The IMU board
 
@@ -359,7 +359,7 @@ here, the glove's too. It carries only what ST asks and two parts for the addres
 | at the board's input | 1 µF 25 V X5R 0402, Samsung CL05A105KA5NQNC | C52923, Basic |
 | at VDD and at VDDIO, one each | 100 nF 50 V X7R 0402, Samsung CL05B104KB54PNC | C307331, Basic |
 | SDO/SA0 | 0 Ω 0402, to ground or to VDDIO | C17168, Basic |
-| INT2 | 1 kΩ 0402, in series with REF | C11702, Basic |
+| INT2 | 10 kΩ 0402, in series with REF | C25744, Basic |
 
 - **The pins** (DS13510 Rev 4, table 2): 1 SDO/SA0 by the 0 Ω to ground or VDDIO, the address
   0x6A or 0x6B; 2 SDx and 3 SCx to ground, the analog hub and Qvar unused ("connect to Vdd_IO or
@@ -377,11 +377,13 @@ here, the glove's too. It carries only what ST asks and two parts for the addres
   1 µF at the input, 0.79 µF at 3.3 V by Samsung's typical curve. The IMUs' 3.3 V comes from the
   module's LDO behind its π filter, and the islands on the fingers want the room.
 - **25 V or more** on every capacitor, by choice, though the board sees 3.3 V.
-- **The connector:** five ways, SCL, SDA, +3.3 V, ground and REF. On the first arm, while the
-  layout changes, the strip's stiffened tail goes into a lever connector for flexible circuits;
-  in a series the strip is soldered to the board through plated holes and the board potted whole
-  with the joint. On the fingers the boards are islands soldered to the finger strip (see
-  [construction](CONSTRUCTION.md#the-glove)). The part is chosen when the board is drawn.
+- **The connector:** the module's six ways, SCL, SDA, +3.3 V, ground, REF and a second ground, **one
+  place a board** (the owner, 6 Nov 2026): a bus reaches its two IMUs by the strip's shape, a Y or
+  two tails from the module's connector, drawn for its piece, so every IMU board is the same and
+  every tail of a strip alike. On the first arm, while the layout changes, the strip's stiffened
+  tail goes into the module's lever connector, the FH12-6S; in a series the strip is soldered to the
+  board through plated holes and the board potted whole with the joint. On the fingers the boards
+  are islands soldered to the finger strip (see [construction](CONSTRUCTION.md#the-glove)).
 - **The fallback,** should the finger strip fail its bending test: Kyocera AVX **9175-700**
   IDCs, a 3-way and a 2-way, 2.5 mm pitch, 26–28 AWG, insulation 0.70–1.00 mm for 28 AWG, 1 A a
   contact, pottable (Kyocera AVX, *9175-700*, *9176-800*), with PTFE wire of 28 AWG, 19 × 0.08
@@ -589,16 +591,16 @@ under [software](SOFTWARE.md#the-glove); where its electrodes and its IMUs sit o
   hand's strip, 20 ways: the sixteen electrodes, the bias, the ground and the +5 V, one spare, in a
   lever connector on the first glove and soldered in a series (see [Sensing
   module](#sensing-module)). On the other side Staršaja, the line's drivers and their Picoflex
-  header, the Bratiški, the IMUs' three switches and six gates with their pull-ups, the two LDOs and
-  the six zones' joints. The board sits over the bases of the second and third metacarpals, which
-  hardly move against the wrist (see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-gloves)); its size is
-  seen when it is drawn.
+  header, the Bratiški, the IMUs' three switches and SCL's gates with their pull-ups, the two LDOs
+  and the six zones' joints. The board sits over the bases of the second and third metacarpals,
+  which hardly move against the wrist (see [Bogatyr](../bogatyr/CONSTRUCTION.md#the-gloves)); its
+  size is seen when it is drawn.
 - **Its Staršaja,** the elder, is the module's own part, the **STM32H523CCU6 in UFQFPN48,** so
   that one processor serves the module and the glove, and she reads every IMU of the hand herself.
   Her 35 I/Os (DS14540 Rev 3, table 2) go round one way: the module's pin map, its line, its
   ADS1298's CLK and START and its DMA as they are, and six of its free pins setting the switches;
-  29 I/Os in all, below. Beside her the line's drivers, a module's three, two
-  THVD1452 and a THVD1450 (see [Porjadok](../porjadok/HARDWARE.md#drivers-on-a-unit)), and her LDOs,
+  29 I/Os in all, below. Beside her the line's drivers, a module's three
+  THVD1450 (see [Porjadok](../porjadok/HARDWARE.md#drivers-on-a-unit)), and her LDOs,
   a TPS7A2033 and an LP2985-5.0 as on a module (see [power](#power)).
 - **Her two I3Cs read every IMU of the hand,** I3C1 on PB6 and PB7, I3C2 on PB5 and PB4, as a
   module's, two IMUs on a path, 0x6A and 0x6B by SDO/SA0: each I3C's SDA is switched among **six
@@ -612,16 +614,21 @@ under [software](SOFTWARE.md#the-glove); where its electrodes and its IMUs sit o
   I3C, its two branches and an SCL of its own: a finger a zone, the thumb with the board's own, and
   the sixth the carpal bones. Staršaja makes the IMUs' REF from the suit clock for the whole board,
   on PA8 (TIM1_CH1), so they sample in step with the suit.
-- **SCL** goes to each zone through a plain gate of its own, always on, six SN74LVC1G34 in SOT-5
-  (DRL, 1.6 × 1.6 mm; JLCPCB C2872902; ±24 mA at 3 V, tpd 4.7 ns at most into 50 pF, SCES519O, 5.3
-  and 5.8), each beside its zone's connector, three on each I3C's SCL: a zone's SCL, four IMUs' pins
-  and a finger's strip, is ~80 pF, its edge ~11 ns at 24 mA (an estimate). A branch not selected
-  sees SCL with its SDA held high by its own pull-up, so no START. The gates' inputs float from
-  reset until Staršaja drives them, so each I3C's SCL has a pull-up before them; each output a
-  place for 22–33 Ω; the gate's delay counted in SDA_HD. Each branch's SDA has 4.7 kΩ at
-  the IMUs' side, so that it idles high when switched away, and each common SDA 2.2 kΩ, 1.5 kΩ
-  together: the open-drain rise ~127 ns against SCLL_OD's 344 ns (AN5879 Rev 7, 9.5.3), the IMU
-  sinking 2.2 mA of the 4 mA it holds at 0.2 V (DS13510 Rev 4, table 4). Fourteen pull-ups.
+- **SCL** goes to each zone through a plain gate of its own, always on, a non-inverting LVC buffer,
+  three on each I3C's SCL: six SN74LVC1G34 (JLCPCB C2872902; ±24 mA at 3 V, tpd 4.7 ns at most into
+  50 pF, SCES519O, 5.3 and 5.8), each beside its zone's connector, or two SN74LVC3G34, triples, one
+  an I3C (C130024), chosen when the board is drawn, in the smallest package JLCPCB places, a BGA too
+  (the owner, 7 Nov 2026); one kind either way, so one loading fee, and no Basic or Preferred part
+  fits. A zone's SCL, four IMUs' pins and a finger's strip, is ~80 pF, its edge ~11 ns at 24 mA (an
+  estimate). A branch not selected sees SCL with its SDA held high by its own pull-up, so no START.
+  The gates' inputs float from reset until Staršaja drives them, so each I3C's SCL has 100 kΩ before
+  them, the gates' leakage at most ±2 µA (SCES519O), 0.2 V across it; each output a place for 22–33
+  Ω; the gate's delay counted in SDA_HD. Each branch's SDA has 2.2 kΩ at the IMUs' side, so that it
+  idles high when switched away and pulls its branch up when selected, each common SDA an empty
+  place: the open-drain rise ~190 ns against SCLL_OD's 344 ns (AN5879 Rev 7, 9.5.3; scaled from 1.5
+  kΩ's ~127 ns, an estimate), the IMU sinking 1.5 mA of the 4 mA it holds at 0.2 V (DS13510 Rev 4,
+  table 4); the values tuned with a scope on the first glove. Fourteen pull-ups, twelve on the
+  branches and two on SCL.
 - **The SDA path** while a branch is selected, her pin, ~3 cm of board, the three chips' lanes, a
   finger's strip to its tip and two IMUs: ~70 pF with 10 pF an IMU's pin (not given by ST; I²C's
   ceiling a pin, NXP UM10204 Rev 7.0, table 10), ~53 pF with the strip's ground hatched under
@@ -635,7 +642,7 @@ under [software](SOFTWARE.md#the-glove); where its electrodes and its IMUs sit o
   nothing (see [software](SOFTWARE.md#the-glove)). The IMUs take ~16 % of her 49.152 MHz (250 cycles
   a read and 100 a sample's sum, estimates).
 - **The Bratiški,** the little brothers, are this part of the board, set apart from the rest: the
-  three switches, the six gates and the fourteen pull-ups, beside the six zones' connectors. They
+  three switches, the gates and the fourteen pull-ups, beside the six zones' connectors. They
   take ~70 mm² of the board with their courtyards, routing not counted, and ~2.6 mA on 3.3 V, ~2.5
   of it SCL's switching (estimates).
 - **24 IMUs in six zones:** each finger and the thumb a zone of two branches, A and B: a finger's A
@@ -662,8 +669,8 @@ under [software](SOFTWARE.md#the-glove); where its electrodes and its IMUs sit o
   six-way lever connector on the first glove and is soldered in a series, its IMU boards soldered
   along it as islands (see [the IMU board](#the-imu-board) and
   [construction](CONSTRUCTION.md#the-glove)).
-- **Across the wrist** nothing crosses but the arm's line itself, the flat cable sewn in
-  meanders over the wrist's back to the board's Picoflex header; the glove comes off it and its
+- **Across the wrist** nothing crosses but the arm's line itself, the flat cable sewn in a loose
+  loop over the wrist's ulnar side to the board's Picoflex header; the glove comes off it and its
   strips only for a repair, as a module does (see
   [Porjadok](../porjadok/HARDWARE.md#cable-and-connectors-in-the-suit)).
 
@@ -692,9 +699,9 @@ side:
 |---|---|---|
 | Staršaja | counted as a module's processor, 53.3 mA typical, 84 mA at most | DS14540, table 26 (see [power](#power)) |
 | the ADS1298, digital side | 0.5 mA | SBAS459K, Power Supply |
-| the IMUs' switches and gates: three TS3USB3031, six SN74LVC1G34, SCL's switching | ~2.6 mA, an estimate | SCDS348D; SCES519O; our calculation |
+| the IMUs' switches and gates: three TS3USB3031, SCL's gates and switching | ~2.6 mA, an estimate | SCDS348D; SCES519O; our calculation |
 | 24 LSM6DSV16X | 24 × 0.65 mA, both sensors on in the high-performance mode, 15.6 mA | DS13510 Rev 4, table 4 |
-| the line's drivers, two THVD1452 and a THVD1450, their receivers on | ~3 × 2.4–3 mA, ~8 mA | SLLSEY3E, ICC |
+| the line's drivers, three THVD1450, their receivers on | ~3 × 2.4–3 mA, ~8 mA | SLLSEY3E, ICC |
 | status LED | ~2 mA | estimate |
 | the driver while it sends | ~37 mA, ~8 % of the time | estimate |
 | **the glove, 4 V** | **~0.085 A on average, ~0.15 A at worst** | |
@@ -723,30 +730,32 @@ A sensing module takes the suit's two rails, 4 V and 6 V (see
 | TI LP2985-5.0 | 6 V | 5 V | the ADS1298's analog side (AVDD, AVDD1) and the strip's driver |
 | TI TPS7A2033 | 4 V | 3.3 V | the processor, the RS-485 drivers, the ADS1298's digital side (DVDD), the IMUs |
 
-- **LP2985-5.0** (SOT-23-5, JLCPCB C5380652): input up to 16 V, 150 mA, 30 µVrms of noise with
-  a 10 nF bypass, 70 dB of ripple rejection at 1 kHz and 40 dB at 1 MHz, stable with ceramics of
-  up to 1 Ω of ESR (SLVS522S); 10 µF in and out and the 10 nF bypass. Its dropout at 10 mA is
-  98 mV typical and 148 mV at most over temperature (SLVS522S, Electrical Characteristics, the
-  new chip), so going from 6 V to 5 V leaves room. The ADS1298's 4 V reference wants AVDD of
-  4.4 V at least (SBAS459K). TI's own front-end boards feed these chips from ordinary low-noise
-  LDOs (ADS1298ECG-FE, SBAU171D); the π filters behind it take the converters' megahertz, where
-  an LDO is weak.
-- **TPS7A2033:** fixed 3.3 V, 300 mA, input 1.6–6 V, dropout at most 140 mV at 300 mA, and its
-  ±1.5% from an input of 3.6 V up (SBVS338H, 5.5), low noise without a bypass capacitor. 3.3 V on
-  DVDD also lets the chips be read at 20 MHz, an SCLK period of 50 ns at a DVDD of 2.7–3.6 V
-  (SBAS459K, 7.6). From 4 V the cable, the filters and the connectors leave it at least ~3.67 V
-  at the worst corner (see [Porjadok](../porjadok/HARDWARE.md#end-to-end)).
+- **LP2985-5.0,** TI's LP2985-N (SOT-23-5, LP2985IM5X-5.0/NOPB, JLCPCB C5380652): input up to 16 V,
+  150 mA, 30 µVrms of noise with a 10 nF bypass, 70 dB of ripple rejection at 1 kHz and 40 dB at 1
+  MHz (SNVS018AB); 1 µF at its input beside the input's 10 µF, 10 µF at its output and the 10 nF
+  bypass. It ships as a legacy chip or a new one, the reel's label telling: the legacy chip's ON/OFF
+  at most VIN, so tied to it, its output at least 2.2 µF, ceramics within its ESR; the new chip's
+  ESR up to 1 Ω (5.3, 7.1.1). Its dropout at 10 mA is 98 mV typical and 148 mV at most over
+  temperature (Electrical Characteristics, the new chip), so going from 6 V to 5 V leaves room. The
+  ADS1298's 4 V reference wants AVDD of 4.4 V at least (SBAS459K). TI's own front-end boards feed
+  these chips from ordinary low-noise LDOs (ADS1298ECG-FE, SBAU171D); the π filters behind it take
+  the converters' megahertz, where an LDO is weak.
+- **TPS7A2033:** fixed 3.3 V, 300 mA, input 1.6–6 V, dropout at most 145 mV at 300 mA in the SOT-23,
+  and its ±1.5% from an input of 3.6 V up (SBVS338H, 5.5), low noise without a bypass capacitor. 3.3
+  V on DVDD also lets the chips be read at 20 MHz, an SCLK period of 50 ns at a DVDD of 2.7–3.6 V
+  (SBAS459K, 7.6). From 4 V the cable, the filters and the connectors leave it at least ~3.66 V at
+  the worst corner (see [Porjadok](../porjadok/HARDWARE.md#end-to-end)).
 - **At the inputs,** where the cable arrives, an RC each, no polymer: a **22 µF 25 V X5R 1206**
   (Samsung CL31A226KAHNNNE, JLCPCB C12891, Basic) behind **0.5 Ω**, two 1 Ω 0603 side by side,
   beside the 10 µF; on the 6 V a 10 µF in its place, the suit's one 6 V converter otherwise past the
-  ~300 µF TI's guidance allows (the peak below to recompute). It damps the cable: a module plugged
-  into a live line peaks at ≤ 4.52 V on 4 V, under the TPS7A2033's 6.5 V (SBVS338H, 5.1), and at ≤
-  6.94 V on 6 V, under the LP2985's 16 V (SLVS522S), computed for a line of 0.2–1.0 µH and 0.08–0.35
-  Ω (the 3M 3811 ~0.44 µH/m, an estimate). An input holds ~26 µF, which each line's converter
-  charges at start (see [Mamka](../mamka/HARDWARE.md#converters)); the driver's ~37 mA for ~30 µs, a
-  frame of 58 B, takes ~42 mV from it. The 6 V branch draws a steady ~7 mA, so its RC stores nothing
-  worth speaking of: it damps the cable and the π filter behind it. The glove and the sock take the
-  same RC at their inputs.
+  ~300 µF TI's guidance allows. It damps the cable: a module plugged into a live line peaks at ≤
+  4.52 V on 4 V, under the TPS7A2033's 6.5 V (SBVS338H, 5.1), and at ≤ 7.18 V on 6 V, under the
+  LP2985's 16 V (SNVS018AB), computed for a line of 0.2–1.0 µH and 0.08–0.35 Ω (the 3M 3811 ~0.44
+  µH/m, an estimate). An input holds ~26 µF, which each line's converter charges at start (see
+  [Mamka](../mamka/HARDWARE.md#converters)); the driver's ~37 mA for ~30 µs, a frame of 58 B, takes
+  ~42 mV from it. The 6 V branch draws a steady ~7 mA, so its RC stores nothing worth speaking of:
+  it damps the cable and the π filter behind it. The glove and the sock take the same RC at their
+  inputs.
 
 **Budget of one module**
 
@@ -777,7 +786,7 @@ The LDOs only do the coarse separation; the filters do the rest:
   | part | what it is |
   |---|---|
   | choke **SWPA252012S2R2MT** | 2.2 µH, shielded, 2.5 × 2.0 × 1.2 mm, DC resistance 0.17 Ω, self-resonance 69 MHz, saturation 1.85 A; JLCPCB C23894 |
-  | ferrite bead **GZ2012D301TF** | Sunlord, 0805, 300 Ω ±25% at 100 MHz, DC resistance at most 0.20 Ω, 500 mA |
+  | ferrite bead **GZ2012D601TF** | Sunlord, 0805, 600 Ω ± 25 % at 100 MHz, DC resistance at most 0.30 Ω, 500 mA (Sunlord's GZ series sheet, the GZ2012 table); JLCPCB C1017, Basic |
 
 - Every choke sits in a π filter of 10 µF 50 V X7R 1206 + 100 nF 50 V X7R 0603 on both sides,
   before it on the rail and behind it at the pins. 2.2 µH into 10 µF puts the corner at
@@ -789,11 +798,11 @@ The LDOs only do the coarse separation; the filters do the rest:
   noise. Above its self-resonance a choke stops filtering, while a bead is resistive from
   about 100 MHz up and burns the noise off instead of storing it; at the converters' 1 MHz a
   bead is a few ohms and filters nothing, which is why it only ever stands behind a choke.
-  Against a small ceramic capacitor (~0.3 Ω at 100 MHz, an estimate) 300 Ω gives roughly
-  60 dB. The bead also keeps that noise off the 3.3 V that feeds the ADS1298 and the RS-485.
-  - Drop: choke and bead together are at most 0.37 Ω. The STM32H523, counted as in VOS0 for margin,
+  Against a small ceramic capacitor (~0.3 Ω at 100 MHz, an estimate) 600 Ω gives roughly
+  66 dB. The bead also keeps that noise off the 3.3 V that feeds the ADS1298 and the RS-485.
+  - Drop: choke and bead together are at most 0.47 Ω. The STM32H523, counted as in VOS0 for margin,
     draws 24.5–53.3 mA typical at 200 MHz depending on the peripherals, up to 84 mA at TJ 105 °C,
-    the most VOS0 allows (DS14540, tables 2 and 26). That makes 20 mV at 53 mA and 31 mV at 84 mA,
+    the most VOS0 allows (DS14540, tables 2 and 26). That makes 25 mV at 53 mA and 40 mV at 84 mA,
     under the 0.1 V limit.
   - The bead's impedance falls with DC current, so it needs current to spare.
   - Choke and bead can each resonate with the decoupling capacitors; check by simulation.

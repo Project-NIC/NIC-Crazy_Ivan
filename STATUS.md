@@ -118,8 +118,8 @@ part has been bought. What is here is of four kinds, and each page says which:
 - **the glove's IMUs by Staršaja alone:** 24 in six zones of four, a finger a zone and the sixth
   over the carpal bones; the Bratiški, the switches' part of the board, three TS3USB3031 side by
   side on her two SDAs, each keeping a channel unconnected as its park, so a change is a change of
-  channel, and six SN74LVC1G34 giving each zone its own SCL; two IMUs on every SDA path, the reads
-  on her schedule from REF; the glove a unit on its arm's line and part of every suit with arms, its
+  channel, and plain buffers giving each zone its own SCL; two IMUs on every SDA path, the reads on
+  her schedule from REF; the glove a unit on its arm's line and part of every suit with arms, its
   Staršaja the module's own part in UFQFPN48 ([Rubaška](rubaska/HARDWARE.md#the-glove)),
 - line 8 by its slots always, each unit on a timer of its own, Mamka's heartbeat the correction:
   the sound in packets of 198 B with a buffer at each end, Nataša's frames, the motors as a chip,
