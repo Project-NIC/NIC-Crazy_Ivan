@@ -43,9 +43,9 @@ over 24 bits).
   as a check Baťa asks for, at putting-on and between two recordings, never while recording (see
   [Rubaška](../rubaska/SOFTWARE.md#an-electrode-coming-off)); the samples of a check's 32
   cycles are not recorded.
-- **The radar's pattern** on the head's electrodes, aligned to each radar frame by Míša's own
-  start of it on SYNC_IN, or by a GPIO pulse of the radar while the demo runs free, not by a
-  sphere's arrival, 10 frames a second, is averaged over
+- **The radar's pattern** on the head's electrodes, aligned to each radar frame by the cycle's
+  number Míša stamps on it from the module's end-of-frame pin, not by a sphere's arrival, 10
+  frames a second, is averaged over
   hundreds of frames and subtracted (see [Míša](../misa/HARDWARE.md#radar-and-the-emg)).
 - **The envelope:** for every channel the log of the RMS over each step of 16 samples (1/120 s),
   so the EMG arrives at the model at the IMUs' rate. Log, because muscle activity spans two

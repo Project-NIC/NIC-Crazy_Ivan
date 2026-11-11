@@ -23,9 +23,12 @@ Each entry says what it was and why it went, so that nobody digs it up without k
 | optical time of flight | glass |
 | IWR6843AOP, and Mistral's module with it | 1.2–1.75 W on average and a heat plate; 15 × 15 mm; the module wants 5 V |
 | Jorjin MT5C01-02R1 | 6 m: its transmitter is turned down 10 dB for certification |
+| Jorjin MT5C01-03 (to 10 Nov 2026) | its pinout only under an NDA, asked without one and not answered; a part whose pins may not be published cannot go into an open design |
+| TI's Motion and Presence demo on the radar's own processor, over UART, its frames started by SYNC_IN (to 10 Nov 2026) | TI's module runs TI's firmware from its flash, set over SPI, and brings no SYNC_IN; the cycle's number on each sphere aligns the EMG's pattern instead |
 | raw radar data: Acconeer A121, Infineon BGT60TR13C | ~10 MB/s and the FFTs on the host |
-| a bare IWRL6432AOP on our own board | the RF layout, crystal and flash, which a module brings; kept as the fallback should no module with a public pinout be found |
-| fields of 5° | the radar resolves ~30°; smaller fields make ghosts |
+| a buck for the radar's 3.3 V, the TPS628502 (to 10 Nov 2026) | from 4 V a linear regulator keeps ~82 % at any load and a buck ~90 % at best, a few mW on the radar's 60–110 mW; the buck's PFM falls to tens of kHz at light load, and nothing that switches is wanted beside the headband's EMG |
+| a bare IWRL6432AOP on our own board | a BGA of 101 balls at 0.5 mm (SWRS323B), the crystal, flash and three rails, which TI's module brings; kept as the fallback should the module's firmware not do, TI's evaluation board's design files being public |
+| fields of 5° | the radar resolves ~19° across; smaller fields make ghosts |
 | a compass against the gyro's drift | steel and cars upset it |
 | a lidar with a 3D map (Livox Mid-360, Unitree L2) | SLAM wants a Raspberry Pi or a Jetson and a big battery |
 | SAR, a 3D model of a hall | the antenna's size sets the resolution; the radar's position to tenths of a millimetre; a sheet-metal hall mirrors |

@@ -274,6 +274,6 @@ both sides (see [Rubaška](../rubaska/HARDWARE.md#power)).
 ## Open questions
 
 - Míša's bursts and the motors against line 8's converter, measured: the budget above is
-  from the sheets, and the radar's 2.1 W is Jorjin's peak figure,
+  from the sheets, and the radar's peak is TI's ceiling of 1 A on its 3.3 V,
 - the clocks (see [software](SOFTWARE.md#clocks)) and the DMA table
   (see [software](SOFTWARE.md#dma)) checked on the first board,

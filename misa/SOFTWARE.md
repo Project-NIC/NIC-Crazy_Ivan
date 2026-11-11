@@ -24,8 +24,9 @@ and 3 rows of 60°.
 
 - **Fixed to the head:** column 0 is where the nose points. The rows are levelled by gravity
   from the accelerometer, which does not drift.
-- **Fields of 30° × 60° match what the radar resolves.** Smaller fields would only make ghosts:
-  the radar merges two posts closer than ~30° into one point in the gap between them.
+- **Fields of 30° × 60° are no finer than the radar resolves,** ~19° across and ~60° up and
+  down (see [hardware](HARDWARE.md#the-radar)). Smaller fields would only make ghosts: the radar
+  merges two posts closer than that into one point in the gap between them.
 - **Two conditions in each field:** the nearest thing, and the one coming closest fastest.
 - **The radar** fills the ~10 fields in its view sharply, from the angles of its points.
 - **The ultrasound** knows only a distance, so it writes it into every field its beam touches,
@@ -119,7 +120,8 @@ He adds:
 | what | setting |
 |---|---|
 | SPI1, the ultrasonic sensors | PLL1Q ÷ 5: 78.6432 MHz, SPI1SEL = 000, the SPI's own ÷ 8: 9.83 MHz, under the sensors' 13 MHz (DS-000478) |
-| USART1 to the radar | the APB clock, 16×, BRR = 0x009D: 196.608 MHz ÷ 157 = 1.2523 MBd, 0.18% from 1.25 MBd |
+| SPI2, the radar | PLL1Q ÷ 5: 78.6432 MHz, SPI2SEL = 000, the SPI's own ÷ 16: 4.92 MHz, mode 0, 16-bit words, under the module's 15 MHz (SWRS350B, 5.11.2.3) |
+| USART1, the radar's patches | the APB clock, 16×, BRR = 1,707: 196.608 MHz ÷ 1,707 = 115,178 Bd, 0.02% from 115,200 |
 | USART2 and UART5, line 8 | the APB clock, OVER8 = 1, BRR = 0x0012: 19,660,800 Bd |
 | I3C1, the IMU | the APB clock: 196.608 MHz |
 | TIM1, the IMU's REF | PSC = 255; ARR = 31,999, CH1 at CCR1 = 16,000: 24 Hz; or ARR = 51,199, CCR1 = 25,600: 15 Hz |
@@ -134,11 +136,11 @@ control words fit the I3C's C-FIFO, so the core writes them and the RX alone is 
 |---|---|---|---|---|
 | GPDMA1 0 | 29, uart5_rx | UART5 RX: Mamka's frames | 3 | circular |
 | GPDMA1 1 | 23, usart2_rx | USART2 RX: the return pair, the echo of his own sending | 3 | circular |
-| GPDMA1 2 | 21, usart1_rx | USART1 RX: the radar's TLV packet, a frame | 1 | circular |
+| GPDMA1 2 | 8, spi2_rx | SPI2 RX: the radar's answers, a frame of points among them | 1 | one block a message |
 | GPDMA1 3 | 6, spi1_rx | SPI1 RX: the ultrasonic sensors' answers | 0 | one block a transfer |
 | GPDMA1 4 | 120, i3c1_rx_dma | I3C1 RX: the IMU's 12 B | 1 | one block a sample |
 | GPDMA2 0 | 24, usart2_tx | USART2 TX: his frames in his slot, the sphere's five pieces among them | 3 | one block a slot |
-| GPDMA2 1 | 22, usart1_tx | USART1 TX: the radar's settings at start | 0 | one block a command |
+| GPDMA2 1 | 9, spi2_tx | SPI2 TX: the radar's commands and its read requests | 1 | one block a message |
 | GPDMA2 2 | 7, spi1_tx | SPI1 TX: the sensors' commands and their firmware at power-on | 0 | one block a transfer |
 
 ## Interrupts
@@ -150,16 +152,16 @@ vector table's (RM0481 Rev 5, table 153):
 |---|---|---|
 | 0 | TIM2 (45) | line 8's cycle: his slot's sending started |
 | 2 | UART5 (62), USART2 (59) | Mamka's frames in, the echo checked |
-| 6 | EXTI15 (26), USART1 (58) | the radar's frame ready, its packet in |
+| 6 | EXTI13 (24), SPI2 (56) | the radar's end of a frame, its message in |
 | 6 | I3C1 (123, 124) | the IMU |
 | 6 | SPI1 (55) | the ultrasonic sensors |
 | 8 | ADC1 (37), FLASH (6) | the temperature and the 3.3 V, the firmware update |
 
 ## Open questions
 
-- 16 frames a second instead of 10, once the trial shows the demo can (see
+- 16 frames a second instead of 10, if the module's firmware takes it (see
   [hardware](HARDWARE.md#open-questions)),
 - the wearer's own speed from the radar, the field margins and the 2-of-3 confidence, on the
   bench; the radar's view of the wearer's own arms and chest in the down row,
 - the floor, holes and steps from the tilt,
-- the chirps for a car faster than ~72 km/h.
+- the fastest speed the module reports, a car's.
