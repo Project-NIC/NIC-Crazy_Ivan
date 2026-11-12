@@ -92,7 +92,7 @@ A line has three pairs: two for data and one for the clock. The cable has 16 wir
 
 **Line speed**
 
-The units have STM32H523s, Mamka two STM32H562s. Per their datasheets (DS14540, DS14258) the
+The units have STM32H523s, Nataša and Mamka STM32H562s. Per their datasheets (DS14540, DS14258) the
 USART of both reaches 20 Mbaud with DMA. Both ends take their clock from the suit, 20 × 9.8304
 MHz = 196,608,000 Hz, Mamka's as her bus clock and a unit's on a PLL of its own for the USART
 alone (see [software](SOFTWARE.md#the-clock-tree)), which VOS1 allows (200 MHz, tables 20 and 21),

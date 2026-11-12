@@ -2,7 +2,7 @@
 
 # Status
 
-**Beta 0.6, 31 Oct 2026, updated 5 Nov 2026:** every module on the ADS1298, the IMU the
+**Beta 0.6, 31 Oct 2026, updated 12 Nov 2026:** every module on the ADS1298, the IMU the
 LSM6DSV16X held to the suit's clock by a reference, the strips polyimide shielded on both faces,
 the units potted on the harness with connectors for assembly only, Mamka's converters at 1 MHz,
 Mrazík the cooling block, two bias drivers caught by software; the electrodes' places on the
@@ -31,14 +31,14 @@ part has been bought. What is here is of four kinds, and each page says which:
 - **the suit's IMU, the LSM6DSV16X,** held to the suit's clock by a reference on INT2, 24 or 15 Hz
   from the suit clock, its 800 Hz setting at 960 Hz, eight samples a step; two a bus by their
   addresses; the IMU board
-  with what ST asks and 1 kΩ on INT2 ([Rubaška](rubaska/HARDWARE.md#the-imu)),
+  with what ST asks and 10 kΩ on INT2 ([Rubaška](rubaska/HARDWARE.md#the-imu)),
 - **the ADS1298 on every module,** the head and the neck too: one chip, one board, one firmware;
   every channel differential, no reference electrode
   ([Rubaška](rubaska/HARDWARE.md#sensing-module)),
 - **the modules' analog supply on the LP2985,** and an RC at every input where a cable arrives
   ([Rubaška](rubaska/HARDWARE.md#power)),
 - **the strips polyimide everywhere,** the limbs too: the strip does not stretch, an elastic gap in
-  the fabric does; two or three short strips a module; four layers, the leads between two grounds,
+  the fabric does; at most two short strips a module; four layers, the leads between two grounds,
   the layer driven at the body's common mode by a TLV9001S, a follower's place at every stud under a
   0 Ω part ([Rubaška](rubaska/HARDWARE.md#the-strips-ground-layer)),
 - **connectors for assembly and repair only:** the units potted whole in a gel on Kaščej, which is
@@ -135,10 +135,17 @@ part has been bought. What is here is of four kinds, and each page says which:
   ([Porjadok](porjadok/HARDWARE.md#cable-and-connectors-in-the-suit)),
 - the battery on LiFePO4, the EVE C40 in 4S1P the first candidate ([Babuška](babuska/HARDWARE.md)),
 - Terem for 2280 cards, the Hailo-10H with 8 GB, its board an L under the ROCK, read from Radxa's
-  3D model, with windows over the ROCK's tallest parts ([Terem](terem/CONSTRUCTION.md#the-board)),
+  3D model, a frame with the ROCK's tallest parts in its opening
+  ([Terem](terem/CONSTRUCTION.md#the-board)),
 - the names by family ties: Borovičok, Staršaja every sensing unit's main
   processor, Kormilica the suit's power on Mamka ([NAMES](NAMES.md)),
-- the codecs and the simulator for all of it ([software](software/protocol/README.md)).
+- three THVD1450 on every unit, one part for the line's data, its return pair and the clock
+  ([Porjadok](porjadok/HARDWARE.md#drivers-on-a-unit)); Nataša on an STM32H562RG, the headphones
+  Bluetooth ones on Baťa as a rule ([Nataša](natasa/README.md)),
+- Míša's radar TI's IWRL6432WMOD, a certified module on SPI2 ([Míša](misa/HARDWARE.md)),
+- the codecs and the simulator for all of it ([software](software/protocol/README.md)), and
+  Baťa's software on recordings: the recorder into BDF+, the signal chain, the map
+  ([software](software/README.md)).
 
 ## What is closed
 
@@ -165,11 +172,9 @@ Each page ends with its open questions. The largest:
 - every figure marked *to be measured*: the pack's voltage at 20 and 80%, the ROCK 5T's
   consumption, the cable at 20 Mbaud, the electrodes' contact, the radar beside the EMG, the
   SPIs behind the ROCK's translators at 11.1 MHz,
-- the top at 80% on LiFePO4's flat curve: the BMS's count or a full charge,
 - the glove's board on the back of the hand: Staršaja's pins in UFQFPN48 against the datasheet's
   tables, on the first board; Mamka's eight line
   headers, which do not fit one edge: two rows or a smaller IDC,
-- datasheets not read: the BMS's manuals,
 - the clock trees and the DMA tables of the six processor designs, written on paper, checked on
   the first board,
 - the electrodes' places on the body, asked of professionals, then checked by the first
@@ -180,7 +185,7 @@ Each page ends with its open questions. The largest:
   discs against Ag/AgCl, titanium and conductive silicone; the polyimide strips, washed and worn,
 - the four-layer strip's own artifact and its ground layer on ground and driven, on the first arm;
   the powered-down bias output's leakage, the LP2985's noise with the inputs shorted inside, the
-  IMUs' reference on INT2 and its 1 kΩ, on the first module; on the first glove the IMU's SDA
+  IMUs' reference on INT2 and its 10 kΩ, on the first module; on the first glove the IMU's SDA
   pin and drive on a scope, which set the bus's clock, the switches' change of channel, and the
   branches switched away staying quiet,
 - the backpack's heat with the *brutal* fitting, up to ~40 W; Mrazík's closure, the Hailos' path to

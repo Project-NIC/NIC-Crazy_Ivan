@@ -896,7 +896,7 @@ for, the snapshot wanting 256, the sphere and the meta packets 3, 4, 5 and 7 512
 
 ## The GPDMA
 
-Every processor on the suit clock, the STM32H523s and Mamka's two STM32H562s, has two GPDMAs
+Every processor on the suit clock, the STM32H523s and the STM32H562s, has two GPDMAs
 of eight channels, and any request goes to any channel by REQSEL in GPDMA_CxTR2
 (RM0481 Rev 5, 16.3.4, table 142). The channels differ (table 140): 0–3 have a FIFO of 8 B and are
 meant for a peripheral and SRAM, 4–5 one of 32 B, 6–7 one of 32 B with 2D addressing. Each

@@ -19,7 +19,7 @@ functions and the whole suit's power.
 | SWD pads | | 2 | one set for each processor, for a programmer on the bench |
 | SCTF SX7M9.8304M20F30TNN | 7.0 × 5.0 mm | 1 | the suit's clock, 9.8304 MHz: a quartz oscillator, CMOS, 1.62–3.63 V, 10 mA at most, duty 45–55 %, edges ≤ 5 ns, ±20 ppm at 25 °C, ±30 ppm over −40…+85 °C, ±3 ppm the first year (SCTF's sheet, revision 05/12/2026); pin 1 its tri-state, on at 1 or open, tied to its 3.3 V; 0.1 µF at its VDD; JLCPCB C21547509, the cheapest. For whoever wants ±20 ppm in all: SiTime's SiT8008 MEMS oscillator in the same 7.0 × 5.0 mm, pins alike: SiT8008BI-81-33N-9.830400Y, a reel of 1,000, or in bulk without the Y (8 the 7.0 × 5.0 mm, 1 ±20 ppm in all, N pin 1 without function at any level or open; SiTime's SiT8008B sheet 1.08, tables 1 and 2, the ordering information) |
 | SN74LVC126A | quad buffer, 14 pins | 3 | the suit clock from the oscillator to both processors' OSC_IN and the eight lines' clock drivers, two spare gates |
-| THVD1452 | VSSOP-10, the units' part | 8 | a line's data: drives the pair to the units only while Mamka sends, its DE a pin of its own, and receives the return pair; a processor's lines with modules driven by her one TX |
+| THVD1452 | VSSOP-10 | 8 | a line's data: drives the pair to the units only while Mamka sends, its DE a pin of its own, and receives the return pair; a processor's lines with modules driven by her one TX |
 | THVD1450 | SOIC-8, VSSOP-8 or VSON-8 | 8 | drive the lines' clock, their DE on one pin a processor |
 | Chipanalog CA-IS3092W | SOIC-16, wide | 1 | the BMS's RS-485, half-duplex, isolated with its own DC/DC (5 kVrms, 500 kbps): JK switches the pack's negative side (P− and B−, the JK-B1A8S10P specification V19.3.1, 6.2), so with its MOSFETs open Mamka's ground stands up to the pack's 14.6 V off the BMS's; its SEL on the isolated ground for 3.3 V, VCC and VISO each 100 nF and at least 10 µF (CA-IS309x Version 1.11, table 6-1); A and B to the BMS's P6 (A1254WF-4A) pins 3 RS485_A and 4 RS485_B, the isolated ground to its P2 pin 3 GND, P6 having none (JK-B1A8S10P product specification V19.3.1, the interfaces' table); JLCPCB C2890051 |
 | LMR43610MB3RPER | VQFN-HR, 2 × 2 mm | 11 | Mamka's own 3.3 V; 4 V for each of the eight lines, each with an EN and a PGOOD of its own on processor 2; 6 V for the suit; 5 V for the fan |
@@ -181,7 +181,7 @@ the rest over two slower SPIs. Details under
 
 Each line has on Mamka:
 
-- **a THVD1452** for its data, the units' part: its driver on the pair to the units, where Mamka is
+- **a THVD1452** for its data: its driver on the pair to the units, where Mamka is
   the only one that sends, enabled by a DE of its own only while she sends, the pair otherwise
   resting on its terminator, which the units' receivers read as a fail-safe high (SLLSEY3E); its
   receiver takes the return pair, RE on ground. The pairs the units drive are terminated here and at

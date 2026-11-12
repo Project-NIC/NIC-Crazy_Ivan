@@ -56,8 +56,8 @@ source is named. What the electrodes and the strips are made of is under
   ankle). Where an IMU needs the same bone, both stay on it a few centimetres apart (see [the
   IMUs](#the-imus)). One bias electrode drives the body and the others wait as spares (see
   [Rubaška](../rubaska/HARDWARE.md#right-leg-drive)).
-- **A strip does not stretch:** an elastic gap in the band's fabric takes the swell, and two or
-  three short strips a module, ~20 cm at most, meet at it (see
+- **A strip does not stretch:** an elastic gap in the band's fabric takes the swell, and at most
+  two short strips a module, ~20 cm at most, meet at it (see
   [Rubaška](../rubaska/CONSTRUCTION.md#electrodes)).
 - **Nothing pressed onto a nerve that lies on bone under the skin:** the common peroneal nerve
   winds round the neck of the fibula, the ulnar nerve rests on the back of the medial epicondyle

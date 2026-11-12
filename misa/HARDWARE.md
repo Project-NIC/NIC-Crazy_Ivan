@@ -33,7 +33,7 @@ pins, and the radar beside the EMG.
 
 | part | package | count | what it does |
 |---|---|---|---|
-| STM32H523 | UFQFPN48 or LQFP64 | 1 | the processor, as in every module |
+| STM32H523 | UFQFPN48 | 1 | the processor, as in every module |
 | THVD1450 | VSSOP-8, or SOIC-8 | 3 | line 8's pair from Mamka and the suit's clock, receive only, and its return pair with the echo, as on a module (see [Porjadok](../porjadok/HARDWARE.md#drivers-on-a-unit)) |
 | IWRL6432WMOD (TI) | QFM, 30 pads of a land grid, 31 × 15.5 mm | 1 | the radar, see below |
 | LSM6DSV16X | LGA-14L, 2.5 × 3 × 0.83 mm | 1 | the IMU, the suit's: the head's tilt from gravity, short turns from the gyro; 100 nF at each supply pin and 10 kΩ in series with INT2, as on the IMU board (see [Rubaška](../rubaska/HARDWARE.md#the-imu)) |
@@ -103,8 +103,7 @@ He needs 31:
   holds the current to 0.33 mA. The processor sums its steps the same way; its 12 B a step go into
   the sphere's header as the head's turn and pitch, not up the line.
 - BOOT0 to ground through 10 kΩ, NRST to the SWD pads, 2.2 µF on each VCAP (DS14540, table 21),
-  PC13 to PC15 left free (table 13, note 2), as on a module. Should LQFP64 be chosen for the
-  layout, the pins keep their names and only their numbers change.
+  PC13 to PC15 left free (table 13, note 2), as on a module.
 
 ## The radar
 

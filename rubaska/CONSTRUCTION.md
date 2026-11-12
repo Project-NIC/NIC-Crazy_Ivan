@@ -312,7 +312,7 @@ settled, since each version is a circuit made and thrown away.
 
 - the band's strip on a sample: bent, tapped and rubbed while recording, on a dummy body of
   resistors first, its fit on the limb as a piece of a cone, the elastic gap beside the bone, and
-  the girths that set two or three short strips; the swell of a working muscle on the first arm,
+  the girths that set the strips' lengths; the swell of a working muscle on the first arm,
   and meanders moulded in silicone only if it wants them,
 - the bench, in this order: the dummy body's resistors alone, the P and N sides matched and then one
   side deliberately mismatched, while only the strip moves; then the contact's impedance measured in
