@@ -280,7 +280,10 @@ code runs on one core. The plan:
 - **The model's shape: convolutions only,** so that one model runs on the Hailo, on the
   RK3588's own NPU and on the cores alike, and the small fitting's fallback is the same model:
   - **The input as an image,** 1 × 32 × 928: the window of 32 steps, the 280 envelopes and the
-    108 IMUs' 6 values of each step, 928 values a step (see [signals](SIGNALS.md)).
+    108 IMUs' 6 values of each step, 928 values a step, variant A's (see [signals](SIGNALS.md)).
+    Variant B's EMG comes as 1 × 512 × 280, the raw samples, into a front of convolutions over
+    time with a stride of 16 down to the 32 steps, then 1 × 1 across the channels, joined to the
+    IMUs' 1 × 32 × 648; the body after it is variant A's.
   - **Convolutions over time** with a kernel of 1 × k, **1 × 1 across the channels**, which also
     stands for the fully connected head; the 32 steps are covered by stacking layers or by a
     stride of 2, not by dilation.
@@ -341,6 +344,75 @@ unknown place:
 | 7 | 19 the neck and upper back, 20 the lower back |
 | 8 | 21 Nataša, 22 Míša |
 
+**The joint list,** a first draft (11 Nov 2026), the numbers behind the joint table of meta 3 and
+4 (see [Porjadok](../porjadok/SOFTWARE.md#ci-btp)): 56 joints, 96 of the snapshot's 127 values,
+each the turn of its child bone in its parent bone's frame, from the IMUs' places in Bogatyr's
+CONSTRUCTION ([the IMUs](../bogatyr/CONSTRUCTION.md#the-imus)); the bones' IMUs in the order of
+each unit's table, the glove's zones taken as index, middle, ring, little, thumb, carpus and the
+sock's four trial places guessed until their tables are fixed. The ranges are first guesses
+with room to spare, set by the recordings, in the table in 2° steps; the shoulder and the hip as
+a swing and a twist (see [Porjadok](../porjadok/SOFTWARE.md#output)). In code:
+`software/map/suitmap/lists.py`.
+
+| joint | name | parent → child | axes, degrees |
+|---|---|---|---|
+| 1 | head on neck | C2 → skull | flexion -60 to 60, abduction -50 to 50, rotation -90 to 90 |
+| 2 | neck | upper thorax → C2 | flexion -60 to 60, abduction -50 to 50, rotation -90 to 90 |
+| 3 | thoracic spine | lower thorax → upper thorax | flexion -40 to 60, abduction -40 to 40, rotation -50 to 50 |
+| 4 | lumbar spine | pelvis → lower thorax | flexion -40 to 80, abduction -40 to 40, rotation -40 to 40 |
+| 5 | left scapula on thorax | upper thorax → left scapula | flexion -40 to 40, abduction -40 to 40, rotation -40 to 40 |
+| 6 | left clavicle on sternum | sternum → left clavicle | flexion -40 to 40, abduction -40 to 40 |
+| 7 | left shoulder | left scapula → left humerus | swing forward -150 to 150, swing out -150 to 150, twist -90 to 90 |
+| 8 | left elbow | left humerus → left ulna | flexion -10 to 160 |
+| 9 | left forearm | left ulna → left radius | rotation -100 to 100 |
+| 10 | left wrist | left radius → left hand | flexion -90 to 90, abduction -40 to 40 |
+| 11 | left thumb CMC | left hand → left thumb metacarpal | flexion -30 to 60, abduction -20 to 80 |
+| 12 | left thumb MCP | left thumb metacarpal → left thumb proximal | flexion -20 to 80 |
+| 13 | left thumb IP | left thumb proximal → left thumb distal | flexion -30 to 100 |
+| 14 | left index MCP | left hand → left index proximal | flexion -40 to 100, abduction -30 to 30 |
+| 15 | left index PIP | left index proximal → left index middle | flexion -10 to 120 |
+| 16 | left index DIP | left index middle → left index distal | flexion -20 to 100 |
+| 17 | left middle MCP | left hand → left middle proximal | flexion -40 to 100, abduction -30 to 30 |
+| 18 | left middle PIP | left middle proximal → left middle middle | flexion -10 to 120 |
+| 19 | left middle DIP | left middle middle → left middle distal | flexion -20 to 100 |
+| 20 | left ring MCP | left hand → left ring proximal | flexion -40 to 100, abduction -30 to 30 |
+| 21 | left ring PIP | left ring proximal → left ring middle | flexion -10 to 120 |
+| 22 | left ring DIP | left ring middle → left ring distal | flexion -20 to 100 |
+| 23 | left little MCP | left hand → left little proximal | flexion -40 to 100, abduction -30 to 30 |
+| 24 | left little PIP | left little proximal → left little middle | flexion -10 to 120 |
+| 25 | left little DIP | left little middle → left little distal | flexion -20 to 100 |
+| 26 | left hip | pelvis → left femur | swing forward -150 to 150, swing out -150 to 150, twist -90 to 90 |
+| 27 | left knee | left femur → left tibia | flexion -10 to 160, rotation -40 to 40 |
+| 28 | left ankle | left tibia → left calcaneus | flexion -60 to 40, abduction -40 to 40 |
+| 29 | left midfoot | left calcaneus → left forefoot | flexion -30 to 30, abduction -30 to 30 |
+| 30 | left big toe | left forefoot → left hallux | flexion -40 to 90 |
+| 31 | right scapula on thorax | upper thorax → right scapula | flexion -40 to 40, abduction -40 to 40, rotation -40 to 40 |
+| 32 | right clavicle on sternum | sternum → right clavicle | flexion -40 to 40, abduction -40 to 40 |
+| 33 | right shoulder | right scapula → right humerus | swing forward -150 to 150, swing out -150 to 150, twist -90 to 90 |
+| 34 | right elbow | right humerus → right ulna | flexion -10 to 160 |
+| 35 | right forearm | right ulna → right radius | rotation -100 to 100 |
+| 36 | right wrist | right radius → right hand | flexion -90 to 90, abduction -40 to 40 |
+| 37 | right thumb CMC | right hand → right thumb metacarpal | flexion -30 to 60, abduction -20 to 80 |
+| 38 | right thumb MCP | right thumb metacarpal → right thumb proximal | flexion -20 to 80 |
+| 39 | right thumb IP | right thumb proximal → right thumb distal | flexion -30 to 100 |
+| 40 | right index MCP | right hand → right index proximal | flexion -40 to 100, abduction -30 to 30 |
+| 41 | right index PIP | right index proximal → right index middle | flexion -10 to 120 |
+| 42 | right index DIP | right index middle → right index distal | flexion -20 to 100 |
+| 43 | right middle MCP | right hand → right middle proximal | flexion -40 to 100, abduction -30 to 30 |
+| 44 | right middle PIP | right middle proximal → right middle middle | flexion -10 to 120 |
+| 45 | right middle DIP | right middle middle → right middle distal | flexion -20 to 100 |
+| 46 | right ring MCP | right hand → right ring proximal | flexion -40 to 100, abduction -30 to 30 |
+| 47 | right ring PIP | right ring proximal → right ring middle | flexion -10 to 120 |
+| 48 | right ring DIP | right ring middle → right ring distal | flexion -20 to 100 |
+| 49 | right little MCP | right hand → right little proximal | flexion -40 to 100, abduction -30 to 30 |
+| 50 | right little PIP | right little proximal → right little middle | flexion -10 to 120 |
+| 51 | right little DIP | right little middle → right little distal | flexion -20 to 100 |
+| 52 | right hip | pelvis → right femur | swing forward -150 to 150, swing out -150 to 150, twist -90 to 90 |
+| 53 | right knee | right femur → right tibia | flexion -10 to 160, rotation -40 to 40 |
+| 54 | right ankle | right tibia → right calcaneus | flexion -60 to 40, abduction -40 to 40 |
+| 55 | right midfoot | right calcaneus → right forefoot | flexion -30 to 30, abduction -30 to 30 |
+| 56 | right big toe | right forefoot → right hallux | flexion -40 to 90 |
+
 ## Assistive use
 
 Muscles below a spinal cord injury often still carry signals even when nothing moves:
@@ -359,6 +431,8 @@ starting point that then adapts to each next one.
 
 ## Open questions
 
+- the joint list's first draft: its ranges, the spine's four joints, the glove's zone order and
+  the sock's trial places, on the first recordings,
 - the ROCK's header 3.3 V off at a poweroff, the RK806 the system-power-controller (likely):
   else the clean-shutdown mark and "pin 1 has fallen" mislead, and every start is reason 10,
 - the USB-C device role behind the ISOUSB211: Rd on CC and VBUS from the host's side, from

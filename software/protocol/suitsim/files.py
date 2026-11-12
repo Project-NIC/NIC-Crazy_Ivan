@@ -12,6 +12,15 @@ def write_frames(path: str, frames: list[bytes]) -> None:
             f.write(fr)
 
 
+def write_table(path: str, units) -> None:
+    """The units as Baťa's recorder reads them (software/recorder, `table.json`)."""
+    import json
+    with open(path, "w") as f:
+        json.dump({"units": [{"number": u.number, "name": u.name, "line": u.line, "slot": u.slot,
+                              "kind": u.kind, "ads": u.ads, "imus": u.imus} for u in units]},
+                  f, indent=1)
+
+
 def read_frames(path: str):
     """Walks a file frame by frame, each frame's length from its class in byte 4."""
     with open(path, "rb") as f:

@@ -1,4 +1,5 @@
 """The two CRCs of the suit (porjadok/SOFTWARE.md, "The frames" and "Updating firmware")."""
+import binascii
 import zlib
 
 _TABLE = []
@@ -13,8 +14,14 @@ def crc16(data: bytes) -> int:
     """CRC-16/CCITT-FALSE: polynomial 0x1021, initial 0xFFFF, no reflection, no final XOR.
 
     "123456789" gives 0x29B1. Used on every frame inside the suit and every output frame,
-    always stored little-endian.
+    always stored little-endian. binascii's CRC-CCITT is this one with its start at 0xFFFF, in C;
+    the table below, the same in Python, is what the firmware's C follows (`crc16_table`).
     """
+    return binascii.crc_hqx(data, 0xFFFF)
+
+
+def crc16_table(data: bytes) -> int:
+    """The same CRC by the table, byte by byte, as the units compute it."""
     c = 0xFFFF
     for b in data:
         c = ((c << 8) & 0xFFFF) ^ _TABLE[((c >> 8) ^ b) & 0xFF]

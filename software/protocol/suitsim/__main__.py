@@ -3,7 +3,7 @@ import argparse
 import os
 import sys
 
-from suitsim import Suit, Bata, write_frames, read_frames, summarize
+from suitsim import Suit, Bata, write_frames, write_table, read_frames, summarize
 from ci import btp, stp
 
 
@@ -41,6 +41,7 @@ def main(argv=None) -> int:
         for sa, sb in suit.p2:
             f.write(sa + sb)
     write_frames(os.path.join(a.out, "output.cibtp"), bata.frames_out)
+    write_table(os.path.join(a.out, "table.json"), suit.units)
     size = sum(len(t) for t in suit.p1) + sum(2 * len(sa) for sa, _ in suit.p2)
     print(f"cycles {cycles}, transfers {len(suit.p1)} + {len(suit.p2)} ({size / 1e6:.2f} MB), "
           f"suit {suit.stats}, Baťa: cycles {bata.cycles}, empty places {bata.empty}, "

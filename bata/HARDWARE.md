@@ -127,9 +127,10 @@ him only over Ethernet.
 - **Recordings,** when made, go over the same cable to Borovičok's SSD, so Baťa needs none; all
   the EMG in BDF, ~1.6 MB/s, is far inside what a PCIe 3.0 ×2 slot carries.
 - **Baťa then needs little memory,** since the data are ~2.8 MB/s from the SPIs and ~3.6 MB/s of the
-  model's windows (32 × 928 values 120 times a second, INT8), and the model sits in Umnica's own 8
-  GB; in the small fitting it sits in the ROCK's own memory, so whether the smallest, 4 GB (Radxa's
-  product brief), leaves room for it and for learning is to be tried.
+  model's windows (32 × 928 values 120 times a second, INT8; variant B's raw windows ~34 MB/s), and
+  the model sits in Umnica's own 8 GB; in the small fitting it sits in the ROCK's own memory, so
+  whether the smallest, 4 GB (Radxa's product brief), leaves room for it and for learning is to be
+  tried.
 - **Power:** Borovičok's eFuse sits on Mamka beside Baťa's (see
   [Mamka](../mamka/HARDWARE.md#the-computers-supply)), so Mamka
   switches both computers, and the backpack takes the 10 A power variant (see

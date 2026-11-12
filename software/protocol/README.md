@@ -22,10 +22,11 @@ python3 -m suitsim --seconds 1 --modules 16 --bad 0.001 --out sim
 python3 -m suitsim --summarize sim/output.cibtp
 ```
 
-The second line writes `spi1.bin` (processor 1's transfers, 1,064 B a cycle), `spi2.bin`
-(processor 2's, both SPIs' shares of 192 B one after the other) and `output.cibtp` (the live
-stream at 128 frames a second in the class of 512 B), and prints how many frames went bad, how
-many places Baťa found empty and how many IMU steps he put together.
+The second line writes `table.json` (the units, as the [recorder](../recorder/README.md) reads
+them), `spi1.bin` (processor 1's transfers, 1,064 B a cycle), `spi2.bin` (processor 2's, both SPIs'
+shares of 192 B one after the other) and `output.cibtp` (the live stream at 128 frames a second in
+the class of 512 B), and prints how many frames went bad, how many places Baťa found empty and how
+many IMU steps he put together.
 
 The code is the second reading of the pages: where a page leaves a detail open, the code
 chooses and its docstring says so. Firmware in C comes later and follows the same layouts.

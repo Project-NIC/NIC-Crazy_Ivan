@@ -404,7 +404,10 @@ def parse_data(frame: bytes) -> tuple[int, int, list[int], bytes]:
     if f.kind not in (K_DATA, K_DATA2, K_END):
         raise ValueError("not data")
     n = 16 if f.kind == K_DATA2 else 8
-    channels = [s24(f.body[3 * i:3 * i + 3]) for i in range(n)]
+    words = bytearray(4 * n)                 # each 24-bit sample at the top of a 32-bit word,
+    words[0::4], words[1::4], words[2::4] = (f.body[0:3 * n:3], f.body[1:3 * n:3],
+                                             f.body[2:3 * n:3])
+    channels = [v >> 8 for v in struct.unpack(f">{n}i", words)]   # shifted down with its sign
     return f.unit, f.number, channels, f.body[3 * n:]
 
 

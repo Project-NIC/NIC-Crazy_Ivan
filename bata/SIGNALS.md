@@ -115,19 +115,38 @@ Each IMU's step is its turn Δθ over 1/120 s with the coning term and its mean 
 
 ## The model
 
-The model takes features at the IMUs' rate, not the raw EMG: 1.61 MB/s of raw samples into a
-network would cost what it does not need, and the envelopes carry the muscles' activity. Its output
-is its own, not the snapshot's joints, which are the pose the IMUs measure; its input is normalised
+Two variants are built and trained on the same recordings, and the better one is kept (the
+owner, 11 Nov 2026): nobody knows yet whether the Hailo carries the raw EMG. Both share the body
+and the output below; they differ in what the EMG is when it reaches the model. Its output is
+its own, not the snapshot's joints, which are the pose the IMUs measure; its input is normalised
 channel by channel, it is trained with dropout over the channels, and the IMU steps are turned into
 each bone's frame.
 
-- **In, every step of 1/120 s:** 280 EMG envelopes (log-RMS of the step) and 108 IMU steps of 6
-  values, **928 values a step**; a window of **32 steps**, 267 ms, 29,696 values. Absent IMUs and
-  masked channels take their "absent" value.
-- **Out, every step:** the 127 joint values, the 32 contact bits and, from longer windows, the
-  fatigue below. Neural networks learn rotations better in a six-number form than as angles or
-  quaternions (Zhou et al., CVPR 2019), so the model may put that out and the output step turns
-  it into the bytes.
+- **Variant A, the envelopes:** every step of 1/120 s, 280 EMG envelopes (log-RMS of the step)
+  and 108 IMU steps of 6 values, **928 values a step**; a window of **32 steps**, 267 ms, 29,696
+  values. Baťa's core makes the envelopes; the heart is taken out of the trunk's channels first,
+  which makes them 1 s late (open questions). Small and certain; it runs on the RK3588's NPU
+  too, so the small fitting keeps it whatever is chosen.
+- **Variant B, the raw EMG** (the suit's first idea): every channel at 1,920 SPS into the Hailo,
+  280 × 16 samples a step and the same IMU steps beside them; the window the same 267 ms, 512
+  samples a channel. Baťa's core only conditions the samples, what a network does badly: the lost
+  ones held, the electrode's offset taken off by the high-pass, the mains by the adaptive canceller,
+  each sample then an i16 of 0.25 µV (±8.2 mV, the chip's 0.8 µVrms ~3 steps). The heart stays in;
+  the network learns it, so nothing waits. The model's first layers learn the filters and the
+  spread of activity over neighbouring electrodes, the map of the muscles over the body, and see
+  the spectrum the fatigue lives in, which an envelope throws away. ~1.1 MB/s of samples, ~34 MB/s
+  of whole windows into the Hailo, little on its PCIe; the first layers ~1 GOP/s at 120 windows a
+  second (a filter of 33 taps a channel at a stride of 4, one of 9 after it, then the channels
+  mixed into 256; an estimate). To be checked in Hailo's tools first: the input and the first
+  layer at 16 bits, since at 8 bits the quiet muscles are lost; if only 8 bits go, each channel
+  scaled by its own slow RMS before, the scale a second input.
+- **The choice** by the scoring the layouts get (below): the same task, the same fresh putting-on,
+  the EMG alone and with the IMUs, then the latency and the Hailo's power. Absent IMUs and masked
+  channels take their "absent" value in both.
+- **Out, every step:** the joint values (up to 127), the 32 contact bits and, from longer
+  windows, the fatigue below. Neural networks learn rotations better in a six-number form than as
+  angles or quaternions (Zhou et al., CVPR 2019), so the model may put that out and the output
+  step turns it into the bytes.
 - **The split:** the large fixed part on the Hailo, a small last part on a core of Baťa that
   learns this person and this fit of the suit (see [learning](SOFTWARE.md#learning)). The IMUs'
   joints are the targets the EMG part learns from.
@@ -161,20 +180,26 @@ the meta packet of fatigue. Surface EMG hears the neighbouring muscles too, so g
 ## Where it runs and what it costs
 
 - **The envelopes, the filters, the ECG and the quaternions** are ~10 MFLOP/s for the whole suit:
-  one core of Baťa, the input core, in the gaps between SPI reads. The model runs on the Hailo;
-  the personal part on a free core.
+  one core of Baťa, the input core, in the gaps between SPI reads; variant B's conditioning less
+  (no envelopes, no heart taken out). The model runs on the Hailo, variant B's first layers with
+  it; the personal part on a free core. The chain in Python on recordings: the whole suit's 12 s
+  in ~0.25 s on one core ([software/signals](../software/signals/README.md)).
 - **Latency:** the step's window adds 8.3 ms; the model's window of 267 ms is history, not delay,
   the newest step is in it. The rest is under [latency](SOFTWARE.md#latency).
-- **In code:** Python on recordings first, the same code that the simulator's files run through;
-  then the live chain in C or Rust on Baťa.
+- **In code:** Python on recordings first, the same code that the simulator's files run through
+  ([software/signals](../software/signals/README.md)); then the live chain in C or Rust on Baťa.
 
 ## Open questions
 
+- the heart taken out of the trunk's EMG waits for a beat's whole window and the detector, which
+  makes the envelopes 1 s late: live, either every envelope waits, or the trunk's go out at once
+  with the QRS's steps marked; for the first recordings,
 - the first recordings decide: the high-pass at 10 or 20 Hz, whether the mains needs taking out
   at all, how far the ECG
   template reaches on the limbs, the breath from the EMG against a belt,
 - the complementary filter's gains and the joint constraints' weights, on a recorded walk against
   a camera,
-- the model's window and features: 32 steps of 928 values is the first guess, to be tuned,
+- the model's window and features: 32 steps of 928 values is variant A's first guess, to be
+  tuned; variant B's 16-bit input on the Hailo, and which variant stays,
 - the load cell and the look-ahead's horizon for the first arm's recordings,
 - the fatigue index against a known effort, on a recording with a dynamometer.

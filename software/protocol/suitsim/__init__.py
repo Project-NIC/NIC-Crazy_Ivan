@@ -6,4 +6,4 @@ the timing is counted in cycles, not seconds.
 """
 from .suit import Suit, Module, Glove, Natasa, Misa   # noqa: F401
 from .bata import Bata                                # noqa: F401
-from .files import read_frames, write_frames, summarize   # noqa: F401
+from .files import read_frames, write_frames, write_table, summarize   # noqa: F401
